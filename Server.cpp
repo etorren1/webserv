@@ -123,7 +123,6 @@ void Server::clientRequest( void ) {
                 {
                     std::cout << "Client " << userFds[id].fd << " disconnected." << "\n";
                     close(userFds[id].fd);
-
                 }
                 // else if (!userData[id]->getBreakconnect())
                 //     executeCommand(id);
@@ -160,7 +159,9 @@ int  Server::readRequest( size_t const id )
     if (text.size())
         std::cout << YELLOW << "User " << userFds[id].fd << " send: " << RESET << text;
 
+    if (text.find("localhost:8080") != std::string::npos)
     {
+
         std::stringstream response_body;
         std::stringstream response;
         size_t result;
@@ -182,6 +183,7 @@ int  Server::readRequest( size_t const id )
         // Отправляем ответ клиенту с помощью функции send
         result = send(userFds[id].fd, response.str().c_str(),
             response.str().length(), 0);
+        
     }
 
     return (bytesRead);
