@@ -2,4 +2,6 @@
 .DS_Store
 ./webserv
 ./a.out
-~/vscode
+/.vscode/
+/YoupiBanane/
+index.html
