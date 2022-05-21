@@ -49,8 +49,7 @@ void Server::run( void ) {
     }
 }
 
-void Server::consoleCommands( void )
-{
+void Server::consoleCommands( void ) {
     char buf[BUF_SIZE + 1];
     int bytesRead = 0;
     int rd;
@@ -60,7 +59,7 @@ void Server::consoleCommands( void )
         buf[rd] = 0;
         text += buf;
         bytesRead += rd;
-        std::cout << RED << "console command: " << RESET << text;
+        // std::cout << RED << "console command: " << RESET << text;
         if (text.find("\n") != std::string::npos) {
             text.erase(text.find("\n"), 1); 
             break;
@@ -78,7 +77,7 @@ void Server::consoleCommands( void )
             userFds.clear();
             status = 0;
         }
-        if (text == "RESTART")
+        else if (text == "RESTART")
         {
             std::cout << YELLOW << "Restarting server ... " << RESET;
             close(srvFd);
@@ -88,6 +87,17 @@ void Server::consoleCommands( void )
             userFds.clear();
             create();
             status = RESTART;
+        }
+        else if (text == "HELP")
+        {
+            std::cout << YELLOW << "Allowed command: " << RESET << "\n\n";
+            std::cout << " * STOP - shutdown server." << "\n\n";
+            std::cout << " * RESTART - restarting server." << "\n\n";
+        }
+        else
+        {
+            std::cout << RED << "Uncnown command. Use " << RESET <<\
+             "HELP" << RED << " for more information." << RESET << "\n";
         }
     }
 }
@@ -132,8 +142,7 @@ void Server::clientRequest( void ) {
     }
 }
 
-int  Server::readRequest( size_t const id )
-{
+int  Server::readRequest( const size_t id ) {
     char buf[BUF_SIZE + 1];
     int bytesRead = 0;
     int rd;
@@ -164,6 +173,7 @@ int  Server::readRequest( size_t const id )
 
         std::stringstream response_body;
         std::stringstream response;
+        int fd;
         size_t result;
         response_body << "<title>Test C++ HTTP Server</title>\n"
             << "<h1>Test page</h1>\n"
@@ -189,19 +199,22 @@ int  Server::readRequest( size_t const id )
     return (bytesRead);
 }
 
-Server::Server( std::string const & _port) {
-    try  {
-        if (_port.find_first_not_of("0123456789") != std::string::npos)
-            throw std::invalid_argument("Port must contain only numbers");
-        srvPort = atoi(_port.c_str());
-        if (srvPort < 1000 || srvPort > 65555) // надо взять правильный рендж портов...
-            throw std::invalid_argument("Port out of range");
-    }
-    catch ( std::exception & e) {
-        std::cerr << e.what() << "\n";
-        exit(EXIT_FAILURE);
-    }
+Server::Server( const std::string & config ) {
+    // try  {
+    //     if (_port.find_first_not_of("0123456789") != std::string::npos)
+    //         throw std::invalid_argument("Port must contain only numbers");
+    //     srvPort = atoi(_port.c_str());
+    //     if (srvPort < 1000 || srvPort > 65555) // надо взять правильный рендж портов...
+    //         throw std::invalid_argument("Port out of range");
+    // }
+    // catch ( std::exception & e) {
+    //     std::cerr << e.what() << "\n";
+    //     exit(EXIT_FAILURE);
+    // }
     status = WORKING;
+
+    parseConfig(config);
+
     std::cout << "Done!\n";
 }
 

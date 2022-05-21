@@ -6,6 +6,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <vector>
+#include <list>
 #include <fcntl.h>
 #include "Utils.hpp"
 #include <string>
@@ -28,15 +29,16 @@ class Server {
 		
 		void 		connectUsers( void );
 		void 		clientRequest( void );
-		int  		readRequest( size_t const id );
+		int  		readRequest( const size_t id );
 		void 		consoleCommands( void );
+		void		parseConfig( const std::string & config );
 
-		Server( Server const & src );
-		Server operator=( Server const & src ); 
+		Server( const Server & src );
+		Server operator=( const Server & src ); 
 
 	public:
 
-		Server( std::string const & port);
+		Server( const std::string & config);
 		~Server();
 
 		void	create( void );
