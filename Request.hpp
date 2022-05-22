@@ -1,8 +1,11 @@
 #ifndef RERUEST_HPP
 # define RERUEST_HPP
 
-# include "iostream"
+# include <iostream>
+# include <sstream>
+# include <string>
 # include <vector>
+# include <map>
 
 // > GET / HTTP/1.1
 // > Host: google.com
@@ -12,24 +15,19 @@
 class Request {
 private:
     std::string                             _method;
-    std::string                             _originForm; /*Абсолютный путь, за которым следует '?' и строка запроса. Это самая распространённая форма, называемая исходной формой (origin form) . Используется с методами GET, POST*/
-    std::string                             _absoluteForm; /*Полный URL - абсолютная форма (absolute form) , обычно используется с GET при подключении к прокси.
-    GET http://developer.mozilla.org/ru/docs/Web/HTTP/Messages HTTP/1.1 */
+    std::string                             _reqURI;
     std::string                             _protocolVersion;
-    std::vector<std::string, std::string>   _headers;
+    std::map<std::string, std::string>      _headers;
     std::string                             _body;
 
 
 public:
-    Request(std::string text);
+    Request();
     ~Request();
+    void            parseText(std::string text);
+    void            getStartLine(std::string str);
 };
 
-Request::Request(std::string text) {
-}
-
-Request::~Request() {
-}
 
 
 #endif

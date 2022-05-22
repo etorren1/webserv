@@ -11,6 +11,7 @@
 #include "Utils.hpp"
 #include <string>
 #include <sstream>
+#include "Request.hpp"
 
 #define	STOP	0b00
 #define WORKING 0b10
@@ -39,6 +40,7 @@ class Server {
 		int					status;
 		int					flags;
 		int					error_fd;
+		Request 			req;
 		
 		void 		connectUsers( void );
 		void 		clientRequest( void );
