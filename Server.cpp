@@ -148,10 +148,10 @@ int  Server::readRequest( const size_t id ) {
     }
     while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
-    if (text.size() > 512)
+    if (text.size() > 2048)   //Длина запроса Не более 2048 символов
     {
         text.replace(510, 2, "\r\n");
-        std::cout << RED << "ALERT! text more than 512 bytes!" << RESET << "\n";
+        std::cout << RED << "ALERT! text more than 2048 bytes!" << RESET << "\n";
     }
     // userData[id]->checkConnection(text);
     // userData[id]->messages = split(text, "\n");

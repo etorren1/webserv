@@ -1,8 +1,9 @@
 *.o
 .DS_Store
-./webserv
-./a.out
+webserv
+a.out
 /.vscode/
 /YoupiBanane/
+/logs/
 index.html
 nginx.conf
