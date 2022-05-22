@@ -16,7 +16,7 @@ get_request_data()
 
 std::string make_general_header (Request req)
 {
-	
+
 }
 
 std::string make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
@@ -39,13 +39,11 @@ std::string make_response_body()
 
 void response(Request req)
 {
-	std::stringstream response_body;
 	std::stringstream response;
 	size_t result;
-	response_body << 
 	// Формируем весь ответ вместе с заголовками
-	response << make_response_header(req)
-		<< response_body.str();
+	response	<< make_response_header(req)
+				<< make_response_body(req);
 	// Отправляем ответ клиенту с помощью функции send
 	result = send(userFds[id].fd, response.str().c_str(),
 		response.str().length(), 0);
