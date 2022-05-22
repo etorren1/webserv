@@ -35,6 +35,8 @@ class Server {
 	private:
 
 		std::vector<struct pollfd>	fds;
+		std::vector<std::string>	mess;
+		std::vector<bool>			cnct;
 
 		struct s_cfg		conf;
 		struct pollfd		srvPoll;
@@ -47,6 +49,7 @@ class Server {
 		void 		connectUsers( void );
 		void 		clientRequest( void );
 		int  		readRequest( const size_t id );
+		void 		disconnectClient( const size_t id );
 		void 		consoleCommands( void );
 		void		parseConfig( const int & fd );
 		// config file parser utilites

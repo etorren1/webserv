@@ -108,11 +108,22 @@ void Server::connectUsers( void ) {
                 nw.events = POLLIN;
                 nw.revents = 0;
                 fds.push_back(nw);
+                mess.push_back("");
+                cnct.push_back(false);
                 std::cout << "New client on " << new_client_fd << " socket." << "\n";
             }
             srvPoll.revents = 0;
         }
     }
+}
+
+void Server::disconnectClient( const size_t id ) {
+    std::cout << "Client " << fds[id].fd << " disconnected." << "\n";
+    close(fds[id].fd);
+
+    fds.erase(fds.begin() + id);
+    mess.erase(mess.begin() + id);
+    cnct.erase(cnct.begin() + id);
 }
 
 void Server::clientRequest( void ) {
@@ -121,17 +132,53 @@ void Server::clientRequest( void ) {
         for (size_t id = 0; id < fds.size(); id++) {
             if (fds[id].revents & POLLIN) {
                 if (readRequest(id) <= 0)
-                {
-                    std::cout << "Client " << fds[id].fd << " disconnected." << "\n";
-                    close(fds[id].fd);
+                    disconnectClient(id);
+                else if (!cnct[id]) {
+                    // request.parseText(text); // REQUEST PART
+
+
+                    //  RESPONSE PART
+                    if (mess[id].size())
+                        std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
+                    if (mess[id].find("localhost:8080") != std::string::npos) // fix close server then client send message
+                    {
+
+                        std::stringstream response_body;
+                        std::stringstream response;
+                        int fd;
+                        size_t result;
+                        response_body << "<title>Test C++ HTTP Server</title>\n"
+                            << "<h1>Test page</h1>\n"
+                            << "<p>This is body of the test page...</p>\n"
+                            << "<h2>Request headers</h2>\n"
+                            << "<pre>" << mess[id] << "</pre>\n"
+                            << "<em><small>Test C++ Http Server</small></em>\n";
+
+                        // Формируем весь ответ вместе с заголовками
+                        response << "HTTP/1.1 200 OK\r\n"
+                            << "Version: HTTP/1.1\r\n"
+                            << "Content-Type: text/html; charset=utf-8\r\n"
+                            << "Content-Length: " << response_body.str().length()
+                            << "\r\n\r\n"
+                            << response_body.str();
+
+                        // Отправляем ответ клиенту с помощью функции send
+                        result = send(fds[id].fd, response.str().c_str(),
+                            response.str().length(), 0);
+                        
+                    }
+                    mess[id] = "";
                 }
-                // else if (!userData[id]->getBreakconnect())
-                    // request.parseText(text);
-                //     executeCommand(id);
                 fds[id].revents = 0;
             }
         }
     }
+}
+
+static bool checkConnection( const std::string & mess ) {
+    if (mess.find_last_of("\n") != mess.size() - 1)
+        return true;
+    return false;
 }
 
 int  Server::readRequest( const size_t id ) {
@@ -139,8 +186,8 @@ int  Server::readRequest( const size_t id ) {
     int bytesRead = 0;
     int rd;
     std::string text;
-    // if (userData[id]->messages.size() > 0)
-	// 	text = userData[id]->messages.front();
+    if (mess[id].size() > 0)
+		text = mess[id];
     while ((rd = recv(fds[id].fd, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
@@ -150,58 +197,27 @@ int  Server::readRequest( const size_t id ) {
     }
     while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
-    if (text.size() > 2048)   //Длина запроса Не более 2048 символов
+    if (text.size() > BUF_SIZE)   //Длина запроса Не более 2048 символов
     {
-        text.replace(2046, 2, "\r\n");
-        std::cout << RED << "ALERT! text more than 2048 bytes!" << RESET << "\n";
+        text.replace(BUF_SIZE - 2, 2, "\r\n");
+        std::cout << RED << "ALERT! text more than 512 bytes!" << RESET << "\n";
     }
-    // userData[id]->checkConnection(text);
-    // userData[id]->messages = split(text, "\n");
-    if (text.size())
-        std::cout << YELLOW << "Client " << fds[id].fd << " send: " << RESET << text;
-
-    if (text.find("localhost:8080") != std::string::npos) // fix close server then client send message
-    {
-
-        std::stringstream response_body;
-        std::stringstream response;
-        int fd;
-        size_t result;
-        response_body << "<title>Test C++ HTTP Server</title>\n"
-            << "<h1>Test page</h1>\n"
-            << "<p>This is body of the test page...</p>\n"
-            << "<h2>Request headers</h2>\n"
-            << "<pre>" << buf << "</pre>\n"
-            << "<em><small>Test C++ Http Server</small></em>\n";
-
-        // Формируем весь ответ вместе с заголовками
-        response << "HTTP/1.1 200 OK\r\n"
-            << "Version: HTTP/1.1\r\n"
-            << "Content-Type: text/html; charset=utf-8\r\n"
-            << "Content-Length: " << response_body.str().length()
-            << "\r\n\r\n"
-            << response_body.str();
-
-        // Отправляем ответ клиенту с помощью функции send
-        result = send(fds[id].fd, response.str().c_str(),
-            response.str().length(), 0);
-        
-    }
-    // req.parseText(text);
+    cnct[id] = checkConnection(text);
+    mess[id] = text;
     return (bytesRead);
 }
 
-void    Server::closeServer( int status ) {
+void    Server::closeServer( int new_status ) {
     close(srvFd);
-    if (conf.error_fd > 2)
+    if (conf.error_fd > 2 && new_status & STOP)
         close(conf.error_fd);
-    if (conf.access_fd > 2)
+    if (conf.access_fd > 2 && new_status & STOP)
         close(conf.access_fd);
     size_t count = fds.size();
     for (size_t i = 0; i < count; i++)
         close(fds[i].fd);
     fds.clear();
-    this->status = status;
+    this->status = new_status;
 }
 
 void    Server::writeLog( int dest, const std::string & header, const std::string & text ) {
