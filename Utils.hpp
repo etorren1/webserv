@@ -26,4 +26,4 @@ std::vector<std::string> split(std::string str, std::string delimiter);
 std::string trim(std::string str, std::string cut);
 
 
-#endif
+#endif 

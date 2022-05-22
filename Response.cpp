@@ -2,17 +2,17 @@
 #include "Server.hpp"
 
 
-find_uri()
-{
-	std::string full_path;
+// find_uri()
+// {
+// 	std::string full_path;
 
-}
+// }
 
-get_request_data()
-{
-	find_uri();
+// get_request_data()
+// {
+// 	find_uri();
 
-}
+// }
 
 std::string make_general_header (Request req)
 {
@@ -29,13 +29,13 @@ std::string make_response_header(Request req) // https://datatracker.ietf.org/do
 
 	statusLine = req._protocolVersion + "  " + statusCode + "  " + reasonPhrase + "\r\n";
 
-	return (statusLine + "\n" + header);
-}
+// 	return (statusLine + "\n" + header);
+// }
 
-std::string make_response_body()
-{
+// std::string make_response_body()
+// {
 
-}
+// }
 
 void response(Request req)
 {

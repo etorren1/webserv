@@ -1,0 +1,33 @@
+[Sun May 22 20:30:57 2022] error: configuration file: not closed brackets.
+
+error_log  logs/error.log; 
+
+
+server {
+
+    listen  8080;  
+    
+    
+
+    access_log  logs/access.log;
+
+    location / { {
+        root index.html
+        bals
+        asd
+
+    }
+
+    location /images/ {
+        2
+    }
+
+    error 404.html
+    
+}
+
+
+
+}
+
+

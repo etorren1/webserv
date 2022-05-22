@@ -11,9 +11,7 @@ int     main(int argc, char **argv)
         std::cerr << argv[0] << ": no such file: " << argv[1] << "\n";
         return (1);
     }
-    close(fd);
-
-    Server server(argv[1]);
+    Server server(fd);
 
     server.create();
     server.run();
