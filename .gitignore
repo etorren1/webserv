@@ -1,7 +1,8 @@
 *.o
 .DS_Store
-./webserv
-./a.out
+webserv
+a.out
 /.vscode/
 /YoupiBanane/
 index.html
+main.cpp

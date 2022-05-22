@@ -11,6 +11,7 @@
 #include "Utils.hpp"
 #include <string>
 #include <sstream>
+#include "Request.hpp"
 
 #define WORKING 0b10
 #define RESTART 0b01
@@ -26,6 +27,7 @@ class Server {
 		int					srvPort;
 		struct sockaddr_in	address;
 		int					status;
+		Request 			req;
 		
 		void 		connectUsers( void );
 		void 		clientRequest( void );

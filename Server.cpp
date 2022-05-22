@@ -135,6 +135,7 @@ void Server::clientRequest( void ) {
                     close(userFds[id].fd);
                 }
                 // else if (!userData[id]->getBreakconnect())
+                    // request.parseText(text);
                 //     executeCommand(id);
                 userFds[id].revents = 0;
             }
@@ -160,7 +161,7 @@ int  Server::readRequest( const size_t id ) {
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
     if (text.size() > 2048)   //Длина запроса Не более 2048 символов
     {
-        text.replace(510, 2, "\r\n");
+        text.replace(2046, 2, "\r\n");
         std::cout << RED << "ALERT! text more than 2048 bytes!" << RESET << "\n";
     }
     // userData[id]->checkConnection(text);
@@ -195,7 +196,7 @@ int  Server::readRequest( const size_t id ) {
             response.str().length(), 0);
         
     }
-
+    // req.parseText(text);
     return (bytesRead);
 }
 
@@ -213,7 +214,7 @@ Server::Server( const std::string & config ) {
     // }
     status = WORKING;
 
-    // parseConfig(config);
+    parseConfig(config);
 
     std::cout << "Done!\n";
 }

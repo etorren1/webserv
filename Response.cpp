@@ -14,12 +14,20 @@ get_request_data()
 
 }
 
-std::string make_response_header() // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+std::string make_general_header (Request req)
+{
+	
+}
+
+std::string make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
 	std::string statusLine;
 	std::string header;
 
-	statusLine = ""
+	std::string statusCode = "200";
+	std::string reasonPhrase = "OK";
+
+	statusLine = req._protocolVersion + "  " + statusCode + "  " + reasonPhrase + "\r\n";
 
 	return (statusLine + "\n" + header);
 }
@@ -29,14 +37,14 @@ std::string make_response_body()
 
 }
 
-void response()
+void response(Request req)
 {
 	std::stringstream response_body;
 	std::stringstream response;
 	size_t result;
 	response_body << 
 	// Формируем весь ответ вместе с заголовками
-	response << make_response_header()
+	response << make_response_header(req)
 		<< response_body.str();
 	// Отправляем ответ клиенту с помощью функции send
 	result = send(userFds[id].fd, response.str().c_str(),
