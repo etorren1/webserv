@@ -14,7 +14,9 @@ void Request::parseText(std::string text) {
         vec.push_back(s);
     this->parseStartLine(vec[0]);
     vec.erase(vec.begin());
+    std::cout << "vec.size() = " << vec.size() << "\n";
     size_t pos = this->parseStrBody(vec);
+    std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
 }
 
@@ -33,17 +35,20 @@ void Request::parseStartLine(std::string str) {
 
 size_t Request::parseStrBody(std::vector<std::string> vec) {
     // std::cout << "body = |" << _body << "|\n";
+
+    // const char *c = vec[]
     size_t pos = 0;
     for (size_t i = 0; i < vec.size() - 1; i++) {
-        std::cout << vec[i].c_str() << "\n";
         if (vec[i].length() == 0) {
-            std::cout << vec[i].c_str() << "\n";
-            pos = i;
+            std::cout << "i = " << i << ", len = " << vec[i].length() << "\n";
+            if (pos == 0)
+                pos = i;
             for (; i < vec.size(); i++) {
                 this->_body += vec[i];
             }
         }
     }
+    std::cout << "pos in parseStrBody = " << pos << "\n";
     return pos;
 }
 
@@ -51,11 +56,13 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
     std::string key = "none";
     std::string val = "none";
     size_t n = 0;
+    std::cout << "vec[pos] = " << vec[pos] << ", pos = " << pos << "\n";
     for (size_t i = 0; i < pos; i++) {
         n = vec[i].find(":");
         key = vec[i].substr(0, n);
         val = vec[i].substr(n + 1);
         _headers.insert(std::make_pair(key, val));
+        std::cout << "[" << key << "] - [" << val << "]\n";
     }
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (size_t i = 0; i < _headers.size() - 1; i++) {
