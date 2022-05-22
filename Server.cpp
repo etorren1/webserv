@@ -18,6 +18,7 @@ void Server::create( void ) {
     srvPoll.revents = 0;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
+    // address.sin_addr.s_addr = inet_addr("ip_addr");
     address.sin_port = htons(atoi(conf.port.c_str()));
     if (bind(srvFd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("bind failed");
@@ -157,9 +158,9 @@ int  Server::readRequest( const size_t id ) {
     // userData[id]->checkConnection(text);
     // userData[id]->messages = split(text, "\n");
     if (text.size())
-        std::cout << YELLOW << "User " << fds[id].fd << " send: " << RESET << text;
+        std::cout << YELLOW << "Client " << fds[id].fd << " send: " << RESET << text;
 
-    if (text.find("localhost:8080") != std::string::npos)
+    if (text.find("localhost:8080") != std::string::npos) // fix close server then client send message
     {
 
         std::stringstream response_body;
@@ -192,8 +193,10 @@ int  Server::readRequest( const size_t id ) {
 
 void    Server::closeServer( int status ) {
     close(srvFd);
-    if (error_fd > 2)
-        close(error_fd);
+    if (conf.error_fd > 2)
+        close(conf.error_fd);
+    if (conf.access_fd > 2)
+        close(conf.access_fd);
     size_t count = fds.size();
     for (size_t i = 0; i < count; i++)
         close(fds[i].fd);
@@ -201,14 +204,27 @@ void    Server::closeServer( int status ) {
     this->status = status;
 }
 
-void	Server::errorShutdown( int code, const std::string & error, const std::string & text ) {
-    if (flags & ERR_LOG) {
-        write(error_fd, error.c_str(), error.size());
-        write(error_fd, "\n\n", 2);
-        write(error_fd, text.c_str(), text.size());
-        std::cerr << "error: see error.log for more information\n";
+void    Server::writeLog( int dest, const std::string & header, const std::string & text ) {
+    int fd;
+    if (this->flags & ERR_LOG && dest & ERR_LOG)
+        fd = conf.error_fd;
+    else if (this->flags & ACS_LOG && dest & ACS_LOG)
+        fd = conf.access_fd;
+    else
+        fd = 0;
+    if (fd) {
+        write(fd, header.c_str(), header.size());
+        write(fd, "\n\n", 2);
+        write(fd, text.c_str(), text.size());
+        write(fd, "\n\n", 2);
     }
+}
+
+void	Server::errorShutdown( int code, const std::string & error, const std::string & text ) {
+    writeLog(ERR_LOG, error, text);
     closeServer(STOP);
+    if (this->flags & ERR_LOG)
+        std::cerr << "error: see error.log for more information\n";
     exit(code);
 }
 

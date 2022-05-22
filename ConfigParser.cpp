@@ -67,6 +67,7 @@ void    Server::cfg_server_block( std::string & text, t_cfg *conf )
     while ((last = get_block("location", &text[last], tmp, last)) > 0) {
         conf->locations.push_back(tmp);
     }
+    cfg_access_log(text);
     cfg_listen(text, conf->hostname, conf->port);
 }
 
@@ -92,26 +93,48 @@ void    rek_mkdir( std::string path)
     mkdir(create.c_str(), 0777);
 }
 
-void    Server::cfg_error_log( std::string & text, std::string & error_log )
+void    Server::cfg_error_log( std::string & text )
 {
     std::string raw;
     raw = get_raw_param("error_log", text);
     if (!raw.size()) {
         return ;
     }
-    error_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
-    if (error_fd < 0) {
+    conf.error_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+    if (conf.error_fd < 0) {
         int sep = raw.find_last_of("/");
         if (sep != std::string::npos) {
             rek_mkdir(raw.substr(0, sep));
         }
-        error_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
-        if (error_fd < 0) {
-            std::cerr << RED << "Error: can not open or create error.log file" << RESET << "\n";
+        conf.error_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+        if (conf.error_fd < 0) {
+            std::cerr << RED << "Error: can not open or create error_log file" << RESET << "\n";
             return ;
         }
     }
     flags |= ERR_LOG;
+}
+
+void    Server::cfg_access_log( std::string & text )
+{
+    std::string raw;
+    raw = get_raw_param("access_log", text);
+    if (!raw.size()) {
+        return ;
+    }
+    conf.access_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+    if (conf.access_fd < 0) {
+        int sep = raw.find_last_of("/");
+        if (sep != std::string::npos) {
+            rek_mkdir(raw.substr(0, sep));
+        }
+        conf.access_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+        if (conf.access_fd < 0) {
+            std::cerr << RED << "Error: can not open or create access_log file" << RESET << "\n";
+            return ;
+        }
+    }
+    flags |= ACS_LOG;
 }
 
 void    Server::parseConfig( const int & fd ) {
@@ -124,7 +147,7 @@ void    Server::parseConfig( const int & fd ) {
     } // read config file
 
     cut_comments(text);
-    cfg_error_log(text, conf.error_log); // get error_log path and create file if it not exist
+    cfg_error_log(text); // get error_log path and create file if it not exist
     if (get_block("server", text, text) == -1)
         errorShutdown(255, "error: configuration file: not closed brackets.", text);
     cfg_server_block(text, &conf);

@@ -16,14 +16,16 @@
 #define	STOP	0b00
 #define WORKING 0b10
 #define RESTART 0b01
-#define ERR_LOG 0x1
+#define ERR_LOG 0x2
+#define ACS_LOG 0x4
 #define BUF_SIZE 512
 
 typedef struct s_cfg
 {
     std::string     hostname;
     std::string     port;
-	std::string		error_log;
+	int				error_fd;
+	int				access_fd;
     std::list<std::string> locations;
 
 } t_cfg;
@@ -39,7 +41,6 @@ class Server {
 		struct sockaddr_in	address;
 		int					status;
 		int					flags;
-		int					error_fd;
 		Request 			req;
 		
 		void 		connectUsers( void );
@@ -53,9 +54,11 @@ class Server {
 			void    cut_comments( std::string & text );
 			void 	cfg_listen(std::string & text, std::string & host, std::string & port );
 			void    cfg_server_block( std::string & text, t_cfg *conf );
-			void    cfg_error_log( std::string & text, std::string & error_log_atr );
+			void    cfg_error_log( std::string & text );
+			void    cfg_access_log( std::string & text );
 
 		void			closeServer( int status );
+		void    		writeLog( int flag, const std::string & header, const std::string & text );
 		void			errorShutdown( int code, const std::string & error, const std::string & text = "");
 
 		Server( const Server & src );
