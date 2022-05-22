@@ -62,6 +62,9 @@ class Server {
 		void    		writeLog( int flag, const std::string & header, const std::string & text );
 		void			errorShutdown( int code, const std::string & error, const std::string & text = "");
 
+		// for response:
+		void			response(Request req, const size_t id);
+
 		Server( const Server & src );
 		Server operator=( const Server & src ); 
 

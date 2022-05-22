@@ -2,24 +2,29 @@
 #include "Server.hpp"
 
 
-// find_uri()
-// {
-// 	std::string full_path;
-
-// }
-
-// get_request_data()
-// {
-// 	find_uri();
-
-// }
-
-std::string make_general_header (Request req)
+static find_uri()
 {
+	std::string full_path;
 
 }
 
-std::string make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+static get_request_data()
+{
+	find_uri();
+
+}
+
+static std::string make_general_header (Request req)
+{
+	std::string Server = "webserv";
+	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
+	std::string contentType = "text/plain";
+	std::string contentLength = "1000"; //= findContentLength();
+	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
+	std::string connection = "keep-alive";
+}
+
+static std::string make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
 	std::string statusLine;
 	std::string header;
@@ -28,24 +33,25 @@ std::string make_response_header(Request req) // https://datatracker.ietf.org/do
 	std::string reasonPhrase = "OK";
 
 	statusLine = req._protocolVersion + "  " + statusCode + "  " + reasonPhrase + "\r\n";
+	header = make_general_header(req);
 
-// 	return (statusLine + "\n" + header);
-// }
+	return (statusLine + "\n" + header);
+}
 
-// std::string make_response_body()
-// {
+static std::string make_response_body(Request req)
+{
 
-// }
+}
 
-void response(Request req)
+void Server::response(Request req, const size_t id)
 {
 	std::stringstream response;
 	size_t result;
-	// Формируем весь ответ вместе с заголовками
-	response	<< make_response_header(req)
+	
+	response	<< make_response_header(req)			// Формируем весь ответ вместе с заголовками
 				<< make_response_body(req);
-	// Отправляем ответ клиенту с помощью функции send
-	result = send(userFds[id].fd, response.str().c_str(),
+	
+	result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
 		response.str().length(), 0);
 }
 
