@@ -11,6 +11,7 @@
 #include "Utils.hpp"
 #include <string>
 #include <sstream>
+#include <ctime>
 #include "Request.hpp"
 
 #define	STOP	0b00

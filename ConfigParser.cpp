@@ -100,13 +100,13 @@ void    Server::cfg_error_log( std::string & text )
     if (!raw.size()) {
         return ;
     }
-    conf.error_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+    conf.error_fd = open(raw.c_str(), O_RDWR | O_CREAT , 0777); // | O_TRUNC
     if (conf.error_fd < 0) {
         int sep = raw.find_last_of("/");
         if (sep != std::string::npos) {
             rek_mkdir(raw.substr(0, sep));
         }
-        conf.error_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+        conf.error_fd = open(raw.c_str(), O_RDWR | O_CREAT , 0777); // | O_TRUNC
         if (conf.error_fd < 0) {
             std::cerr << RED << "Error: can not open or create error_log file" << RESET << "\n";
             return ;
@@ -122,13 +122,13 @@ void    Server::cfg_access_log( std::string & text )
     if (!raw.size()) {
         return ;
     }
-    conf.access_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+    conf.access_fd = open(raw.c_str(), O_RDWR | O_CREAT , 0777); // | O_TRUNC
     if (conf.access_fd < 0) {
         int sep = raw.find_last_of("/");
         if (sep != std::string::npos) {
             rek_mkdir(raw.substr(0, sep));
         }
-        conf.access_fd = open(raw.c_str(), O_RDWR | O_CREAT | O_TRUNC , 0777);
+        conf.access_fd = open(raw.c_str(), O_RDWR | O_CREAT , 0777); // | O_TRUNC
         if (conf.access_fd < 0) {
             std::cerr << RED << "Error: can not open or create access_log file" << RESET << "\n";
             return ;

@@ -213,6 +213,10 @@ void    Server::writeLog( int dest, const std::string & header, const std::strin
     else
         fd = 0;
     if (fd) {
+        std::time_t result = std::time(nullptr);
+        std::string time = std::asctime(std::localtime(&result));
+        time = "[" + time.erase(time.size() - 1) + "] ";
+        write(fd, time.c_str(), time.size());
         write(fd, header.c_str(), header.size());
         write(fd, "\n\n", 2);
         write(fd, text.c_str(), text.size());
@@ -222,9 +226,9 @@ void    Server::writeLog( int dest, const std::string & header, const std::strin
 
 void	Server::errorShutdown( int code, const std::string & error, const std::string & text ) {
     writeLog(ERR_LOG, error, text);
-    closeServer(STOP);
     if (this->flags & ERR_LOG)
         std::cerr << "error: see error.log for more information\n";
+    closeServer(STOP);
     exit(code);
 }
 
