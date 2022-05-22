@@ -19,7 +19,7 @@
 #define RESTART 0b01
 #define ERR_LOG 0x2
 #define ACS_LOG 0x4
-#define BUF_SIZE 512
+#define BUF_SIZE 2048
 
 typedef struct s_cfg
 {
