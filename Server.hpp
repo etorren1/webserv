@@ -19,7 +19,7 @@
 #define RESTART 0b01
 #define ERR_LOG 0x2
 #define ACS_LOG 0x4
-#define BUF_SIZE 512
+#define BUF_SIZE 2048
 
 typedef struct s_cfg
 {
@@ -35,6 +35,8 @@ class Server {
 	private:
 
 		std::vector<struct pollfd>	fds;
+		std::vector<std::string>	mess;
+		std::vector<bool>			cnct;
 
 		struct s_cfg		conf;
 		struct pollfd		srvPoll;
@@ -47,6 +49,7 @@ class Server {
 		void 		connectUsers( void );
 		void 		clientRequest( void );
 		int  		readRequest( const size_t id );
+		void 		disconnectClient( const size_t id );
 		void 		consoleCommands( void );
 		void		parseConfig( const int & fd );
 		// config file parser utilites
