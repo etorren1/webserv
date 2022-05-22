@@ -4,5 +4,6 @@ webserv
 a.out
 /.vscode/
 /YoupiBanane/
+/logs/
 index.html
-main.cpp
+nginx.conf
