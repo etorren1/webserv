@@ -75,7 +75,7 @@ void Server::consoleCommands( void ) {
         else if (text == "RESTART")
         {
             std::cout << YELLOW << "Restarting server ... " << RESET;
-            closeServer(STOP);
+            closeServer(RESTART);
             create();
         }
         else if (text == "HELP")
