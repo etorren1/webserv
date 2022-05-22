@@ -14,3 +14,10 @@ std::vector<std::string> split(std::string str, std::string delimiter)
         res.push_back(str);
     return (res);
 }
+
+std::string trim(std::string str, std::string cut)
+{
+    size_t beg = str.find_first_not_of(cut);
+    size_t end = str.find_last_not_of(cut);
+    return str.substr(beg, end - beg + 1);
+}
