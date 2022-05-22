@@ -1,16 +1,29 @@
 
 #include "Server.hpp"
+#include <fstream>
 
 
-static find_uri()
+static std::string parse_uri(std::string uri)
+{
+	try
+	{
+		std::fstream fs;
+		fs.open ("test.txt", std::fstream::in);		// https://www.cplusplus.com/reference/fstream/fstream/open/
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << "exception caught: " << e.what() << '\n';
+	}
+	if (fs.is_open())
+		fs.close();
+}
+static std::string find_requested_file_path(Request req)
 {
 	std::string full_path;
+	std::string uri = req.getReqURI();
 
-}
+	parse_uri(uri);
 
-static get_request_data()
-{
-	find_uri();
 
 }
 
@@ -32,7 +45,7 @@ static std::string make_response_header(Request req) // https://datatracker.ietf
 	std::string statusCode = "200";
 	std::string reasonPhrase = "OK";
 
-	statusLine = req._protocolVersion + "  " + statusCode + "  " + reasonPhrase + "\r\n";
+	statusLine = req.getProtocolVer() + " " + statusCode + " " + reasonPhrase + "\r\n";
 	header = make_general_header(req);
 
 	return (statusLine + "\n" + header);
@@ -40,7 +53,18 @@ static std::string make_response_header(Request req) // https://datatracker.ietf
 
 static std::string make_response_body(Request req)
 {
+	std::ifstream file(find_requested_file_path(req));
+	std::string tmp_line;
+	std::string return_line;
+	
+	if (file.is_open())
+	{
+		while (getline (file,tmp_line))					// reading requested file
+				return_line.append(tmp_line);
+		file.close();
+	}
 
+	return(return_line);
 }
 
 void Server::response(Request req, const size_t id)
@@ -52,7 +76,7 @@ void Server::response(Request req, const size_t id)
 				<< make_response_body(req);
 	
 	result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
-		response.str().length(), 0);
+					response.str().length(), 0);
 }
 
 
