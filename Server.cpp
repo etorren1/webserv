@@ -18,7 +18,7 @@ void Server::create( void ) {
     srvPoll.revents = 0;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(srvPort);
+    address.sin_port = htons(atoi(conf.port.c_str()));
     if (bind(srvFd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("bind failed");
         exit(EXIT_FAILURE);
@@ -70,23 +70,13 @@ void Server::consoleCommands( void ) {
         if (text == "STOP")
         {
             std::cout << YELLOW << "Shutdown server\n" << RESET;
-            close(srvFd);
-            size_t count = userFds.size();
-            for (size_t i = 0; i < count; i++)
-                close(userFds[i].fd);
-            userFds.clear();
-            status = 0;
+            closeServer(STOP);
         }
         else if (text == "RESTART")
         {
             std::cout << YELLOW << "Restarting server ... " << RESET;
-            close(srvFd);
-            size_t count = userFds.size();
-            for (size_t i = 0; i < count; i++)
-                close(userFds[i].fd);
-            userFds.clear();
+            closeServer(STOP);
             create();
-            status = RESTART;
         }
         else if (text == "HELP")
         {
@@ -116,7 +106,7 @@ void Server::connectUsers( void ) {
                 nw.fd = new_client_fd;
                 nw.events = POLLIN;
                 nw.revents = 0;
-                userFds.push_back(nw);
+                fds.push_back(nw);
                 std::cout << "New client on " << new_client_fd << " socket." << "\n";
             }
             srvPoll.revents = 0;
@@ -125,18 +115,18 @@ void Server::connectUsers( void ) {
 }
 
 void Server::clientRequest( void ) {
-    int ret = poll(userFds.data(), userFds.size(), 0);
+    int ret = poll(fds.data(), fds.size(), 0);
     if (ret != 0)    {
-        for (size_t id = 0; id < userFds.size(); id++) {
-            if (userFds[id].revents & POLLIN) {
+        for (size_t id = 0; id < fds.size(); id++) {
+            if (fds[id].revents & POLLIN) {
                 if (readRequest(id) <= 0)
                 {
-                    std::cout << "Client " << userFds[id].fd << " disconnected." << "\n";
-                    close(userFds[id].fd);
+                    std::cout << "Client " << fds[id].fd << " disconnected." << "\n";
+                    close(fds[id].fd);
                 }
                 // else if (!userData[id]->getBreakconnect())
                 //     executeCommand(id);
-                userFds[id].revents = 0;
+                fds[id].revents = 0;
             }
         }
     }
@@ -149,7 +139,7 @@ int  Server::readRequest( const size_t id ) {
     std::string text;
     // if (userData[id]->messages.size() > 0)
 	// 	text = userData[id]->messages.front();
-    while ((rd = recv(userFds[id].fd, buf, BUF_SIZE, 0)) > 0) {
+    while ((rd = recv(fds[id].fd, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
@@ -166,7 +156,7 @@ int  Server::readRequest( const size_t id ) {
     // userData[id]->checkConnection(text);
     // userData[id]->messages = split(text, "\n");
     if (text.size())
-        std::cout << YELLOW << "User " << userFds[id].fd << " send: " << RESET << text;
+        std::cout << YELLOW << "User " << fds[id].fd << " send: " << RESET << text;
 
     if (text.find("localhost:8080") != std::string::npos)
     {
@@ -191,7 +181,7 @@ int  Server::readRequest( const size_t id ) {
             << response_body.str();
 
         // Отправляем ответ клиенту с помощью функции send
-        result = send(userFds[id].fd, response.str().c_str(),
+        result = send(fds[id].fd, response.str().c_str(),
             response.str().length(), 0);
         
     }
@@ -199,23 +189,34 @@ int  Server::readRequest( const size_t id ) {
     return (bytesRead);
 }
 
-Server::Server( const std::string & config ) {
-    // try  {
-    //     if (_port.find_first_not_of("0123456789") != std::string::npos)
-    //         throw std::invalid_argument("Port must contain only numbers");
-    //     srvPort = atoi(_port.c_str());
-    //     if (srvPort < 1000 || srvPort > 65555) // надо взять правильный рендж портов...
-    //         throw std::invalid_argument("Port out of range");
-    // }
-    // catch ( std::exception & e) {
-    //     std::cerr << e.what() << "\n";
-    //     exit(EXIT_FAILURE);
-    // }
+void    Server::closeServer( int status ) {
+    close(srvFd);
+    if (error_fd > 2)
+        close(error_fd);
+    size_t count = fds.size();
+    for (size_t i = 0; i < count; i++)
+        close(fds[i].fd);
+    fds.clear();
+    this->status = status;
+}
+
+void	Server::errorShutdown( int code, const std::string & error, const std::string & text ) {
+    if (flags & ERR_LOG) {
+        write(error_fd, error.c_str(), error.size());
+        write(error_fd, "\n\n", 2);
+        write(error_fd, text.c_str(), text.size());
+        std::cerr << "error: see error.log for more information\n";
+    }
+    closeServer(STOP);
+    exit(code);
+}
+
+Server::Server( const int & config_fd ) {
+
+    parseConfig(config_fd);
+
     status = WORKING;
-
-    parseConfig(config);
-
-    std::cout << "Done!\n";
+    flags = 0;
 }
 
 Server::~Server() {
