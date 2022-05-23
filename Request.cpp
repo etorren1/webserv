@@ -53,7 +53,6 @@ size_t Request::parseStrBody(std::vector<std::string> vec) {
             }
         }
     }
-    std::cout << "pos in parseStrBody = " << pos << "\n";
     return pos;
 }
 
@@ -61,7 +60,6 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
     std::string key = "none";
     std::string val = "none";
     size_t n = 0;
-    std::cout << "vec[pos] = " << vec[pos] << ", pos = " << pos << "\n";
     for (size_t i = 0; i < pos; i++) {
         n = vec[i].find(":");
         key = vec[i].substr(0, n);
