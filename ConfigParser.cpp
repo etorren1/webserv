@@ -38,37 +38,37 @@ std::string Server::get_raw_param(std::string key, std::string & text)
     return trim(res, " \n\t\r;{}");
 }
 
-void Server::cfg_listen(std::string & text, std::string & host, std::string & port )
+void Server::cfg_listen(std::string & text )
 {
     std::string raw;
     raw = get_raw_param("listen", text);
     if (!raw.size())
         errorShutdown(255, "error: configuration file: requaired parameter: listen.");
-    int sep = raw.find(":");
+    size_t sep = raw.find(":");
     if (sep == std::string::npos) {
-        port = raw;
-        host = "0.0.0.0";
+        conf.port = raw;
+        conf.hostname = "0.0.0.0";
     }
     else {
-        host = raw.substr(0, sep);
-        if (host == "*" || !host.size())
-            host = "0.0.0.0";
-        port = raw.substr(sep + 1, raw.size() - sep - 1);
+        conf.hostname = raw.substr(0, sep);
+        if (conf.hostname == "*" || !conf.hostname.size())
+            conf.hostname = "0.0.0.0";
+        conf.port = raw.substr(sep + 1, raw.size() - sep - 1);
     }
-    if (!port.size())
+    if (!conf.port.size())
         errorShutdown(255, "error: configuration file: no such port.");
 }
 
-void    Server::cfg_server_block( std::string & text, t_cfg *conf )
+void    Server::cfg_server_block( std::string & text )
 {
     std::string tmp;
 
     int last = 0;
     while ((last = get_block("location", &text[last], tmp, last)) > 0) {
-        conf->locations.push_back(tmp);
+        conf.locations.push_back(tmp);
     }
     cfg_access_log(text);
-    cfg_listen(text, conf->hostname, conf->port);
+    cfg_listen(text);
 }
 
 void    Server::cut_comments( std::string & text )
@@ -96,6 +96,7 @@ void    rek_mkdir( std::string path)
 void    Server::cfg_error_log( std::string & text )
 {
     std::string raw;
+    char buf[BUF_SIZE];
     raw = get_raw_param("error_log", text);
     if (!raw.size()) {
         return ;
@@ -111,13 +112,18 @@ void    Server::cfg_error_log( std::string & text )
             std::cerr << RED << "Error: can not open or create error_log file" << RESET << "\n";
             return ;
         }
+        else
+            while (read(conf.error_fd, buf, BUF_SIZE) > 0) {}
     }
+    else
+        while (read(conf.error_fd, buf, BUF_SIZE) > 0) {}
     flags |= ERR_LOG;
 }
 
 void    Server::cfg_access_log( std::string & text )
 {
     std::string raw;
+    char buf[BUF_SIZE];
     raw = get_raw_param("access_log", text);
     if (!raw.size()) {
         return ;
@@ -133,12 +139,16 @@ void    Server::cfg_access_log( std::string & text )
             std::cerr << RED << "Error: can not open or create access_log file" << RESET << "\n";
             return ;
         }
+        else
+            while (read(conf.access_fd, buf, BUF_SIZE) > 0) {}
     }
+    else
+        while (read(conf.access_fd, buf, BUF_SIZE) > 0) {} 
     flags |= ACS_LOG;
 }
 
 void    Server::parseConfig( const int & fd ) {
-    char buf[512];
+    char buf[BUF_SIZE];
     int rd;
     std::string text;
     while ((rd = read(fd, buf, BUF_SIZE)) > 0) {
@@ -148,8 +158,8 @@ void    Server::parseConfig( const int & fd ) {
 
     cut_comments(text);
     cfg_error_log(text); // get error_log path and create file if it not exist
-    if (get_block("server", text, text) == -1)
+    if (get_block("http", text, text) == -1)
         errorShutdown(255, "error: configuration file: not closed brackets.", text);
-    cfg_server_block(text, &conf);
-
+    cfg_server_block(text);
+    close (fd);
 }

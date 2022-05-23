@@ -17,8 +17,8 @@ void Server::create( void ) {
     srvPoll.events = POLLIN;
     srvPoll.revents = 0;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    // address.sin_addr.s_addr = inet_addr("ip_addr");
+    // address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = inet_addr(conf.hostname.c_str());
     address.sin_port = htons(atoi(conf.port.c_str()));
     if (bind(srvFd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("bind failed");
@@ -251,7 +251,8 @@ void	Server::errorShutdown( int code, const std::string & error, const std::stri
 
 Server::Server( const int & config_fd ) {
 
-    parseConfig(config_fd);
+    // parseConfig(config_fd);
+    // std::cout << conf.hostname << ":" << conf.port << "\n";
 
     status = WORKING;
     flags = 0;
