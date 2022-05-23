@@ -32,15 +32,17 @@ static std::string make_general_header (Request req, std::string response_body)
 {
 	std::string Server = "webserv";
 	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
-	std::string contentType = "text/plain";
+	std::string contentType = "text/html";
 	std::string contentLength = itos (std::strlen(response_body.c_str())); //= findContentLength();
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
 	std::string connection = "keep-alive";
-	return("Server: " + Server + "\r\n" +
+	return(
+			"Version: " + req.getProtocolVer()  + "\r\n" + 
+			// "Server: " + Server + "\r\n" +
 			"Content-Type: " + contentType + "\r\n" +
 			"Content-Length: " + contentLength + "\r\n" +
-			"Connection" + connection + "\r\n" +
-			+ "\r\n\r\n");
+			// "Connection: " + connection + "\r\n" +
+			+ "\r\n");
 }
 
 static std::string make_response_header(Request req, std::string response_body) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
@@ -54,7 +56,7 @@ static std::string make_response_header(Request req, std::string response_body) 
 	statusLine = req.getProtocolVer() + " " + statusCode + " " + reasonPhrase + "\r\n";
 	header = make_general_header(req, response_body);
 
-	return (statusLine + "\n" + header);
+	return (statusLine + header);
 }
 
 static std::string make_response_body(Request req)
