@@ -66,7 +66,7 @@ class Server {
 		void			errorShutdown( int code, const std::string & error, const std::string & text = "");
 
 		// for response:
-		void			response(Request req, const size_t id);
+		void			make_response(Request req, const size_t id);
 
 		Server( const Server & src );
 		Server operator=( const Server & src ); 
