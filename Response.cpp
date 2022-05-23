@@ -3,20 +3,22 @@
 #include <fstream>
 
 
-// static std::string parse_uri(std::string uri)
-// {
-// 	// try
-// 	// {
-// 	// 	std::fstream fs;
-// 	// 	fs.open ("test.txt", std::fstream::in);		// https://www.cplusplus.com/reference/fstream/fstream/open/
-// 	// }
-// 	// catch (std::exception& e)
-// 	// {
-// 	// 	std::cerr << "exception caught: " << e.what() << '\n';
-// 	// }
-// 	// if (fs.is_open())
-// 	// 	fs.close();
-// }
+static std::string parse_uri(std::string uri)
+{
+	std::fstream fs;
+	fs.exceptions ( std::fstream::failbit );		//https://stackoverflow.com/questions/9670396/exception-handling-and-opening-a-file
+	try
+	{
+		fs.open (uri, std::fstream::in);		// https://www.cplusplus.com/reference/fstream/fstream/open/
+	}
+	catch (std::exception const& e)
+	{
+		std::cerr << "exception caught: " << e.what() << '\n';
+		std::cout << GREEN << "here" << RESET <<'\n';
+	}
+	fs.close();
+	return(uri);
+}
 
 static std::string find_requested_file_path(Request req)
 {
@@ -25,7 +27,7 @@ static std::string find_requested_file_path(Request req)
 
 	// return(parse_uri(uri));
 
-	return("/Users/kmeeseek/Documents/webserv/site/index.html");
+	return(parse_uri("./site/index.ht"));
 }
 
 static std::string make_general_header (Request req, std::string response_body)
