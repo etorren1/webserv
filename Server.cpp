@@ -135,7 +135,7 @@ void Server::clientRequest( void ) {
                     disconnectClient(id);
                 else if (!cnct[id]) {
                     // REQUEST PART
-                    // req.parseText(mess[id]);
+                    req.parseText(mess[id]);
 
 
                     //  RESPONSE PART
