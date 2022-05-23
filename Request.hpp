@@ -16,7 +16,6 @@ private:
 	std::string                             _body;
 	std::string								_MIMEType;
 
-
 public:
 	Request();
 	~Request();

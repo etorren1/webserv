@@ -21,3 +21,10 @@ std::string trim(std::string str, std::string cut)
     size_t end = str.find_last_not_of(cut);
     return str.substr(beg, end - beg + 1);
 }
+
+std::string	itos( int const & num )
+{
+	std::stringstream ss;
+	ss << num;
+	return(ss.str());
+}

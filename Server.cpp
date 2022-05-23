@@ -17,8 +17,8 @@ void Server::create( void ) {
     srvPoll.events = POLLIN;
     srvPoll.revents = 0;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    // address.sin_addr.s_addr = inet_addr("ip_addr");
+    // address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = inet_addr(conf.hostname.c_str());
     address.sin_port = htons(atoi(conf.port.c_str()));
     if (bind(srvFd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("bind failed");
@@ -141,34 +141,33 @@ void Server::clientRequest( void ) {
                     //  RESPONSE PART
                     if (mess[id].size())
                         std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
-                    if (mess[id].find("localhost:8080") != std::string::npos) // fix close server then client send message
-                    {
+                    // if (mess[id].find("localhost:8081") != std::string::npos) // fix close server then client send message
+                    // {
 
-                        std::stringstream response_body;
-                        std::stringstream response;
-                        int fd;
-                        size_t result;
-                        response_body << "<title>Test C++ HTTP Server</title>\n"
-                            << "<h1>Test page</h1>\n"
-                            << "<p>This is body of the test page...</p>\n"
-                            << "<h2>Request headers</h2>\n"
-                            << "<pre>" << mess[id] << "</pre>\n"
-                            << "<img src=\"/image.jpg\">\n"
-                            << "<em><small>Test C++ Http Server</small></em>\n";
+                        // std::stringstream response_body;
+                        // std::stringstream response;
+                        // int fd;
+                        // size_t result;
+                        // response_body << "<title>Test C++ HTTP Server</title>\n"
+                        //     << "<h1>Test page</h1>\n"
+                        //     << "<p>This is body of the test page...</p>\n"
+                        //     << "<h2>Request headers</h2>\n"
+                        //     << "<pre>" << mess[id] << "</pre>\n"
+                        //     << "<em><small>Test C++ Http Server</small></em>\n";
 
-                        // Формируем весь ответ вместе с заголовками
-                        response << "HTTP/1.1 200 OK\r\n"
-                            << "Version: HTTP/1.1\r\n"
-                            << "Content-Type: text/html; charset=utf-8\r\n"
-                            << "Content-Length: " << response_body.str().length()
-                            << "\r\n\r\n"
-                            << response_body.str();
-
+                        // // Формируем весь ответ вместе с заголовками
+                        // response << "HTTP/1.1 200 OK\r\n"
+                        //     << "Version: HTTP/1.1\r\n"
+                        //     << "Content-Type: text/html; charset=utf-8\r\n"
+                        //     << "Content-Length: " << response_body.str().length()
+                        //     << "\r\n\r\n"
+                        //     << response_body.str();
                         // Отправляем ответ клиенту с помощью функции send
-                        result = send(fds[id].fd, response.str().c_str(),
-                            response.str().length(), 0);
+                        // result = send(fds[id].fd, response.c_str(),
+                        //     response.length(), 0);
                         
-                    }
+						make_response(req, id);
+                    // }
                     mess[id] = "";
                 }
                 fds[id].revents = 0;
@@ -252,7 +251,8 @@ void	Server::errorShutdown( int code, const std::string & error, const std::stri
 
 Server::Server( const int & config_fd ) {
 
-    parseConfig(config_fd);
+    // parseConfig(config_fd);
+    // std::cout << conf.hostname << ":" << conf.port << "\n";
 
     status = WORKING;
     flags = 0;
