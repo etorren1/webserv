@@ -153,6 +153,7 @@ void Server::clientRequest( void ) {
                             << "<p>This is body of the test page...</p>\n"
                             << "<h2>Request headers</h2>\n"
                             << "<pre>" << mess[id] << "</pre>\n"
+                            << "<img src=\"/image.jpg\">\n"
                             << "<em><small>Test C++ Http Server</small></em>\n";
 
                         // Формируем весь ответ вместе с заголовками

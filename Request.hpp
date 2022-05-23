@@ -14,6 +14,7 @@ private:
 	std::string                             _protocolVersion;
 	std::map<std::string, std::string>      _headers;
 	std::string                             _body;
+	std::string								_MIMEType;
 
 
 public:
@@ -23,12 +24,14 @@ public:
 	void            						parseStartLine( std::string );
 	void									parseMapHeaders( std::vector<std::string> , size_t );
 	size_t          						parseStrBody( std::vector<std::string> );
+	void									parseMIMEType();
 
 	std::string								getMethod();
 	std::string								getReqURI();
 	std::string								getProtocolVer();
 	std::map<std::string, std::string>		getHeadears();
 	std::string								getBody();
+	std::string								getMIMEType();
 
 };
 
