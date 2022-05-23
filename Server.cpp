@@ -141,33 +141,33 @@ void Server::clientRequest( void ) {
                     //  RESPONSE PART
                     if (mess[id].size())
                         std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
-                    if (mess[id].find("localhost:8080") != std::string::npos) // fix close server then client send message
-                    {
+                    // if (mess[id].find("localhost:8081") != std::string::npos) // fix close server then client send message
+                    // {
 
-                        std::stringstream response_body;
-                        std::stringstream response;
-                        int fd;
-                        size_t result;
-                        response_body << "<title>Test C++ HTTP Server</title>\n"
-                            << "<h1>Test page</h1>\n"
-                            << "<p>This is body of the test page...</p>\n"
-                            << "<h2>Request headers</h2>\n"
-                            << "<pre>" << mess[id] << "</pre>\n"
-                            << "<em><small>Test C++ Http Server</small></em>\n";
+                        // std::stringstream response_body;
+                        // std::stringstream response;
+                        // int fd;
+                        // size_t result;
+                        // response_body << "<title>Test C++ HTTP Server</title>\n"
+                        //     << "<h1>Test page</h1>\n"
+                        //     << "<p>This is body of the test page...</p>\n"
+                        //     << "<h2>Request headers</h2>\n"
+                        //     << "<pre>" << mess[id] << "</pre>\n"
+                        //     << "<em><small>Test C++ Http Server</small></em>\n";
 
-                        // Формируем весь ответ вместе с заголовками
-                        response << "HTTP/1.1 200 OK\r\n"
-                            << "Version: HTTP/1.1\r\n"
-                            << "Content-Type: text/html; charset=utf-8\r\n"
-                            << "Content-Length: " << response_body.str().length()
-                            << "\r\n\r\n"
-                            << response_body.str();
-
+                        // // Формируем весь ответ вместе с заголовками
+                        // response << "HTTP/1.1 200 OK\r\n"
+                        //     << "Version: HTTP/1.1\r\n"
+                        //     << "Content-Type: text/html; charset=utf-8\r\n"
+                        //     << "Content-Length: " << response_body.str().length()
+                        //     << "\r\n\r\n"
+                        //     << response_body.str();
                         // Отправляем ответ клиенту с помощью функции send
-                        result = send(fds[id].fd, response.str().c_str(),
-                            response.str().length(), 0);
+                        // result = send(fds[id].fd, response.c_str(),
+                        //     response.length(), 0);
                         
-                    }
+						make_response(req, id);
+                    // }
                     mess[id] = "";
                 }
                 fds[id].revents = 0;
