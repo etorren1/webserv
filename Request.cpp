@@ -14,9 +14,15 @@ void Request::parseText(std::string text) {
         vec.push_back(s);
     this->parseStartLine(vec[0]);
     vec.erase(vec.begin());
-    std::cout << "vec.size() = " << vec.size() << "\n";
+    // std::cout << "vec.size() = " << vec.size() << "\n";
     size_t pos = this->parseStrBody(vec);
-    std::cout << "pos = " << pos << "\n";
+    if (pos == 0) {
+        for (size_t i = 0; i < vec.size() - 1; i++) {
+            if (vec[i].length() == 0)
+                pos = vec.size() - 1;
+        }
+    }
+    // std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
 }
 
@@ -41,8 +47,7 @@ size_t Request::parseStrBody(std::vector<std::string> vec) {
     for (size_t i = 0; i < vec.size() - 1; i++) {
         if (vec[i].length() == 0) {
             std::cout << "i = " << i << ", len = " << vec[i].length() << "\n";
-            if (pos == 0)
-                pos = i;
+            pos = i;
             for (; i < vec.size(); i++) {
                 this->_body += vec[i];
             }
