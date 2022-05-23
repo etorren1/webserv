@@ -1,4 +1,4 @@
-[Sun May 22 20:30:57 2022] error: configuration file: not closed brackets.
+[Sun May 22 22:01:09 2022] error: configuration file: not closed brackets.
 
 error_log  logs/error.log; 
 
