@@ -6,18 +6,16 @@
 static std::string parse_uri(std::string uri)
 {
 	std::fstream fs;
-	fs.exceptions ( std::fstream::failbit );		//https://stackoverflow.com/questions/9670396/exception-handling-and-opening-a-file
-	try
+	fs.open (uri, std::fstream::in);
+	if (fs)
 	{
-		fs.open (uri, std::fstream::in);		// https://www.cplusplus.com/reference/fstream/fstream/open/
+		fs.close();
+		return(uri);
 	}
-	catch (std::exception const& e)
+	else
 	{
-		std::cerr << "exception caught: " << e.what() << '\n';
-		std::cout << GREEN << "here" << RESET <<'\n';
+		throw(fileException());
 	}
-	fs.close();
-	return(uri);
 }
 
 static std::string find_requested_file_path(Request req)
@@ -25,9 +23,16 @@ static std::string find_requested_file_path(Request req)
 	std::string full_path;
 	std::string uri = req.getReqURI();
 
-	// return(parse_uri(uri));
-
-	return(parse_uri("./site/index.ht"));
+	// full_path = parse_uri(uri);
+	try
+	{
+		full_path = parse_uri("./site/index.htmfl");
+		return(full_path);
+	}
+	catch (fileException &e)
+	{
+		throw(fileException());
+	}
 }
 
 static std::string make_general_header (Request req, std::string response_body)
@@ -76,18 +81,63 @@ static std::string make_response_body(Request req)
 	return(return_line);
 }
 
+void return_error_page(std::string errorNum, const size_t id, std::vector<struct pollfd> fds)
+{
+	std::string responseBody = "<!DOCTYPE html>\\
+	<html lang=\"en\">\\
+	<head>\\
+	    <meta charset=\"UTF-8\">\\
+	    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\\
+	    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\\
+	    <title>Responsive 404 page </title>\\
+	</head>\\
+	<body>\\
+	    <div class=\"container\">\\
+	        <h2>404</h2>\\
+	        <h3>Oops, nothing here...</h3>\\
+	        <p>Please Check the URL</p>\\
+	        <p>Otherwise, <a href=\"#homepage\">Click here</a> to redirect to homepage.</p>\\
+	    </div>\\
+	</body>\\
+	</html";
+	std::string contentLength = itos (std::strlen(responseBody.c_str())); //body length
+	std::string header = "HTTP/1.1 404 Not Found\\
+	Version: HTTP/1.1\\
+	Content-Type: text/html\\
+	Content-Length: \\";
+	header.append(contentLength + "\n\n");
+	std::string fullResponseMsg = header.append(responseBody);
+
+	std::cout << GREEN << "HERE" << RESET;
+	size_t result = send(fds[id].fd, fullResponseMsg.c_str(),	// Отправляем ответ клиенту с помощью функции send
+		fullResponseMsg.length(), 0);
+}
+
 void Server::make_response(Request req, const size_t id)
 {
 	std::stringstream response;
 	size_t result;
 
-	std::string response_body = make_response_body(req);
-	std::string response_header = make_response_header(req, response_body);			// Формируем весь ответ вместе с заголовками
-	
-	response	<< response_header			// Формируем весь ответ вместе с заголовками
-				<< response_body;
-	
-	std::cout << RED << response.str() << RESET;
-	result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
-					response.str().length(), 0);
+	try
+	{
+		std::string response_body = make_response_body(req);
+		std::string response_header = make_response_header(req, response_body);			// Формируем весь ответ вместе с заголовками
+
+		response	<< response_header			// Формируем весь ответ вместе с заголовками
+					<< response_body;
+
+		std::cout << RED << response.str() << RESET;
+		result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
+						response.str().length(), 0);
+	}
+	catch (fileException &e)
+	{
+		// std::cout << GREEN << "HERE" << RESET;
+		return_error_page("404", id, this->fds);
+		return;
+	}
+	catch (std::exception &e)
+	{
+		return;
+	}
 }
