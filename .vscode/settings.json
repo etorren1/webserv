@@ -1,7 +1,5 @@
 {
     "files.associations": {
-        "cctype": "cpp",
-        "iosfwd": "cpp",
         "__bit_reference": "cpp",
         "__config": "cpp",
         "__debug": "cpp",
@@ -22,10 +20,10 @@
         "atomic": "cpp",
         "bit": "cpp",
         "bitset": "cpp",
+        "cctype": "cpp",
         "chrono": "cpp",
         "cmath": "cpp",
         "complex": "cpp",
-        "csignal": "cpp",
         "cstdarg": "cpp",
         "cstddef": "cpp",
         "cstdint": "cpp",
@@ -42,10 +40,12 @@
         "initializer_list": "cpp",
         "iomanip": "cpp",
         "ios": "cpp",
+        "iosfwd": "cpp",
         "iostream": "cpp",
         "istream": "cpp",
         "iterator": "cpp",
         "limits": "cpp",
+        "list": "cpp",
         "locale": "cpp",
         "map": "cpp",
         "memory": "cpp",
@@ -53,9 +53,7 @@
         "new": "cpp",
         "optional": "cpp",
         "ostream": "cpp",
-        "queue": "cpp",
         "ratio": "cpp",
-        "set": "cpp",
         "sstream": "cpp",
         "stack": "cpp",
         "stdexcept": "cpp",
@@ -69,6 +67,6 @@
         "unordered_map": "cpp",
         "utility": "cpp",
         "vector": "cpp",
-        "list": "cpp"
+        "set": "cpp"
     }
 }

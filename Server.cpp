@@ -2,45 +2,49 @@
 
 void Server::create( void ) {
     struct protoent	*pe;
+    struct pollfd   newPoll;
+    int             newSrvSock;
 
     pe = getprotobyname("tcp");
-    if ((srvFd = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == 0) {
+    if ((newSrvSock = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == 0) {
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
     int enable = 1;
-    if (setsockopt(srvFd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+    if (setsockopt(newSrvSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
         perror("setsockopt(SO_REUSEADDR) failed");
         exit(EXIT_FAILURE);
     }
-    srvPoll.fd = srvFd;
-    srvPoll.events = POLLIN;
-    srvPoll.revents = 0;
+    newPoll.fd = newSrvSock;
+    newPoll.events = POLLIN;
+    newPoll.revents = 0;
     address.sin_family = AF_INET;
-    // address.sin_addr.s_addr = INADDR_ANY;
     address.sin_addr.s_addr = inet_addr(conf.hostname.c_str());
     address.sin_port = htons(atoi(conf.port.c_str()));
-    if (bind(srvFd, (struct sockaddr*)&address, sizeof(address)) < 0) {
+    if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
-    if (listen(srvFd, 5) < 0) {
+    if (listen(newSrvSock, 5) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    fcntl(srvFd, F_SETFL, O_NONBLOCK);
+    fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
     /* 
     / F_SETFL устанавливет флаг O_NONBLOCK для подаваемого дескриптора 
     / O_NONBLOCK устанавливает  режим  неблокирования, 
     / что позволяет при ошибке вернуть чтение другим запросам 
     */
+    fds.push_back(newPoll);
+    mess.push_back("");
+    cnct.push_back(false);
+    srvSockets.insert(newSrvSock);
 }
 
 void Server::run( void ) {
     std::cout << GREEN << "Server running." << RESET << "\n";
     while(status & WORKING) {
-        connectUsers();
         clientRequest();
         consoleCommands();
     }
@@ -93,31 +97,7 @@ void Server::consoleCommands( void ) {
     }
 }
 
-void Server::connectUsers( void ) {
-    int new_client_fd;
-    struct sockaddr_in clientaddr;
-    int addrlen = sizeof(clientaddr);
-
-    int ret = poll(&srvPoll, 1, 0);
-    if (ret != 0) {
-        if (srvPoll.revents & POLLIN) {
-            if ((new_client_fd = accept(srvFd, (struct sockaddr*)&clientaddr, (socklen_t*)&addrlen)) > 0) {
-                struct pollfd nw;
-
-                nw.fd = new_client_fd;
-                nw.events = POLLIN;
-                nw.revents = 0;
-                fds.push_back(nw);
-                mess.push_back("");
-                cnct.push_back(false);
-                std::cout << "New client on " << new_client_fd << " socket." << "\n";
-            }
-            srvPoll.revents = 0;
-        }
-    }
-}
-
-void Server::disconnectClient( const size_t id ) {
+void Server::disconnectClients( const size_t id ) {
     std::cout << "Client " << fds[id].fd << " disconnected." << "\n";
     close(fds[id].fd);
 
@@ -126,13 +106,33 @@ void Server::disconnectClient( const size_t id ) {
     cnct.erase(cnct.begin() + id);
 }
 
+void Server::connectClients( const int & fd ) {
+    int newClientSock;
+    struct sockaddr_in clientaddr;
+    int addrlen = sizeof(clientaddr);
+
+    if ((newClientSock = accept(fd, (struct sockaddr*)&clientaddr, (socklen_t*)&addrlen)) > 0) {
+        struct pollfd nw;
+
+        nw.fd = newClientSock;
+        nw.events = POLLIN;
+        nw.revents = 0;
+        fds.push_back(nw);
+        mess.push_back("");
+        cnct.push_back(false);
+        std::cout << "New client on " << newClientSock << " socket." << "\n";
+    }
+}
+
 void Server::clientRequest( void ) {
     int ret = poll(fds.data(), fds.size(), 0);
     if (ret != 0)    {
         for (size_t id = 0; id < fds.size(); id++) {
             if (fds[id].revents & POLLIN) {
-                if (readRequest(id) <= 0)
-                    disconnectClient(id);
+                if (isServerSocket(fds[id].fd))
+                    connectClients(fds[id].fd);
+                else if (readRequest(id) <= 0)
+                    disconnectClients(id);
                 else if (!cnct[id]) {
                     // REQUEST PART
                     req.parseText(mess[id]);
@@ -141,30 +141,6 @@ void Server::clientRequest( void ) {
                     //  RESPONSE PART
                     if (mess[id].size())
                         std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
-                    // if (mess[id].find("localhost:8081") != std::string::npos) // fix close server then client send message
-                    // {
-
-                        // std::stringstream response_body;
-                        // std::stringstream response;
-                        // int fd;
-                        // size_t result;
-                        // response_body << "<title>Test C++ HTTP Server</title>\n"
-                        //     << "<h1>Test page</h1>\n"
-                        //     << "<p>This is body of the test page...</p>\n"
-                        //     << "<h2>Request headers</h2>\n"
-                        //     << "<pre>" << mess[id] << "</pre>\n"
-                        //     << "<em><small>Test C++ Http Server</small></em>\n";
-
-                        // // Формируем весь ответ вместе с заголовками
-                        // response << "HTTP/1.1 200 OK\r\n"
-                        //     << "Version: HTTP/1.1\r\n"
-                        //     << "Content-Type: text/html; charset=utf-8\r\n"
-                        //     << "Content-Length: " << response_body.str().length()
-                        //     << "\r\n\r\n"
-                        //     << response_body.str();
-                        // Отправляем ответ клиенту с помощью функции send
-                        // result = send(fds[id].fd, response.c_str(),
-                        //     response.length(), 0);
                         
 						make_response(req, id);
                     // }
@@ -209,7 +185,7 @@ int  Server::readRequest( const size_t id ) {
 }
 
 void    Server::closeServer( int new_status ) {
-    close(srvFd);
+
     if (conf.error_fd > 2 && new_status & STOP)
         close(conf.error_fd);
     if (conf.access_fd > 2 && new_status & STOP)
@@ -219,6 +195,12 @@ void    Server::closeServer( int new_status ) {
         close(fds[i].fd);
     fds.clear();
     this->status = new_status;
+}
+
+bool    Server::isServerSocket( const int & fd ) {
+    if (srvSockets.find(fd) != srvSockets.end())
+        return true;
+    return false;
 }
 
 void    Server::writeLog( int dest, const std::string & header, const std::string & text ) {

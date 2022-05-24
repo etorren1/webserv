@@ -25,22 +25,24 @@ static std::string find_requested_file_path(Request req)
 
 	// return(parse_uri(uri));
 
-	return("/Users/kmeeseek/Documents/webserv/site/index.html");
+	return("site/index.html");
 }
 
 static std::string make_general_header (Request req, std::string response_body)
 {
 	std::string Server = "webserv";
 	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
-	std::string contentType = "text/plain";
+	std::string contentType = "text/html";
 	std::string contentLength = itos (std::strlen(response_body.c_str())); //= findContentLength();
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
 	std::string connection = "keep-alive";
-	return("Server: " + Server + "\r\n" +
+	return(
+			"Version: " + req.getProtocolVer()  + "\r\n" + 
+			// "Server: " + Server + "\r\n" +
 			"Content-Type: " + contentType + "\r\n" +
 			"Content-Length: " + contentLength + "\r\n" +
-			"Connection" + connection + "\r\n" +
-			+ "\r\n\r\n");
+			// "Connection: " + connection + "\r\n" +
+			+ "\r\n");
 }
 
 static std::string make_response_header(Request req, std::string response_body) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
@@ -54,7 +56,7 @@ static std::string make_response_header(Request req, std::string response_body) 
 	statusLine = req.getProtocolVer() + " " + statusCode + " " + reasonPhrase + "\r\n";
 	header = make_general_header(req, response_body);
 
-	return (statusLine + "\n" + header);
+	return (statusLine + header);
 }
 
 static std::string make_response_body(Request req)
@@ -83,7 +85,7 @@ void Server::make_response(Request req, const size_t id)
 	response	<< response_header			// Формируем весь ответ вместе с заголовками
 				<< response_body;
 	
-	std::cout << RED << response.str() << RESET;
+	// std::cout << RED << response.str() << RESET;
 	result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
 					response.str().length(), 0);
 }

@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <vector>
 #include <list>
+#include <set>
 #include <fcntl.h>
 #include "Utils.hpp"
 #include <string>
@@ -38,21 +39,21 @@ class Server {
 	private:
 
 		std::vector<struct pollfd>	fds;
+		std::set<int>				srvSockets;
+
 		std::vector<std::string>	mess;
 		std::vector<bool>			cnct;
 
 		struct s_cfg		conf;
-		struct pollfd		srvPoll;
-		int					srvFd;
 		struct sockaddr_in	address;
 		int					status;
 		int					flags;
 		Request 			req;
 		
-		void 		connectUsers( void );
+		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
 		int  		readRequest( const size_t id );
-		void 		disconnectClient( const size_t id );
+		void 		disconnectClients( const size_t id );
 		void 		consoleCommands( void );
 		// config file parser utilites
 			std::string get_raw_param(std::string key, std::string & text);
@@ -63,6 +64,7 @@ class Server {
 			void    cfg_error_log( std::string & text );
 			void    cfg_access_log( std::string & text );
 
+		bool			isServerSocket( const int & fd );
 		void			closeServer( int status );
 		void    		writeLog( int flag, const std::string & header, const std::string & text );
 		void			errorShutdown( int code, const std::string & error, const std::string & text = "");
