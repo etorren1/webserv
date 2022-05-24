@@ -1,6 +1,7 @@
 #include "Server.hpp"
 
 void Server::create( void ) {
+    struct sockaddr_in	address;
     struct protoent	*pe;
     struct pollfd   newPoll;
     int             newSrvSock;
@@ -136,14 +137,14 @@ void Server::clientRequest( void ) {
                 else if (!cnct[id]) {
                     // REQUEST PART
                     req.parseText(mess[id]);
-
+                    //
 
                     //  RESPONSE PART
                     if (mess[id].size())
                         std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
                         
-						make_response(req, id);
-                    // }
+					make_response(req, id);
+                    //
                     mess[id] = "";
                 }
                 fds[id].revents = 0;

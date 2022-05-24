@@ -12,10 +12,11 @@
 #include <list>
 #include <set>
 #include <fcntl.h>
-#include "Utils.hpp"
 #include <string>
 #include <sstream>
 #include <ctime>
+#include "Utils.hpp"
+#include "Config/Config.hpp"
 #include "Request.hpp"
 
 #define	STOP	0b00
@@ -39,13 +40,13 @@ class Server {
 	private:
 
 		std::vector<struct pollfd>	fds;
-		std::set<int>				srvSockets;
-
 		std::vector<std::string>	mess;
 		std::vector<bool>			cnct;
 
+		std::set<int>				srvSockets;
+		std::map<std::string, Server_block *> srvs;
+
 		struct s_cfg		conf;
-		struct sockaddr_in	address;
 		int					status;
 		int					flags;
 		Request 			req;

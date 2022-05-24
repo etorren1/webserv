@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../Server.hpp"
 #include <sys/stat.h> // for make directory
 
 int    Server::get_block(const std::string& prompt,const std::string& content, std::string& dest, int last)
@@ -157,6 +157,9 @@ void    Server::parseConfig( const int & fd ) {
     } // read config file
 
     cut_comments(text);
+
+    Http_block      http;
+    
     cfg_error_log(text); // get error_log path and create file if it not exist
     if (get_block("http", text, text) == -1)
         errorShutdown(255, "error: configuration file: not closed brackets.", text);

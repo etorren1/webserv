@@ -1,6 +1,7 @@
 NAME = webserv
 
-SRC = $(wildcard *.cpp)
+SRC = $(wildcard *.cpp)\
+	  $(wildcard Config/*.cpp)
 
 HEADER = 
 
