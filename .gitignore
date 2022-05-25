@@ -1,9 +1,10 @@
 *.o
 .DS_Store
-webserv
+./webserv
 a.out
 /.vscode/
 /YoupiBanane/
 /logs/
 index.html
 nginx.conf
+main.cpp
