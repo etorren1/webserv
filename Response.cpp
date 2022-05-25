@@ -23,16 +23,9 @@ static std::string find_requested_file_path(Request req)
 	std::string full_path;
 	std::string uri = req.getReqURI();
 
-	// full_path = parse_uri(uri);
-	try
-	{
-		full_path = parse_uri("./site/index.htmfl");
-		return(full_path);
-	}
-	catch (fileException &e)
-	{
-		throw(fileException());
-	}
+	// return(parse_uri(uri));
+
+	return("site/index.html");
 }
 
 static std::string make_general_header (Request req, std::string response_body)
@@ -118,26 +111,13 @@ void Server::make_response(Request req, const size_t id)
 	std::stringstream response;
 	size_t result;
 
-	try
-	{
-		std::string response_body = make_response_body(req);
-		std::string response_header = make_response_header(req, response_body);			// Формируем весь ответ вместе с заголовками
-
-		response	<< response_header			// Формируем весь ответ вместе с заголовками
-					<< response_body;
-
-		std::cout << RED << response.str() << RESET;
-		result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
-						response.str().length(), 0);
-	}
-	catch (fileException &e)
-	{
-		// std::cout << GREEN << "HERE" << RESET;
-		return_error_page("404", id, this->fds);
-		return;
-	}
-	catch (std::exception &e)
-	{
-		return;
-	}
+	std::string response_body = make_response_body(req);
+	std::string response_header = make_response_header(req, response_body);			// Формируем весь ответ вместе с заголовками
+	
+	response	<< response_header			// Формируем весь ответ вместе с заголовками
+				<< response_body;
+	
+	// std::cout << RED << response.str() << RESET;
+	result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
+					response.str().length(), 0);
 }

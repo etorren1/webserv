@@ -90,3 +90,4 @@ std::string Request::getProtocolVer() { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() { return this->_headers; }
 std::string Request::getBody() { return this->_body; }
 std::string Request::getMIMEType() { return this->_MIMEType; }
+std::string Request::getContentType() { _contentType = "text"; return this->_contentType; }

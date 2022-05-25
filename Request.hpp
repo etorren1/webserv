@@ -15,6 +15,7 @@ private:
 	std::map<std::string, std::string>      _headers;
 	std::string                             _body;
 	std::string								_MIMEType;
+	std::string								_contentType;
 
 public:
 	Request();
@@ -31,7 +32,7 @@ public:
 	std::map<std::string, std::string>		getHeadears();
 	std::string								getBody();
 	std::string								getMIMEType();
-
+	std::string								getContentType();
 };
 
 

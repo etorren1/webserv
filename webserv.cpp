@@ -24,7 +24,7 @@ int     main(int argc, char **argv)
     }
     Server server(fd);
 
-    server.parseConfig(fd);
+    server.config(fd);
     server.create();
     server.run();
 
