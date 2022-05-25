@@ -26,7 +26,8 @@ static std::string find_requested_file_path(Request req)
 	// full_path = parse_uri(uri);
 	try
 	{
-		full_path = parse_uri("./site/image.png");
+		// full_path = parse_uri(req.getReqURI());
+		full_path = parse_uri("./site/indefx.html");
 		return(full_path);
 	}
 	catch (fileException &e)
@@ -39,7 +40,7 @@ static std::string make_general_header (Request req, std::string response_body)
 {
 	std::string Server = "webserv";
 	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
-	std::string contentType = "image/png";
+	std::string contentType = "text/html";
 	std::string contentLength = itos (std::strlen(response_body.c_str())); //= findContentLength();
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
 	std::string connection = "keep-alive";
@@ -49,6 +50,7 @@ static std::string make_general_header (Request req, std::string response_body)
 			"Content-Type: " + contentType + "\r\n" +
 			"Content-Length: " + contentLength + "\r\n" +
 			// "Connection: " + connection + "\r\n" +
+			// Transfer-Encoding:
 			+ "\r\n");
 }
 
@@ -68,31 +70,42 @@ static std::string make_response_header(Request req, std::string response_body) 
 
 static std::string make_response_body(Request req)
 {
-	// std::ifstream file(find_requested_file_path(req));
-	// std::string tmp_line;
-	// std::string return_line;
+	std::ifstream file(find_requested_file_path(req));
+	// std::fstream file;
+	std::string tmp_line;
+	std::string return_line;
 	
-	// if (file.is_open())
-	// {
-	// 	while (getline (file,tmp_line))					// reading requested file
-	// 			return_line.append(tmp_line + "\n");
-	// 	file.close();
-	// }
-	std::fstream fs;
-	std::string line;
-	std::string result;
-	fs.open ("./site/image.png", std::fstream::in);
-	if (fs.is_open())
+	// try{
+	// file.open ("./site/image.png", std::fstream::in);
+	if (file.is_open())
 	{
-		while (getline (fs,line))	//reading map
-				result.append(line + "\n");
-		fs.close();
+		while (getline (file,tmp_line))	{				// reading requested file
+			// std::cout << BLUE << tmp_line << RESET << "\n";
+			return_line.append(tmp_line + "\n");
+		}
+		file.close();
 	}
-	std::cout << BLUE << result << "\n";
-	std::cout << result.length() << RESET <<"\n";
+	// }
+	// catch (std::exception &e)
+	// {
+	// 	std::cout << BLUE << "EXEPTION!" << RESET << "\n";
+	// }
+	// std::cout << GREEN << return_line << RESET << "\n";
+	return(return_line);
 
-	// return(return_line);
-	return(result);
+	// std::fstream fs;
+	// std::string line;
+	// std::string result;
+	// fs.open ("./site/image.png", std::fstream::in);
+	// if (fs.is_open())
+	// {
+	// 	while (getline (fs,line))	//reading map
+	// 			result.append(line + "\n");
+	// 	fs.close();
+	// }
+	// std::cout << BLUE << result << "\n";
+	// std::cout << result.length() << RESET <<"\n";
+	// return(result);
 }
 
 void return_error_page(std::string errorNum, const size_t id, std::vector<struct pollfd> fds)
@@ -114,7 +127,7 @@ void return_error_page(std::string errorNum, const size_t id, std::vector<struct
 	    </div>\\
 	</body>\\
 	</html";
-	std::string contentLength = itos (std::strlen(responseBody.c_str())); //body length
+	std::string contentLength = itos (responseBody.length()); //body length
 	std::string header = "HTTP/1.1 404 Not Found\\
 	Version: HTTP/1.1\\
 	Content-Type: text/html\\
@@ -139,19 +152,6 @@ void Server::make_response(Request req, const size_t id)
 
 		response	<< response_header			// Формируем весь ответ вместе с заголовками
 					<< response_body;
-
-		// std::string response_header =
-		// 	int fd = open("./site/image.png", O_RDWR);
-		// 	char buf[2048];
-		// 	int rd;
-		// 	int bytes = 0;
-		// 	std::string text;
-		// 	while ((rd = read(fd, buf, 2048)) > 0)
-		// 	{
-		// 		buf[rd] = 0;
-		// 		text += buf;
-		// 		bytes += rd;
-		// 	}
 
 		std::cout << RED << response.str() << RESET;
 		result = send(fds[id].fd, response_header.c_str(),	// Отправляем ответ клиенту с помощью функции send
