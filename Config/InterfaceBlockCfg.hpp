@@ -43,6 +43,19 @@ class Block
             return false;
         }
 
+        void    show_all() {
+            std::cout << "error_log = " << error_log << "\n";
+            std::cout << "error_page = " << error_page << "\n";
+            std::cout << "access_log = " << access_log << "\n";
+            std::cout << "root = " << root << "\n";
+            std::cout << "sendfile = " << sendfile << "\n";
+            std::cout << "autoindex = " << autoindex << "\n";
+            std::cout << "client_max_body_size = " << client_max_body_size << "\n";
+            std::cout << "index = ";
+            for (size_t i = 0; i < index.size(); i++) { std::cout << index[i] << " "; }
+            std::cout << "\n";
+        }
+
         Block() {
             client_max_body_size = 1024;
             error_log = "logs/error.log";

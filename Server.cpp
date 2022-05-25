@@ -1,35 +1,71 @@
 #include "Server.hpp"
 
-void Server::create( void ) {
+
+void    Server::create() {
+    std::vector<std::string> brokenhosts;
+    for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
+        std::string hostname;
+        std::string port;
+        getHostAndPort((*it).first, hostname, port);
+        if (createVirtualServer(hostname, port, (*it).second) == -1) {
+            brokenhosts.push_back((*it).first);
+            delete (*it).second;
+        }
+    }
+    for (int i = 0; i < brokenhosts.size(); i++)
+        srvs.erase(brokenhosts[i]);
+    if (!srvs.size())
+        closeServer(STOP);
+}
+
+void    Server::run( void ) {
+    std::cout << GREEN << "Server running." << RESET << "\n";
+    while(status & WORKING) {
+        clientRequest();
+        consoleCommands();
+    }
+    if (status & RESTART) {
+        status = WORKING;
+        run();
+    }
+}
+
+void    Server::getHostAndPort( const std::string & listen, std::string & hostname, std::string & port ) {
+    size_t sep = listen.find(":");
+    if (sep == std::string::npos) {
+        port = listen;
+        hostname = "0.0.0.0";
+    }
+    else {
+        hostname = listen.substr(0, sep);
+        if (hostname == "*" || !hostname.size())
+            hostname = "0.0.0.0";
+        port = listen.substr(sep + 1, listen.size() - sep - 1);
+    }
+}
+
+int    Server::createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv ) {
     struct sockaddr_in	address;
     struct protoent	*pe;
     struct pollfd   newPoll;
     int             newSrvSock;
 
     pe = getprotobyname("tcp");
-    if ((newSrvSock = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == 0) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
-    }
+    if ((newSrvSock = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == 0)
+        return closeVirtualServer(srv, newSrvSock, "error: create socket failed.", "Host: " + hostname + ":" + port);
     int enable = 1;
-    if (setsockopt(newSrvSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-        perror("setsockopt(SO_REUSEADDR) failed");
-        exit(EXIT_FAILURE);
-    }
+    if (setsockopt(newSrvSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+        return closeVirtualServer(srv, newSrvSock, "error: setsockopt(SO_REUSEADDR) failed.", "Host: " + hostname + ":" + port);
     newPoll.fd = newSrvSock;
     newPoll.events = POLLIN;
     newPoll.revents = 0;
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr(conf.hostname.c_str());
-    address.sin_port = htons(atoi(conf.port.c_str()));
-    if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-    if (listen(newSrvSock, 5) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
+    address.sin_addr.s_addr = inet_addr(hostname.c_str());
+    address.sin_port = htons(atoi(port.c_str()));
+    if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
+        return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
+    if (listen(newSrvSock, 5) < 0)
+        return closeVirtualServer(srv, newSrvSock, "error: listen failed.", "Host: " + hostname + ":" + port);
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
     /* 
@@ -41,18 +77,22 @@ void Server::create( void ) {
     mess.push_back("");
     cnct.push_back(false);
     srvSockets.insert(newSrvSock);
+    std::cout << "Host: " << hostname << ":" << port << " up succsesfuly\n";
+    return (1);
 }
 
-void Server::run( void ) {
-    std::cout << GREEN << "Server running." << RESET << "\n";
-    while(status & WORKING) {
-        clientRequest();
-        consoleCommands();
+int    Server::closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text ) {
+    if (srv->get_error_log() != "off") {
+        writeLog(srv->get_error_log(), error, text);
+        std::cerr << "error: can not up domain: see error_log for more information\n";
     }
-    if (status & RESTART) {
-        status = WORKING;
-        run();
+    for (lctn_iterator it = srv->lctn.begin(); it != srv->lctn.end(); it++) {
+        delete (*it).second;
     }
+    // delete srv;
+    if (sock)
+        close(sock);
+    return (-1);
 }
 
 void Server::consoleCommands( void ) {
@@ -175,10 +215,9 @@ int  Server::readRequest( const size_t id ) {
     }
     while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
-    if (text.size() > BUF_SIZE)   //Длина запроса Не более 2048 символов
-    {
+    if (text.size() > BUF_SIZE) {
         text.replace(BUF_SIZE - 2, 2, "\r\n");
-        std::cout << RED << "ALERT! text more than 512 bytes!" << RESET << "\n";
+        std::cout << RED << "ALERT! text more than " << BUF_SIZE << " bytes!" << RESET << "\n";
     }
     cnct[id] = checkConnection(text);
     mess[id] = text;
@@ -187,14 +226,18 @@ int  Server::readRequest( const size_t id ) {
 
 void    Server::closeServer( int new_status ) {
 
-    if (conf.error_fd > 2 && new_status & STOP)
-        close(conf.error_fd);
-    if (conf.access_fd > 2 && new_status & STOP)
-        close(conf.access_fd);
     size_t count = fds.size();
     for (size_t i = 0; i < count; i++)
         close(fds[i].fd);
     fds.clear();
+    if (http != NULL)
+        delete http;
+    for (srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
+        for (lctn_iterator jt = (*it).second->lctn.begin(); jt != (*it).second->lctn.end(); jt++) {
+            delete (*jt).second;
+        }
+        delete (*it).second;
+    }
     this->status = new_status;
 }
 
@@ -250,16 +293,15 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
 }
 
 void	Server::errorShutdown( int code, const std::string & path, const std::string & error, const std::string & text ) {
-    writeLog(path, error, text);
-    std::cerr << "error: see error.log for more information\n";
+    if (path != "off") {
+        writeLog(path, error, text);
+        std::cerr << "error: see error_log for more information\n";
+    }
     closeServer(STOP);
     exit(code);
 }
 
 Server::Server( const int & config_fd ) {
-
-    // parseConfig(config_fd);
-    // std::cout << conf.hostname << ":" << conf.port << "\n";
 
     status = WORKING;
 }

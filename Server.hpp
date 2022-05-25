@@ -24,16 +24,8 @@
 #define WORKING 0b10
 #define RESTART 0b01
 #define BUF_SIZE 2048
-
-typedef struct s_cfg
-{
-    std::string     hostname;
-    std::string     port;
-	int				error_fd;
-	int				access_fd;
-    std::list<std::string> locations;
-
-} t_cfg;
+#define srvs_iterator std::map<std::string, Server_block * >::iterator
+#define lctn_iterator std::map<std::string, Location_block * >::iterator
 
 class Server {
 	private:
@@ -42,11 +34,10 @@ class Server {
 		std::vector<std::string>	mess;
 		std::vector<bool>			cnct;
 
-		Http_block     				http;
 		std::set<int>				srvSockets;
-		std::map<std::string, Server_block *> srvs;
+		Http_block     				*http;
+		std::map<std::string, Server_block * > srvs;
 
-		struct s_cfg		conf;
 		int					status;
 		Request 			req;
 		
@@ -55,18 +46,24 @@ class Server {
 		int  		readRequest( const size_t id );
 		void 		disconnectClients( const size_t id );
 		void 		consoleCommands( void );
+		int			createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv );
+		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
+		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
 		// config file parser utilites
 			std::string get_raw_param(std::string key, std::string & text);
 			int    	get_block(const std::string& prompt,const std::string& content, std::string& dest, int last = 0);
 			void    cut_comments( std::string & text );
-			template <class T>
-			void 	cfg_listen(std::string & text, T & block );
-			template <class T>
-			void    cfg_server_block( std::string & text, T & block );
-			template <class T>
-			void    cfg_error_log( std::string & text, T & block );
-			template <class T>
-			void    cfg_access_log( std::string & text, T & block );
+			template <class T> void		cfg_set_attributes( std::string & text, T * block );
+			template <class T> void		cfg_server_name(std::string & text, T * block );
+			template <class T> void		cfg_index(std::string & text, T * block );
+			template <class T> void		cfg_listen(std::string & text, T * block );
+			template <class T> void		cfg_error_log( std::string & text, T * block );
+			template <class T> void		cfg_access_log( std::string & text, T * block );
+			template <class T> void		cfg_sendfile( std::string & text, T * block );
+			template <class T> void		cfg_autoindex( std::string & text, T * block );
+			template <class T> void		cfg_client_max_body_size( std::string & text, T * block );
+			template <class T> void		cfg_location_block( std::string & text, T * block );
+			template <class T> void		cfg_server_block( std::string & text, T * block );
 
 		bool			isServerSocket( const int & fd );
 		void			closeServer( int status );
@@ -76,6 +73,7 @@ class Server {
 		// for response:
 		void			make_response(Request req, const size_t id);
 
+
 		Server( const Server & src );
 		Server operator=( const Server & src ); 
 
@@ -84,8 +82,8 @@ class Server {
 		Server( const int & config_fd );
 		~Server();
 
-		void		parseConfig( const int & fd );
-		void	create( void );
+		void	config( const int & fd );
+		void	create();
 		void	run( void );
 
 };
