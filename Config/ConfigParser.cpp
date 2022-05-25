@@ -69,7 +69,23 @@ void Server::cfg_listen(std::string & text, T * block ) {
         delete block; block = NULL;
         errorShutdown(255, http->get_error_log(), "error: configuration file: requaired parameter: listen.");
     }
-    block->set_listen(raw);
+    if (raw.find_first_not_of("0123456789.:") != std::string::npos) {
+        delete block; block = NULL;
+        errorShutdown(255, http->get_error_log(), "error: configuration file: bad parameter: listen.");
+    }
+    std::string hostname, port;
+    size_t sep = raw.find(":");
+    if (sep == std::string::npos) {
+        port = raw;
+        hostname = "0.0.0.0";
+    }
+    else {
+        hostname = raw.substr(0, sep);
+        if (hostname == "*" || !hostname.size())
+            hostname = "0.0.0.0";
+        port = raw.substr(sep + 1, raw.size() - sep - 1);
+    }
+    block->set_listen(hostname + ":" + port);
 }
 
 template <class T>

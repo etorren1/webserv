@@ -2,6 +2,8 @@
 
 
 void    Server::create() {
+
+
     std::vector<std::string> brokenhosts;
     for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
         std::string hostname;
@@ -32,16 +34,8 @@ void    Server::run( void ) {
 
 void    Server::getHostAndPort( const std::string & listen, std::string & hostname, std::string & port ) {
     size_t sep = listen.find(":");
-    if (sep == std::string::npos) {
-        port = listen;
-        hostname = "0.0.0.0";
-    }
-    else {
-        hostname = listen.substr(0, sep);
-        if (hostname == "*" || !hostname.size())
-            hostname = "0.0.0.0";
-        port = listen.substr(sep + 1, listen.size() - sep - 1);
-    }
+    hostname = listen.substr(0, sep);
+    port = listen.substr(sep + 1, listen.size() - sep - 1);
 }
 
 int    Server::createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv ) {
