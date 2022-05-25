@@ -2,8 +2,6 @@
 
 
 void    Server::create() {
-
-
     std::vector<std::string> brokenhosts;
     for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
         std::string hostname;

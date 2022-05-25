@@ -152,6 +152,13 @@ void    Server::cfg_access_log( std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_root( std::string & text, T * block ) {
+    std::string raw = get_raw_param("root", text);
+    if (raw.size())
+        block->set_root(raw);
+}
+
+template <class T>
 void    Server::cfg_sendfile( std::string & text, T * block ) {
     std::string raw = get_raw_param("sendfile", text);
     if (raw.size()) {
@@ -201,6 +208,8 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_access_log(text, block);
     cfg_sendfile(text, block);
     cfg_autoindex(text, block);
+    cfg_index(text, block);
+    cfg_root(text, block);
     cfg_client_max_body_size(text, block);
 }
 

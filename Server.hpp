@@ -56,6 +56,7 @@ class Server {
 			template <class T> void		cfg_set_attributes( std::string & text, T * block );
 			template <class T> void		cfg_server_name(std::string & text, T * block );
 			template <class T> void		cfg_index(std::string & text, T * block );
+			template <class T> void     cfg_root( std::string & text, T * block );
 			template <class T> void		cfg_listen(std::string & text, T * block );
 			template <class T> void		cfg_error_log( std::string & text, T * block );
 			template <class T> void		cfg_access_log( std::string & text, T * block );
