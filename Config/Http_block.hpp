@@ -3,7 +3,7 @@
 
 #include "InterfaceBlockCfg.hpp"
 
-class Http_block : private Block {
+class Http_block : public Block {
 
     public:
         Http_block() {}

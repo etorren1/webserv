@@ -5,6 +5,7 @@
 #include <netdb.h>
 // #include <sys/socket.h>
 // #include <netinet/in.h>
+#include <sys/stat.h>
 #include <arpa/inet.h>
 #include <poll.h>
 #include <unistd.h>
@@ -22,8 +23,6 @@
 #define	STOP	0b00
 #define WORKING 0b10
 #define RESTART 0b01
-#define ERR_LOG 0x2
-#define ACS_LOG 0x4
 #define BUF_SIZE 2048
 
 typedef struct s_cfg
@@ -43,12 +42,12 @@ class Server {
 		std::vector<std::string>	mess;
 		std::vector<bool>			cnct;
 
+		Http_block     				http;
 		std::set<int>				srvSockets;
 		std::map<std::string, Server_block *> srvs;
 
 		struct s_cfg		conf;
 		int					status;
-		int					flags;
 		Request 			req;
 		
 		void 		connectClients( const int & fd );
@@ -60,15 +59,19 @@ class Server {
 			std::string get_raw_param(std::string key, std::string & text);
 			int    	get_block(const std::string& prompt,const std::string& content, std::string& dest, int last = 0);
 			void    cut_comments( std::string & text );
-			void 	cfg_listen(std::string & text );
-			void    cfg_server_block( std::string & text );
-			void    cfg_error_log( std::string & text );
-			void    cfg_access_log( std::string & text );
+			template <class T>
+			void 	cfg_listen(std::string & text, T & block );
+			template <class T>
+			void    cfg_server_block( std::string & text, T & block );
+			template <class T>
+			void    cfg_error_log( std::string & text, T & block );
+			template <class T>
+			void    cfg_access_log( std::string & text, T & block );
 
 		bool			isServerSocket( const int & fd );
 		void			closeServer( int status );
-		void    		writeLog( int flag, const std::string & header, const std::string & text );
-		void			errorShutdown( int code, const std::string & error, const std::string & text = "");
+		void    		writeLog( const std::string & path, const std::string & header, const std::string & text );
+		void			errorShutdown( int code, const std::string & path, const std::string & error, const std::string & text = "");
 
 		// for response:
 		void			make_response(Request req, const size_t id);

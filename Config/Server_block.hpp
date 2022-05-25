@@ -5,13 +5,13 @@
 #include "Location_block.hpp"
 #include <map>
 
-class Server_block : private Block {
+class Server_block : virtual public Block {
     private:
         std::string listen;
         std::vector<std::string>     server_name;
 
         Server_block() {}
-        
+
     public:
         std::map<std::string, Location_block*> lctn;
     

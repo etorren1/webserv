@@ -4,7 +4,7 @@
 #include "InterfaceBlockCfg.hpp"
 
 
-class Location_block : private Block {
+class Location_block : public Block {
     private:
         Location_block() {}
 
