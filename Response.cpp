@@ -26,7 +26,7 @@ static std::string find_requested_file_path(Request req)
 	// full_path = parse_uri(uri);
 	try
 	{
-		full_path = parse_uri("./site/index.htmfl");
+		full_path = parse_uri("./site/image.png");
 		return(full_path);
 	}
 	catch (fileException &e)
@@ -39,7 +39,7 @@ static std::string make_general_header (Request req, std::string response_body)
 {
 	std::string Server = "webserv";
 	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
-	std::string contentType = "text/html";
+	std::string contentType = "image/png";
 	std::string contentLength = itos (std::strlen(response_body.c_str())); //= findContentLength();
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
 	std::string connection = "keep-alive";
@@ -68,17 +68,31 @@ static std::string make_response_header(Request req, std::string response_body) 
 
 static std::string make_response_body(Request req)
 {
-	std::ifstream file(find_requested_file_path(req));
-	std::string tmp_line;
-	std::string return_line;
+	// std::ifstream file(find_requested_file_path(req));
+	// std::string tmp_line;
+	// std::string return_line;
 	
-	if (file.is_open())
+	// if (file.is_open())
+	// {
+	// 	while (getline (file,tmp_line))					// reading requested file
+	// 			return_line.append(tmp_line + "\n");
+	// 	file.close();
+	// }
+	std::fstream fs;
+	std::string line;
+	std::string result;
+	fs.open ("./site/image.png", std::fstream::in);
+	if (fs.is_open())
 	{
-		while (getline (file,tmp_line))					// reading requested file
-				return_line.append(tmp_line + "\n");
-		file.close();
+		while (getline (fs,line))	//reading map
+				result.append(line + "\n");
+		fs.close();
 	}
-	return(return_line);
+	std::cout << BLUE << result << "\n";
+	std::cout << result.length() << RESET <<"\n";
+
+	// return(return_line);
+	return(result);
 }
 
 void return_error_page(std::string errorNum, const size_t id, std::vector<struct pollfd> fds)
@@ -126,9 +140,24 @@ void Server::make_response(Request req, const size_t id)
 		response	<< response_header			// Формируем весь ответ вместе с заголовками
 					<< response_body;
 
+		// std::string response_header =
+		// 	int fd = open("./site/image.png", O_RDWR);
+		// 	char buf[2048];
+		// 	int rd;
+		// 	int bytes = 0;
+		// 	std::string text;
+		// 	while ((rd = read(fd, buf, 2048)) > 0)
+		// 	{
+		// 		buf[rd] = 0;
+		// 		text += buf;
+		// 		bytes += rd;
+		// 	}
+
 		std::cout << RED << response.str() << RESET;
-		result = send(fds[id].fd, response.str().c_str(),	// Отправляем ответ клиенту с помощью функции send
-						response.str().length(), 0);
+		result = send(fds[id].fd, response_header.c_str(),	// Отправляем ответ клиенту с помощью функции send
+						response_header.length(), 0);
+		result = send(fds[id].fd, response_body.c_str(),	// Отправляем ответ клиенту с помощью функции send
+						response_body.length(), 0);
 	}
 	catch (fileException &e)
 	{
