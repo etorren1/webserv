@@ -24,6 +24,7 @@ void Request::parseText(std::string text) {
     }
     // std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
+    parseMIMEType();
 }
 
 void Request::parseStartLine(std::string str) {
@@ -46,7 +47,6 @@ size_t Request::parseStrBody(std::vector<std::string> vec) {
     size_t pos = 0;
     for (size_t i = 0; i < vec.size() - 1; i++) {
         if (vec[i].length() == 0) {
-            std::cout << "i = " << i << ", len = " << vec[i].length() << "\n";
             pos = i;
             for (; i < vec.size(); i++) {
                 this->_body += vec[i];
@@ -65,7 +65,7 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         key = vec[i].substr(0, n);
         val = vec[i].substr(n + 1);
         _headers.insert(std::make_pair(key, val));
-        std::cout << "[" << key << "] - [" << val << "]\n";
+        // std::cout << "[" << key << "] - [" << val << "]\n";
     }
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (size_t i = 0; i < _headers.size() - 1; i++) {
@@ -74,8 +74,19 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
     // }
 }
 
+void Request::parseMIMEType() {
+    size_t pos = 0;
+    if (_reqURI.length() > 1) {
+        pos = _reqURI.find(".");
+        if (pos != std::string::npos)
+            _MIMEType = _reqURI.substr(pos + 1);
+    }
+    // std::cout << _MIMEType << "\n";
+}
+
 std::string Request::getMethod() { return this->_method; }
 std::string Request::getReqURI() { return this->_reqURI; }
 std::string Request::getProtocolVer() { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() { return this->_headers; }
 std::string Request::getBody() { return this->_body; }
+std::string Request::getMIMEType() { return this->_MIMEType; }
