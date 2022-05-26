@@ -20,7 +20,7 @@ private:
 
 	//data for response
 	std::string								_responseContentType;
-	std::map<std::string, std::string>		_typesMIMO;
+	std::map<std::string, std::string>		_typesMIME;
 
 public:
 	Request();
