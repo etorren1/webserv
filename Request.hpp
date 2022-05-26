@@ -9,6 +9,7 @@
 
 class Request {
 private:
+	//parse data for request
 	std::string                             _method;
 	std::string                             _reqURI;
 	std::string                             _protocolVersion;
@@ -16,6 +17,10 @@ private:
 	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_contentType;
+
+	//data for response
+	std::string								_responseContentType;
+	std::map<std::string, std::string>		_typesMIMO;
 
 public:
 	Request();
@@ -25,6 +30,7 @@ public:
 	void									parseMapHeaders( std::vector<std::string> , size_t );
 	size_t          						parseStrBody( std::vector<std::string> );
 	void									parseMIMEType();
+	void									findType();
 
 	std::string								getMethod();
 	std::string								getReqURI();
