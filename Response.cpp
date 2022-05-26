@@ -122,37 +122,37 @@ static std::string make_response_body(Request req)
 	// //-------------------------------------------------
 }
 
-void return_error_page(std::string errorNum, const size_t id, std::vector<struct pollfd> fds)
-{
-	std::string responseBody = "<!DOCTYPE html>\\
-	<html lang=\"en\">\\
-	<head>\\
-	    <meta charset=\"UTF-8\">\\
-	    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\\
-	    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\\
-	    <title>Responsive 404 page </title>\\
-	</head>\\
-	<body>\\
-	    <div class=\"container\">\\
-	        <h2>404</h2>\\
-	        <h3>Oops, nothing here...</h3>\\
-	        <p>Please Check the URL</p>\\
-	        <p>Otherwise, <a href=\"#homepage\">Click here</a> to redirect to homepage.</p>\\
-	    </div>\\
-	</body>\\
-	</html";
-	std::string contentLength = itos (responseBody.length()); //body length
-	std::string header = "HTTP/1.1 404 Not Found\\
-	Version: HTTP/1.1\\
-	Content-Type: text/html\\
-	Content-Length: \\";
-	header.append(contentLength + "\n\n");
-	std::string fullResponseMsg = header.append(responseBody);
+// void return_error_page(std::string errorNum, const size_t id, std::vector<struct pollfd> fds)
+// {
+// 	std::string responseBody = "<!DOCTYPE html>\\
+// 	<html lang=\"en\">\\
+// 	<head>\\
+// 	    <meta charset=\"UTF-8\">\\
+// 	    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\\
+// 	    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\\
+// 	    <title>Responsive 404 page </title>\\
+// 	</head>\\
+// 	<body>\\
+// 	    <div class=\"container\">\\
+// 	        <h2>404</h2>\\
+// 	        <h3>Oops, nothing here...</h3>\\
+// 	        <p>Please Check the URL</p>\\
+// 	        <p>Otherwise, <a href=\"#homepage\">Click here</a> to redirect to homepage.</p>\\
+// 	    </div>\\
+// 	</body>\\
+// 	</html";
+// 	std::string contentLength = itos (responseBody.length()); //body length
+// 	std::string header = "HTTP/1.1 404 Not Found\\
+// 	Version: HTTP/1.1\\
+// 	Content-Type: text/html\\
+// 	Content-Length: \\";
+// 	header.append(contentLength + "\n\n");
+// 	std::string fullResponseMsg = header.append(responseBody);
 
-	std::cout << GREEN << "HERE" << RESET;
-	size_t result = send(fds[id].fd, fullResponseMsg.c_str(),	// Отправляем ответ клиенту с помощью функции send
-		fullResponseMsg.length(), 0);
-}
+// 	std::cout << GREEN << "HERE" << RESET;
+// 	size_t result = send(fds[id].fd, fullResponseMsg.c_str(),	// Отправляем ответ клиенту с помощью функции send
+// 		fullResponseMsg.length(), 0);
+// }
 
 void Server::make_response(Request req, const size_t id)
 {
@@ -178,12 +178,12 @@ void Server::make_response(Request req, const size_t id)
 	catch (fileException &e)
 	{
 		// std::cout << GREEN << "HERE" << RESET;
-		return_error_page("404", id, this->fds);
+		generateErrorPage(404, id);
 		return;
 	}
 	catch (std::exception &e)
 	{
-		return_error_page("404", id, this->fds);
+		generateErrorPage(404, id);
 		return;
 	}
 }

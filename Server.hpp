@@ -16,6 +16,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include <cstdlib>
 #include "Utils.hpp"
 #include "Config/Config.hpp"
 #include "Request.hpp"
@@ -38,8 +39,9 @@ class Server {
 		Http_block     				*http;
 		std::map<std::string, Server_block * > srvs;
 
-		int					status;
-		Request 			req;
+		int							status;
+		Request 					req;
+		std::map<int, std::string>	resCode;
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
@@ -86,6 +88,9 @@ class Server {
 		void	config( const int & fd );
 		void	create();
 		void	run( void );
+
+		//for errors
+		void	generateErrorPage(int code, int id);
 
 };
 
