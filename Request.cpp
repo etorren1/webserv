@@ -1,7 +1,36 @@
 #include "Request.hpp"
 
 
-Request::Request() {}
+Request::Request() {
+    this->_typesMIME.insert(std::make_pair("json", "application/json"));
+    this->_typesMIME.insert(std::make_pair("javascript", "application/javascript"));
+    this->_typesMIME.insert(std::make_pair("pdf", "application/pdf"));
+    this->_typesMIME.insert(std::make_pair("postscript", "application/postscript"));
+    this->_typesMIME.insert(std::make_pair("zip", "application/zip"));
+
+    this->_typesMIME.insert(std::make_pair("aac", "audio/aac"));
+    this->_typesMIME.insert(std::make_pair("mpeg", "audio/mpeg"));
+    this->_typesMIME.insert(std::make_pair("ogg", "audio/ogg"));
+
+    this->_typesMIME.insert(std::make_pair("gif", "image/gif"));
+    this->_typesMIME.insert(std::make_pair("jpeg", "image/jpeg"));
+    this->_typesMIME.insert(std::make_pair("pjpeg", "image/pjpeg"));
+    this->_typesMIME.insert(std::make_pair("png", "image/png"));
+    this->_typesMIME.insert(std::make_pair("tiff", "image/tiff"));
+    this->_typesMIME.insert(std::make_pair("webp", "image/webp"));
+
+    this->_typesMIME.insert(std::make_pair("cmd", "text/cmd"));
+    this->_typesMIME.insert(std::make_pair("css", "text/css"));
+    this->_typesMIME.insert(std::make_pair("csv", "text/csv"));
+    this->_typesMIME.insert(std::make_pair("html", "text/html"));
+    this->_typesMIME.insert(std::make_pair("plain", "text/plain"));
+    this->_typesMIME.insert(std::make_pair("php", "text/php"));
+    this->_typesMIME.insert(std::make_pair("xml", "text/xml"));
+
+    this->_typesMIME.insert(std::make_pair("mp4", "video/mp4"));
+    this->_typesMIME.insert(std::make_pair("quicktime", "video/quicktime"));
+    this->_typesMIME.insert(std::make_pair("webm", "video/webm"));
+}
 
 Request::~Request() {}
 
@@ -25,6 +54,7 @@ void Request::parseText(std::string text) {
     // std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
     parseMIMEType();
+    findType();
 }
 
 void Request::parseStartLine(std::string str) {
@@ -35,13 +65,13 @@ void Request::parseStartLine(std::string str) {
     size_t pos_n = str.find(" ");
     str.erase(str.find(' '), 1);
     this->_protocolVersion = str.substr(pos_n);
-    // std::cout << "_method = |" << _method << "\n";
-    // std::cout << "_reqURI = |" << _reqURI << "\n";
-    // std::cout << "_protocolVersion = |" << _protocolVersion << "\n";
+    // std::cout << "_method = |" << _method << "|\n";
+    // std::cout << "_reqURI = |" << _reqURI << "|\n";
+    // std::cout << "_protocolVersion = |" << _protocolVersion << "|\n";
 }
 
 size_t Request::parseStrBody(std::vector<std::string> vec) {
-    // std::cout << "body = |" << _body << "|\n";
+    // std::cout << "_body = |" << _body << "|\n";
 
     // const char *c = vec[]
     size_t pos = 0;
@@ -65,7 +95,7 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         key = vec[i].substr(0, n);
         val = vec[i].substr(n + 1);
         _headers.insert(std::make_pair(key, val));
-        // std::cout << "[" << key << "] - [" << val << "]\n";
+        std::cout << "[" << key << "] - [" << val << "]\n";
     }
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (size_t i = 0; i < _headers.size() - 1; i++) {
@@ -76,12 +106,27 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
 
 void Request::parseMIMEType() {
     size_t pos = 0;
+    size_t typeEnd = _reqURI.find("?");
     if (_reqURI.length() > 1) {
         pos = _reqURI.find(".");
-        if (pos != std::string::npos)
-            _MIMEType = _reqURI.substr(pos + 1);
+        if (pos != std::string::npos) {
+            if (typeEnd != std::string::npos)
+                _MIMEType = _reqURI.substr(pos + 1, typeEnd - pos - 1);
+            else
+                _MIMEType = _reqURI.substr(pos + 1);
+        }
     }
-    // std::cout << _MIMEType << "\n";
+    // std::cout << "_MIMEType = |" << _MIMEType << "|\n";
+}
+
+void Request::findType() {
+    std::map<std::string, std::string>::iterator it = _typesMIME.begin();
+    for ( ; it != _typesMIME.end(); it++) {
+        if (_MIMEType == (*it).first) {
+            _responseContentType = (*it).second;
+        }
+    }
+    std::cout << "_responseContentType = |" << _responseContentType << "|\n";
 }
 
 std::string Request::getMethod() { return this->_method; }
@@ -90,3 +135,4 @@ std::string Request::getProtocolVer() { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() { return this->_headers; }
 std::string Request::getBody() { return this->_body; }
 std::string Request::getMIMEType() { return this->_MIMEType; }
+std::string Request::getContentType() { return this->_responseContentType; }

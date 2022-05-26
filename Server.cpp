@@ -293,9 +293,48 @@ void	Server::errorShutdown( int code, const std::string & path, const std::strin
     exit(code);
 }
 
-Server::Server( const int & config_fd ) {
+void	Server::generateErrorPage(int error, int id) {
+    std::string mess = "none";
+    const int &code = error;
+    std::map<int, std::string>::iterator it = resCode.begin();
+    for (; it != this->resCode.end(); it++) {
+        if (code == (*it).first) {
+            mess = (*it).second;
+        }
+    }
+    std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Error page </title></head><body><div class=\"container\"><h2>" + itos(code) + "</h2><h3>" + mess + "</h3><p><a href=\"#homepage\">Click here</a> to redirect to homepage.</p></div></body></html>";
+    std::string header = req.getProtocolVer() + " " + itos(code) + " " + mess + "\n" + "Version: " + req.getProtocolVer() + "\n" + "Content-Type: " + req.getContentType() + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
+    std::string response = header + responseBody;
+    size_t res = send(fds[id].fd, response.c_str(), response.length(), 0);
+    std::cout << GREEN << response << RESET;
+}
 
+
+Server::Server( const int & config_fd ) {
     status = WORKING;
+    this->resCode.insert(std::make_pair(100, "Continue"));
+    this->resCode.insert(std::make_pair(101, "Switching Protocols"));
+    this->resCode.insert(std::make_pair(200, "OK"));
+    this->resCode.insert(std::make_pair(201, "Created"));
+    this->resCode.insert(std::make_pair(202, "Accepted"));
+    this->resCode.insert(std::make_pair(203, "Non-Authoritative Information"));
+    this->resCode.insert(std::make_pair(204, "No Content"));
+    this->resCode.insert(std::make_pair(304, "Not Modified"));
+    this->resCode.insert(std::make_pair(400, "Bad Request"));
+    this->resCode.insert(std::make_pair(401, "Unauthorized"));
+    this->resCode.insert(std::make_pair(402, "Payment Required"));
+    this->resCode.insert(std::make_pair(403, "Forbidden"));
+    this->resCode.insert(std::make_pair(404, "Not Found"));
+    this->resCode.insert(std::make_pair(405, "Method Not Allowed"));
+    this->resCode.insert(std::make_pair(406, "Not Acceptable"));
+    this->resCode.insert(std::make_pair(407, "Proxy Authentication Required"));
+    this->resCode.insert(std::make_pair(408, "Request Timeout"));
+    this->resCode.insert(std::make_pair(409, "Conflict"));
+    this->resCode.insert(std::make_pair(500, "Internal Server Error"));
+    this->resCode.insert(std::make_pair(501, "Not Implemented"));
+    this->resCode.insert(std::make_pair(502, "Bad Gateway"));
+    this->resCode.insert(std::make_pair(503, "Service Unavailable"));
+    this->resCode.insert(std::make_pair(504, "Gateway Timeout"));
 }
 
 Server::~Server() {

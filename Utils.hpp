@@ -24,5 +24,12 @@ std::vector<std::string>	split(std::string str, std::string delimiter);
 std::string					trim(std::string str, std::string cut);
 std::string					itos( int const & num );
 
+struct fileException : public std::exception
+{
+	const char * what () const throw ()
+	{
+		return "Error while opnening file";
+	}
+};
 
-#endif 
+#endif
