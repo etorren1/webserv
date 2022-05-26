@@ -78,7 +78,8 @@ static std::string make_response_body(Request req)
 	// FOR PARTIAL RESPONSES
 
 	std::ifstream input;
-	std::string dir_name = "./site/image.jpg";
+	// std::string dir_name = find_requested_file_path(Request req);
+	std::string dir_name = "./site/image.jdfdpg";
 
 	input.open(dir_name.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())
