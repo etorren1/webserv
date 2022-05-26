@@ -2,34 +2,34 @@
 
 
 Request::Request() {
-    this->_typesMIMO.insert(std::make_pair("json", "application/json"));
-    this->_typesMIMO.insert(std::make_pair("javascript", "application/javascript"));
-    this->_typesMIMO.insert(std::make_pair("pdf", "application/pdf"));
-    this->_typesMIMO.insert(std::make_pair("postscript", "application/postscript"));
-    this->_typesMIMO.insert(std::make_pair("zip", "application/zip"));
+    this->_typesMIME.insert(std::make_pair("json", "application/json"));
+    this->_typesMIME.insert(std::make_pair("javascript", "application/javascript"));
+    this->_typesMIME.insert(std::make_pair("pdf", "application/pdf"));
+    this->_typesMIME.insert(std::make_pair("postscript", "application/postscript"));
+    this->_typesMIME.insert(std::make_pair("zip", "application/zip"));
 
-    this->_typesMIMO.insert(std::make_pair("aac", "audio/aac"));
-    this->_typesMIMO.insert(std::make_pair("mpeg", "audio/mpeg"));
-    this->_typesMIMO.insert(std::make_pair("ogg", "audio/ogg"));
+    this->_typesMIME.insert(std::make_pair("aac", "audio/aac"));
+    this->_typesMIME.insert(std::make_pair("mpeg", "audio/mpeg"));
+    this->_typesMIME.insert(std::make_pair("ogg", "audio/ogg"));
 
-    this->_typesMIMO.insert(std::make_pair("gif", "image/gif"));
-    this->_typesMIMO.insert(std::make_pair("jpeg", "image/jpeg"));
-    this->_typesMIMO.insert(std::make_pair("pjpeg", "image/pjpeg"));
-    this->_typesMIMO.insert(std::make_pair("png", "image/png"));
-    this->_typesMIMO.insert(std::make_pair("tiff", "image/tiff"));
-    this->_typesMIMO.insert(std::make_pair("webp", "image/webp"));
+    this->_typesMIME.insert(std::make_pair("gif", "image/gif"));
+    this->_typesMIME.insert(std::make_pair("jpeg", "image/jpeg"));
+    this->_typesMIME.insert(std::make_pair("pjpeg", "image/pjpeg"));
+    this->_typesMIME.insert(std::make_pair("png", "image/png"));
+    this->_typesMIME.insert(std::make_pair("tiff", "image/tiff"));
+    this->_typesMIME.insert(std::make_pair("webp", "image/webp"));
 
-    this->_typesMIMO.insert(std::make_pair("cmd", "text/cmd"));
-    this->_typesMIMO.insert(std::make_pair("css", "text/css"));
-    this->_typesMIMO.insert(std::make_pair("csv", "text/csv"));
-    this->_typesMIMO.insert(std::make_pair("html", "text/html"));
-    this->_typesMIMO.insert(std::make_pair("plain", "text/plain"));
-    this->_typesMIMO.insert(std::make_pair("php", "text/php"));
-    this->_typesMIMO.insert(std::make_pair("xml", "text/xml"));
+    this->_typesMIME.insert(std::make_pair("cmd", "text/cmd"));
+    this->_typesMIME.insert(std::make_pair("css", "text/css"));
+    this->_typesMIME.insert(std::make_pair("csv", "text/csv"));
+    this->_typesMIME.insert(std::make_pair("html", "text/html"));
+    this->_typesMIME.insert(std::make_pair("plain", "text/plain"));
+    this->_typesMIME.insert(std::make_pair("php", "text/php"));
+    this->_typesMIME.insert(std::make_pair("xml", "text/xml"));
 
-    this->_typesMIMO.insert(std::make_pair("mp4", "video/mp4"));
-    this->_typesMIMO.insert(std::make_pair("quicktime", "video/quicktime"));
-    this->_typesMIMO.insert(std::make_pair("webm", "video/webm"));
+    this->_typesMIME.insert(std::make_pair("mp4", "video/mp4"));
+    this->_typesMIME.insert(std::make_pair("quicktime", "video/quicktime"));
+    this->_typesMIME.insert(std::make_pair("webm", "video/webm"));
 }
 
 Request::~Request() {}
@@ -54,6 +54,7 @@ void Request::parseText(std::string text) {
     // std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
     parseMIMEType();
+    findType();
 }
 
 void Request::parseStartLine(std::string str) {
@@ -118,10 +119,20 @@ void Request::parseMIMEType() {
     // std::cout << "_MIMEType = |" << _MIMEType << "|\n";
 }
 
+void Request::findType() {
+    std::map<std::string, std::string>::iterator it = _typesMIME.begin();
+    for ( ; it != _typesMIME.end(); it++) {
+        if (_MIMEType == (*it).first) {
+            _responseContentType = (*it).second;
+        }
+    }
+    std::cout << "_responseContentType = |" << _responseContentType << "|\n";
+}
+
 std::string Request::getMethod() { return this->_method; }
 std::string Request::getReqURI() { return this->_reqURI; }
 std::string Request::getProtocolVer() { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() { return this->_headers; }
 std::string Request::getBody() { return this->_body; }
 std::string Request::getMIMEType() { return this->_MIMEType; }
-std::string Request::getContentType() { _contentType = "text"; return this->_contentType; }
+std::string Request::getContentType() { return this->_responseContentType; }
