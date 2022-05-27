@@ -1,9 +1,7 @@
-
 #include "Server.hpp"
 #include <fstream>
 
-
-static std::string parse_uri(std::string uri)
+std::string Response::parse_uri(std::string uri)
 {
 	std::fstream fs;
 	fs.open (uri, std::fstream::in);
@@ -18,7 +16,7 @@ static std::string parse_uri(std::string uri)
 	}
 }
 
-static std::string find_requested_file_path(Request req)
+std::string Response::find_requested_file_path(Request req)
 {
 	std::string full_path;
 	std::string uri = req.getReqURI();
@@ -36,12 +34,11 @@ static std::string find_requested_file_path(Request req)
 	}
 }
 
-static std::string make_general_header (Request req, std::string response_body)
+std::string Response::make_general_header (Request req, std::string response_body)
 {
 	std::string Server = "webserv";
 	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
 	std::string contentType = "image/jpg";
-	std::cout << response_body.length() << RESET << "\n";
 	std::string contentLength = itos (response_body.length()); //= findContentLength();
 	std::cout << YELLOW << contentLength << "\n";	
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
@@ -56,22 +53,21 @@ static std::string make_general_header (Request req, std::string response_body)
 			+ "\r\n");
 }
 
-static std::string make_response_header(Request req, std::string response_body) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+void Response::make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
-	std::cout << response_body.length() << RESET << "\n";
 	std::string statusLine;
-	std::string header;
+	std::string generalHeader;
 
-	std::string statusCode = "200";
-	std::string reasonPhrase = "OK";
+	_statusCode = "200";
+	_reasonPhrase = "OK";
 
-	statusLine = req.getProtocolVer() + " " + statusCode + " " + reasonPhrase + "\r\n";
-	header = make_general_header(req, response_body);
+	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
+	generalHeader = make_general_header(req, _body);
 
-	return (statusLine + header);
+	_header = statusLine + generalHeader;
 }
 
-static std::string make_response_body(Request req)
+void Response::make_response_body(Request req)
 {
 
 	//------------------------1------------------------
@@ -79,7 +75,7 @@ static std::string make_response_body(Request req)
 
 	std::ifstream input;
 	// std::string dir_name = find_requested_file_path(Request req);
-	std::string dir_name = "./site/image.jdfdpg";
+	std::string dir_name = "./site/image.jpg";
 
 	input.open(dir_name.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())
@@ -95,15 +91,10 @@ static std::string make_response_body(Request req)
 		input.seekg(range_begin); 
 
 	std::string line;
-	std::string result;
-	while (getline (input,line))	//reading map
-				result.append(line + "\n");
+	while (getline (input,line))
+				_body.append(line + "\n");
 	input.close();
-	std::cout << YELLOW << "HERE"  << RESET << "\n";
-	// std::cout << BLUE << result << RESET << "\n";
-	std::cout << YELLOW << "HERE"  << RESET << "\n";
-	std::cout << result.length() << RESET << "\n";
-	return(result);
+
 	//-------------------------------------------------
 
 	// //------------------------2------------------------
@@ -155,6 +146,15 @@ static std::string make_response_body(Request req)
 // 		fullResponseMsg.length(), 0);
 // }
 
+void Response::clearResponseObj()
+{
+	_header.clear();
+	_body.clear();
+	_contentType.clear();
+	_statusCode.clear();
+	_reasonPhrase.clear();
+}
+
 void Server::make_response(Request req, const size_t id)
 {
 	std::stringstream response;
@@ -162,23 +162,17 @@ void Server::make_response(Request req, const size_t id)
 
 	try
 	{
-		std::string response_body = make_response_body(req);
-		std::cout << response_body.length() << RESET << "\n";
-		std::string response_header = make_response_header(req, response_body);			// Формируем весь ответ вместе с заголовками
-
-		response	<< response_header			// Формируем весь ответ вместе с заголовками
-					<< response_body;
+		res.make_response_body(req);
+		res.make_response_header(req);					// Формируем весь ответ вместе с заголовками
+		response << res.getHeader() << res.getBody();	// Формируем весь ответ вместе с заголовками
+					
 		std::cout << RED << response.str() << RESET;
 
-
-		result = send(fds[id].fd, response_header.c_str(),	// Отправляем ответ клиенту с помощью функции send
-						response_header.length(), 0);
-		result = send(fds[id].fd, response_body.c_str(),	// Отправляем ответ клиенту с помощью функции send
-						response_body.length(), 0);
+		result = send(fds[id].fd, response.str().c_str(),		// Отправляем ответ клиенту с помощью функции send
+						response.str().length(), 0);
 	}
 	catch (fileException &e)
 	{
-		// std::cout << GREEN << "HERE" << RESET;
 		generateErrorPage(404, id);
 		return;
 	}
@@ -187,4 +181,11 @@ void Server::make_response(Request req, const size_t id)
 		generateErrorPage(404, id);
 		return;
 	}
+	res.clearResponseObj();
 }
+
+std::string	Response::getHeader() { return(_header);}
+std::string	Response::getBody() { return(_body);}
+std::string	Response::getContentType() { return(_contentType);}
+std::string	Response::getStatusCode() { return(_statusCode);}
+std::string	Response::getReasonPhrase() { return(_reasonPhrase);}
