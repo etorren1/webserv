@@ -1,6 +1,5 @@
 #include "Server.hpp"
 
-
 void    Server::create() {
     std::vector<std::string> brokenhosts;
     for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
@@ -19,7 +18,8 @@ void    Server::create() {
 }
 
 void    Server::run( void ) {
-    std::cout << GREEN << "Server running." << RESET << "\n";
+    if (status & ~STOP)
+        std::cout << GREEN << "Server running." << RESET << "\n";
     while(status & WORKING) {
         clientRequest();
         consoleCommands();
@@ -114,6 +114,12 @@ void Server::consoleCommands( void ) {
         {
             std::cout << YELLOW << "Restarting server ... " << RESET;
             closeServer(RESTART);
+            int fd = open(cfg_path.c_str(), O_RDONLY);
+            config(fd);
+            // for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
+            //     std::cout << (*it).first << "\n";
+            //     std::cout << (*it).second->get_access_log() << "\n";
+            // }
             create();
         }
         else if (text == "HELP")
@@ -230,6 +236,7 @@ void    Server::closeServer( int new_status ) {
         }
         delete (*it).second;
     }
+    srvs.clear();
     this->status = new_status;
 }
 
@@ -310,8 +317,10 @@ void	Server::generateErrorPage(int error, int id) {
 }
 
 
-Server::Server( const int & config_fd ) {
+Server::Server( std::string nw_cfg_path ) {
+
     status = WORKING;
+    nw_cfg_path.size() ? cfg_path = nw_cfg_path : cfg_path =  DEFAULT_PATH;
     this->resCode.insert(std::make_pair(100, "Continue"));
     this->resCode.insert(std::make_pair(101, "Switching Protocols"));
     this->resCode.insert(std::make_pair(200, "OK"));

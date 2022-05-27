@@ -214,6 +214,14 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
 }
 
 void    Server::config( const int & fd ) {
+    if (fd == -1) {
+        status = STOP;
+        if (http->get_error_log() != "off") {
+            writeLog(http->get_error_log(), "error: configuration file: bad descriptor.");
+            std::cerr << "error: see error_log for more information\n";
+        }
+        exit(1);
+    }
     char buf[BUF_SIZE];
     int rd;
     std::string text;
@@ -221,6 +229,7 @@ void    Server::config( const int & fd ) {
         buf[rd] = 0;
         text += buf;
     } // read config file
+
 
     http = new Http_block();
 
