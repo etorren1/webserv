@@ -41,7 +41,7 @@ std::string Response::make_general_header (Request req, std::string response_bod
 	_contentLength = itos(getFileSize(_fileLoc.c_str()));
 
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
-	std::string connection = "keep-alive"; //Connection: keep-alive
+	std::string connection = "close"; //Connection: keep-alive
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
@@ -74,29 +74,50 @@ void Response::make_response_body(Request req, const size_t id, std::vector<poll
 	// FOR PARTIAL RESPONSES
 
 	std::ifstream	input;
-	size_t			result;
+	int 			result;
+	char 			*buffer = new char [2048];
 
 	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())
 		throw(codeException(404));
-	// get length of file:			https://m.cplusplus.com/reference/istream/istream/seekg/?kw=seekg
-	input.seekg(0, std::ios::end); //seekg sets the position of the next character to be extracted from the input stream.
-	size_t file_size = input.tellg(); //узнаем размер файла, tellg returns the position of the current character in the input stream.
-	input.seekg(0, std::ios::beg);
 
-	size_t range_begin = 0;
-	if(range_begin && range_begin < file_size && range_begin > 0)
-		input.seekg(range_begin); 
+	size_t file_size = getFileSize(_fileLoc.c_str());
+	std::cout << RED << file_size << RESET << "\n";	
 
-	std::string line;
-	while (getline (input,line))
-				_body.append(line + "\n");
+size_t count = 0;
+while (!input.eof())
+{
 
-	result = send(fds[id].fd, _body.c_str(),		// Отправляем ответ клиенту с помощью функции send
-					_body.length(), 0);
-	std::cout << YELLOW << result << RESET << "\n";
+	// if(_readFrom && _readFrom < file_size && _readFrom > 0)
+	// 	input.seekg(_readFrom);
 
-	input.close();
+	input.read (buffer, 2048);
+	int read_bytes =  input.gcount();
+	if (read_bytes != 2048)
+	{
+		std::cerr << "read = " << read_bytes << std::endl;
+		throw (123 );
+	}
+	// std::cout << YELLOW << strlen(buffer) << RESET << "\n";
+	result = send(fds[id].fd, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (result != 2048)
+	{
+		std::cerr << "wrote = " << result << std::endl;
+		throw (123);
+	}
+	// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
+	count += result;
+}
+	std::cout << GREEN << count << RESET << "\n";
+	if (input.eof())								//закрываем файл только после того как оправили все содержание файла
+	{
+			std::cout << RED << "blabla" << RESET << "\n";	
+		input.close();
+		_sendingFinished = 1;
+	}
+	std::cout << BLUE<< "HERE" << RESET << "\n";
+
+	delete[] buffer;
 
 	//-------------------------------------------------
 
