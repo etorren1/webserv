@@ -28,3 +28,13 @@ std::string	itos( int const & num )
 	ss << num;
 	return(ss.str());
 }
+
+std::string	getTime()
+{
+	char buf[1000];
+	time_t now = time(0);
+	struct tm tm = *gmtime(&now);
+	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+	sprintf("Time is: [%s]\n", buf);
+	return 0;
+};

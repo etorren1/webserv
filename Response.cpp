@@ -12,7 +12,7 @@ std::string Response::parse_uri(std::string uri)
 	}
 	else
 	{
-		throw(fileException());
+		throw(codeException(404));
 	}
 }
 
@@ -28,26 +28,32 @@ std::string Response::find_requested_file_path(Request req)
 		full_path = parse_uri("./site/index.html");
 		return(full_path);
 	}
-	catch (fileException &e)
+	catch (codeException &e)
 	{
-		throw(fileException());
+		throw(codeException(404));
 	}
 }
 
 std::string Response::make_general_header (Request req, std::string response_body)
 {
-	std::string Server = "webserv";
-	// std::string Date =  Sun, 22 May 2022 18:42:40 GMT
-	std::string contentType = "image/jpg";
-	std::string contentLength = itos (response_body.length()); //= findContentLength();
-	std::cout << YELLOW << contentLength << "\n";	
+	// std::string Server = "webserv";
+	// _date = getTime();
+	_contentType = "image/jpg";
+	std::ifstream input;
+
+	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
+	if(!input.is_open())
+		throw(std::exception());
+
+	_contentLength = itos (response_body.length()); //= findContentLength();
+	std::cout << YELLOW << _contentLength << "\n";	
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
 	std::string connection = "keep-alive";
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
-			"Content-Type: " + contentType + "\r\n" +
-			"Content-Length: " + contentLength + "\r\n" +
+			"Content-Type: " + _contentType + "\r\n" +
+			"Content-Length: " + _contentLength + "\r\n" +
 			// "Connection: " + connection + "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
@@ -74,10 +80,8 @@ void Response::make_response_body(Request req)
 	// FOR PARTIAL RESPONSES
 
 	std::ifstream input;
-	// std::string dir_name = find_requested_file_path(Request req);
-	std::string dir_name = "./site/image.jpg";
 
-	input.open(dir_name.c_str(), std::ios::binary|std::ios::in);
+	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())
 		// return false;
 		throw(std::exception());
@@ -114,38 +118,6 @@ void Response::make_response_body(Request req)
 	// //-------------------------------------------------
 }
 
-// void return_error_page(std::string errorNum, const size_t id, std::vector<struct pollfd> fds)
-// {
-// 	std::string responseBody = "<!DOCTYPE html>\\
-// 	<html lang=\"en\">\\
-// 	<head>\\
-// 	    <meta charset=\"UTF-8\">\\
-// 	    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\\
-// 	    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\\
-// 	    <title>Responsive 404 page </title>\\
-// 	</head>\\
-// 	<body>\\
-// 	    <div class=\"container\">\\
-// 	        <h2>404</h2>\\
-// 	        <h3>Oops, nothing here...</h3>\\
-// 	        <p>Please Check the URL</p>\\
-// 	        <p>Otherwise, <a href=\"#homepage\">Click here</a> to redirect to homepage.</p>\\
-// 	    </div>\\
-// 	</body>\\
-// 	</html";
-// 	std::string contentLength = itos (responseBody.length()); //body length
-// 	std::string header = "HTTP/1.1 404 Not Found\\
-// 	Version: HTTP/1.1\\
-// 	Content-Type: text/html\\
-// 	Content-Length: \\";
-// 	header.append(contentLength + "\n\n");
-// 	std::string fullResponseMsg = header.append(responseBody);
-
-// 	std::cout << GREEN << "HERE" << RESET;
-// 	size_t result = send(fds[id].fd, fullResponseMsg.c_str(),	// Отправляем ответ клиенту с помощью функции send
-// 		fullResponseMsg.length(), 0);
-// }
-
 void Response::clearResponseObj()
 {
 	_header.clear();
@@ -159,6 +131,8 @@ void Server::make_response(Request req, const size_t id)
 {
 	std::stringstream response;
 	size_t result;
+	res.setFileLoc(res.find_requested_file_path(req));
+	res.setFileLoc("./site/image.jpg");
 
 	try
 	{
@@ -166,14 +140,14 @@ void Server::make_response(Request req, const size_t id)
 		res.make_response_header(req);					// Формируем весь ответ вместе с заголовками
 		response << res.getHeader() << res.getBody();	// Формируем весь ответ вместе с заголовками
 					
-		std::cout << RED << response.str() << RESET;
+		// std::cout << RED << response.str() << RESET;
 
 		result = send(fds[id].fd, response.str().c_str(),		// Отправляем ответ клиенту с помощью функции send
 						response.str().length(), 0);
 	}
-	catch (fileException &e)
+	catch (codeException &e)
 	{
-		generateErrorPage(404, id);
+		generateErrorPage(e.getErrorCode(), id);
 		return;
 	}
 	catch (std::exception &e)
@@ -189,3 +163,4 @@ std::string	Response::getBody() { return(_body);}
 std::string	Response::getContentType() { return(_contentType);}
 std::string	Response::getStatusCode() { return(_statusCode);}
 std::string	Response::getReasonPhrase() { return(_reasonPhrase);}
+void		Response::setFileLoc(std::string loc) { _fileLoc = loc; };
