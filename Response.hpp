@@ -17,18 +17,16 @@ class Response
 		std::string								_reasonPhrase;
 		std::string								_connection;
 		// std::string								_date;
-		std::string								_contentRange; //for 206
 
 		// other
 		std::string								_fileLoc;
-
-
+		int										_sendingFinished;
 
 	public:
-		Response() {};
+		Response() : _sendingFinished(0) {};
 		~Response() {};
 
-		void			make_response_body(Request req);
+		void			make_response_body(Request req, const size_t id, std::vector<pollfd> fds);
 		void			make_response_header(Request req);
 		std::string		make_general_header (Request req, std::string response_body);
 		std::string		find_requested_file_path(Request req);
@@ -40,8 +38,10 @@ class Response
 		std::string		getContentType();
 		std::string		getStatusCode();
 		std::string		getReasonPhrase();
+		std::string		getFileLoc();
 
 		void			setFileLoc(std::string location);
+		void			setContentType(std::string type);
 };
 
 #endif

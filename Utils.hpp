@@ -22,8 +22,9 @@
 
 std::vector<std::string>	split(std::string str, std::string delimiter);
 std::string					trim(std::string str, std::string cut);
-std::string					itos( int const & num );
-std::string					getTime();
+std::string					itos( long long const & num );
+// std::string					getTime();
+long long					getFileSize(const char *fileLoc);
 
 struct codeException : public std::exception
 {
