@@ -22,9 +22,30 @@ std::string trim(std::string str, std::string cut)
     return str.substr(beg, end - beg + 1);
 }
 
-std::string	itos( int const & num )
+std::string	itos( long long const & num )
 {
 	std::stringstream ss;
 	ss << num;
 	return(ss.str());
+}
+
+// std::string	getTime()
+// {
+// 	char buf[1000];
+// 	time_t now = time(0);
+// 	struct tm tm = *gmtime(&now);
+// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+// 	sprintf("Time is: [%s]\n", buf);
+// 	return 0;
+// };
+
+long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
+{
+	FILE *file;
+	struct stat buff;
+	if (!(file = fopen(fileLoc, "r")))
+		codeException(404);
+	fstat (fileno (file), &buff);
+	fclose (file);
+	return (buff.st_size);
 }

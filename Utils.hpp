@@ -22,14 +22,19 @@
 
 std::vector<std::string>	split(std::string str, std::string delimiter);
 std::string					trim(std::string str, std::string cut);
-std::string					itos( int const & num );
+std::string					itos( long long const & num );
+// std::string					getTime();
+long long					getFileSize(const char *fileLoc);
 
-struct fileException : public std::exception
+struct codeException : public std::exception
 {
+	codeException(int code) : errorCode(code) {}
+	int errorCode;
 	const char * what () const throw ()
 	{
 		return "Error while opnening file";
 	}
+	int getErrorCode() { return(errorCode); }
 };
 
 #endif
