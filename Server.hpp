@@ -18,9 +18,11 @@
 #include <ctime>
 #include <cstdlib>
 #include <filesystem>
+
 #include "Utils.hpp"
 #include "Config/Config.hpp"
 #include "Request.hpp"
+#include "Response.hpp"
 
 #define	STOP	0b00
 #define WORKING 0b10
@@ -42,6 +44,7 @@ class Server {
 
 		int							status;
 		Request 					req;
+		Response 					res;
 		std::map<int, std::string>	resCode;
 		std::string					location; 
 		

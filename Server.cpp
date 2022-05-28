@@ -168,7 +168,9 @@ void Server::clientRequest( void ) {
                     disconnectClients(id);
                 else if (!cnct[id]) {
                     // REQUEST PART
+
                     req.parseText(mess[id]);
+                    parseLocation();
                     //
 
                     //  RESPONSE PART
@@ -306,12 +308,39 @@ void	Server::generateErrorPage(int error, int id) {
     std::string header = req.getProtocolVer() + " " + itos(code) + " " + mess + "\n" + "Version: " + req.getProtocolVer() + "\n" + "Content-Type: " + req.getContentType() + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(fds[id].fd, response.c_str(), response.length(), 0);
-    std::cout << GREEN << response << RESET;
+    // std::cout << GREEN << response << RESET;
 }
 
+void Server::parseLocation() {
+    if (existDir(req.getReqURI().c_str()))
+        std::cout << "Directory exist\n";
+    else
+        std::cout << "Directory don't exist\n";
+    // std::cout << srvs[req.getHost()]->lctn.at(req.getReqURI())->get_root() << "\n";
+    std::cout << req.getHost() << ", " << req.getReqURI() << "\n";
+    try    {
+        srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+    }
+    catch(const std::exception& e)    {
+        try        {
+            size_t pos = req.getHost().find(":");
+            if (pos != std::string::npos) {
+                std::string ip = "0.0.0.0" + req.getHost().substr(pos);
+                req.setHost(ip);
+            }
+            srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+        }
+        catch(const std::exception& e)        {
+            
+            std::cerr << e.what() << '\n';
+        }
+    }
+}
 
 Server::Server( const int & config_fd ) {
     status = WORKING;
+    //Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
+    // отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
     this->resCode.insert(std::make_pair(100, "Continue"));
     this->resCode.insert(std::make_pair(101, "Switching Protocols"));
     this->resCode.insert(std::make_pair(200, "OK"));
