@@ -79,7 +79,7 @@ static std::string make_response_body(Request req)
 
 	std::ifstream input;
 	// std::string dir_name = find_requested_file_path(Request req);
-	std::string dir_name = "./site/image.jdfdpg";
+	std::string dir_name = "./site/image.jpg";
 
 	input.open(dir_name.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())

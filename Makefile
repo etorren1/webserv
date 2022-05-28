@@ -5,7 +5,8 @@ SRC = $(wildcard *.cpp)\
 
 HEADER = 
 
-#FLAGS = -Wall -Werror -Wextra
+# FLAGS = -Wall -Werror -Wextra 
+FLAGS = -std=c++98
 
 OBJ = $(SRC:.cpp=.o)
 

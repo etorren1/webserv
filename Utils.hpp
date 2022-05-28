@@ -23,6 +23,7 @@
 std::vector<std::string>	split(std::string str, std::string delimiter);
 std::string					trim(std::string str, std::string cut);
 std::string					itos( int const & num );
+bool 						existDir(const char * name);
 
 struct fileException : public std::exception
 {

@@ -17,6 +17,7 @@
 #include <sstream>
 #include <ctime>
 #include <cstdlib>
+#include <filesystem>
 #include "Utils.hpp"
 #include "Config/Config.hpp"
 #include "Request.hpp"
@@ -42,6 +43,7 @@ class Server {
 		int							status;
 		Request 					req;
 		std::map<int, std::string>	resCode;
+		std::string					location; 
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
@@ -91,6 +93,7 @@ class Server {
 
 		//for errors
 		void	generateErrorPage(int code, int id);
+		void	parseLocation();
 
 };
 

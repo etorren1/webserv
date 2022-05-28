@@ -28,3 +28,9 @@ std::string	itos( int const & num )
 	ss << num;
 	return(ss.str());
 }
+
+bool existDir(const char * name) {
+    struct stat s;
+    if (stat(name,&s)) return false;
+        return S_ISDIR(s.st_mode);
+}

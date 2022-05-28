@@ -6,6 +6,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include "Utils.hpp"
 
 class Request {
 private:
@@ -17,10 +18,11 @@ private:
 	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_contentType;
+	std::map<std::string, std::string>		_typesMIME;
+	std::string								_host;
 
 	//data for response
 	std::string								_responseContentType;
-	std::map<std::string, std::string>		_typesMIME;
 
 public:
 	Request();
@@ -31,6 +33,7 @@ public:
 	size_t          						parseStrBody( std::vector<std::string> );
 	void									parseMIMEType();
 	void									findType();
+	void									findHost();
 
 	std::string								getMethod();
 	std::string								getReqURI();
@@ -39,6 +42,9 @@ public:
 	std::string								getBody();
 	std::string								getMIMEType();
 	std::string								getContentType();
+	std::string								getHost();
+	
+	void									setHost(std::string);
 };
 
 
