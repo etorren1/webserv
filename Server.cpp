@@ -10,6 +10,8 @@ void    Server::create() {
             brokenhosts.push_back((*it).first);
             delete (*it).second;
         }
+        // std::cout << GREEN << (*it).first << RESET << "\n";
+        // (*it).second->show_all();
     }
     for (int i = 0; i < brokenhosts.size(); i++)
         srvs.erase(brokenhosts[i]);
@@ -59,7 +61,6 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     if (listen(newSrvSock, 5) < 0)
         return closeVirtualServer(srv, newSrvSock, "error: listen failed.", "Host: " + hostname + ":" + port);
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
-    fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
     /* 
     / F_SETFL устанавливет флаг O_NONBLOCK для подаваемого дескриптора 
     / O_NONBLOCK устанавливает  режим  неблокирования, 

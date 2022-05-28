@@ -25,24 +25,25 @@ int    Server::get_block(const std::string& prompt, const std::string& content, 
 }
 
 static bool    in_other_block(std::string & text, size_t pos) {
-    size_t  open, close, start = text.find("{");
-    start = text.find("{", start+1);
-    open = text.find("{", start+1);
-    close = open + 1;
-    while (open < close) {
-        open = text.find("{", open+1);
-        close = text.find("}", close+1);
+    size_t begin, end;
+    begin = text.find("{");
+    end = text.find("{", begin + 1);
+    while (true) {
+        if ( begin == std::string::npos || end == std::string::npos )
+            break;
+        if ( pos > begin && pos < end )
+            return false;
+        begin = text.find("}", begin + 1);
+        end = text.find("{", end + 1);
     }
-    if (pos > start && pos < close)
-        return true;
-    return false;
+    return true;
 }
 
 std::string Server::get_raw_param(std::string key, std::string & text) {
     size_t pos = text.find(key);
     if (pos == std::string::npos)
         return "";
-    if (in_other_block(text, pos))
+    if (in_other_block(text, pos) && key != "location")
         return "";
     size_t end = text.find("\n", pos);
     std::string res = text.substr(pos, end - pos);
@@ -69,7 +70,7 @@ void Server::cfg_listen(std::string & text, T * block ) {
         delete block; block = NULL;
         errorShutdown(255, http->get_error_log(), "error: configuration file: requaired parameter: listen.");
     }
-    if (raw.find_first_not_of("0123456789.:") != std::string::npos) {
+    if (raw.find_first_not_of("0123456789.:*") != std::string::npos) {
         delete block; block = NULL;
         errorShutdown(255, http->get_error_log(), "error: configuration file: bad parameter: listen.");
     }
@@ -98,6 +99,13 @@ void    Server::cfg_server_name(std::string & text, T * block ) {
 template <class T>
 void    Server::cfg_index(std::string & text, T * block ) {
     std::string raw = get_raw_param("index", text);
+    if (raw.size())
+        block->set_index(raw);
+}
+
+template <class T>
+void    Server::cfg_accepted_methods(std::string & text, T * block ) {
+    std::string raw = get_raw_param("accepted_methods", text);
     if (raw.size())
         block->set_index(raw);
 }
@@ -154,6 +162,13 @@ void    Server::cfg_access_log( std::string & text, T * block ) {
 template <class T>
 void    Server::cfg_root( std::string & text, T * block ) {
     std::string raw = get_raw_param("root", text);
+    if (raw.size())
+        block->set_root(raw);
+}
+
+template <class T>
+void    Server::cfg_default_page( std::string & text, T * block ) {
+    std::string raw = get_raw_param("default_page", text);
     if (raw.size())
         block->set_root(raw);
 }
@@ -240,4 +255,5 @@ void    Server::config( const int & fd ) {
     cfg_set_attributes(text, http);
     cfg_server_block(text, http);
     close (fd);
+    fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
 }
