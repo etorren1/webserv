@@ -20,6 +20,7 @@ private:
 	std::string								_contentType;
 	std::map<std::string, std::string>		_typesMIME;
 	std::string								_host;
+	std::vector<std::string>				_dirs;
 
 	//data for response
 	std::string								_responseContentType;
@@ -34,15 +35,19 @@ public:
 	void									parseMIMEType();
 	void									findType();
 	void									findHost();
+	void									splitDirectories();
 
-	std::string								getMethod();
-	std::string								getReqURI();
-	std::string								getProtocolVer();
-	std::map<std::string, std::string>		getHeadears();
-	std::string								getBody();
-	std::string								getMIMEType();
-	std::string								getContentType();
-	std::string								getHost();
+	bool									isFile(std::string);
+
+	std::string								getMethod() const;
+	std::string								getReqURI() const;
+	std::string								getProtocolVer() const;
+	std::map<std::string, std::string>		getHeadears() const;
+	std::string								getBody() const;
+	std::string								getMIMEType() const;
+	std::string								getContentType() const;
+	std::string								getHost() const;
+	std::vector<std::string>				getDirs() const;
 	
 	void									setHost(std::string);
 };
