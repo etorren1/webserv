@@ -38,23 +38,16 @@ std::string Response::make_general_header (Request req, std::string response_bod
 {
 	// std::string Server = "webserv";
 	// _date = getTime();
-	_contentType = "image/jpg";
-	std::ifstream input;
+	_contentLength = itos(getFileSize(_fileLoc.c_str()));
 
-	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
-	if(!input.is_open())
-		throw(std::exception());
-
-	_contentLength = itos (response_body.length()); //= findContentLength();
-	std::cout << YELLOW << _contentLength << "\n";	
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
-	std::string connection = "keep-alive";
+	std::string connection = "close"; //Connection: keep-alive
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
 			"Content-Type: " + _contentType + "\r\n" +
 			"Content-Length: " + _contentLength + "\r\n" +
-			// "Connection: " + connection + "\r\n" +
+			"Connection: " + connection + "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
 }
@@ -71,33 +64,60 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	generalHeader = make_general_header(req, _body);
 
 	_header = statusLine + generalHeader;
+	std::cout << RED << _header << RESET;
 }
 
-void Response::make_response_body(Request req)
+void Response::make_response_body(Request req, const size_t id, std::vector<pollfd> fds)
 {
 
 	//------------------------1------------------------
 	// FOR PARTIAL RESPONSES
 
-	std::ifstream input;
+	std::ifstream	input;
+	int 			result;
+	char 			*buffer = new char [2048];
 
 	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())
-		// return false;
-		throw(std::exception());
-	// get length of file:			https://m.cplusplus.com/reference/istream/istream/seekg/?kw=seekg
-	input.seekg(0, std::ios::end); //seekg sets the position of the next character to be extracted from the input stream.
-	size_t file_size = input.tellg(); //узнаем размер файла, tellg returns the position of the current character in the input stream.
-	input.seekg(0, std::ios::beg);
+		throw(codeException(404));
 
-	size_t range_begin = 0;
-	if(range_begin && range_begin < file_size && range_begin > 0)
-		input.seekg(range_begin); 
+	size_t file_size = getFileSize(_fileLoc.c_str());
+	std::cout << RED << file_size << RESET << "\n";	
 
-	std::string line;
-	while (getline (input,line))
-				_body.append(line + "\n");
-	input.close();
+size_t count = 0;
+while (!input.eof())
+{
+
+	// if(_readFrom && _readFrom < file_size && _readFrom > 0)
+	// 	input.seekg(_readFrom);
+
+	input.read (buffer, 2048);
+	int read_bytes =  input.gcount();
+	if (read_bytes != 2048)
+	{
+		std::cerr << "read = " << read_bytes << std::endl;
+		throw (123 );
+	}
+	// std::cout << YELLOW << strlen(buffer) << RESET << "\n";
+	result = send(fds[id].fd, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (result != 2048)
+	{
+		std::cerr << "wrote = " << result << std::endl;
+		throw (123);
+	}
+	// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
+	count += result;
+}
+	std::cout << GREEN << count << RESET << "\n";
+	if (input.eof())								//закрываем файл только после того как оправили все содержание файла
+	{
+			std::cout << RED << "blabla" << RESET << "\n";	
+		input.close();
+		_sendingFinished = 1;
+	}
+	std::cout << BLUE<< "HERE" << RESET << "\n";
+
+	delete[] buffer;
 
 	//-------------------------------------------------
 
@@ -131,19 +151,21 @@ void Server::make_response(Request req, const size_t id)
 {
 	std::stringstream response;
 	size_t result;
-	res.setFileLoc(res.find_requested_file_path(req));
+	// res.setFileLoc(res.find_requested_file_path(req));
 	res.setFileLoc("./site/image.jpg");
+	// res.setContentType(req.getContentType());
+	res.setContentType("image/jpg");
 
 	try
 	{
-		res.make_response_body(req);
-		res.make_response_header(req);					// Формируем весь ответ вместе с заголовками
-		response << res.getHeader() << res.getBody();	// Формируем весь ответ вместе с заголовками
-					
-		// std::cout << RED << response.str() << RESET;
+		res.make_response_header(req);
+		result = send(fds[id].fd, res.getHeader().c_str(),		// Отправляем ответ клиенту с помощью функции send
+						res.getHeader().length(), 0);
 
-		result = send(fds[id].fd, response.str().c_str(),		// Отправляем ответ клиенту с помощью функции send
-						response.str().length(), 0);
+		res.make_response_body(req, id, fds);
+
+		// response << res.getHeader() << res.getBody();	// Формируем весь ответ вместе с заголовками
+		// std::cout << RED << response.str() << RESET;
 	}
 	catch (codeException &e)
 	{
@@ -152,15 +174,17 @@ void Server::make_response(Request req, const size_t id)
 	}
 	catch (std::exception &e)
 	{
-		generateErrorPage(404, id);
+		e.what();
 		return;
 	}
 	res.clearResponseObj();
 }
 
-std::string	Response::getHeader() { return(_header);}
-std::string	Response::getBody() { return(_body);}
-std::string	Response::getContentType() { return(_contentType);}
-std::string	Response::getStatusCode() { return(_statusCode);}
-std::string	Response::getReasonPhrase() { return(_reasonPhrase);}
+std::string	Response::getHeader() { return(_header); }
+std::string	Response::getBody() { return(_body); }
+std::string	Response::getContentType() { return(_contentType); }
+std::string	Response::getStatusCode() { return(_statusCode); }
+std::string	Response::getReasonPhrase() { return(_reasonPhrase); }
+std::string	Response::getFileLoc() { return(_fileLoc); }
 void		Response::setFileLoc(std::string loc) { _fileLoc = loc; };
+void		Response::setContentType(std::string type) { _contentType = type; };

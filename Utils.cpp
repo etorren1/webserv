@@ -22,7 +22,7 @@ std::string trim(std::string str, std::string cut)
     return str.substr(beg, end - beg + 1);
 }
 
-std::string	itos( int const & num )
+std::string	itos( long long const & num )
 {
 	std::stringstream ss;
 	ss << num;
@@ -43,3 +43,14 @@ bool existDir(const char * name) {
 // 	sprintf("Time is: [%s]\n", buf);
 // 	return 0;
 // };
+
+long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
+{
+	FILE *file;
+	struct stat buff;
+	if (!(file = fopen(fileLoc, "r")))
+		codeException(404);
+	fstat (fileno (file), &buff);
+	fclose (file);
+	return (buff.st_size);
+}
