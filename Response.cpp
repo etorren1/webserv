@@ -157,7 +157,7 @@ void Server::make_response(Request req, const size_t id)
 		res.setFileLoc("./site/colors/tables/yellow.html");
 		res.setContentType("text/html");
 	}
-	else {
+	else if (req.getReqURI() == "/favicon.ico") {
 		res.setFileLoc("./site/image.png");
 		res.setContentType("image/png");
 	}
