@@ -67,8 +67,6 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     / что позволяет при ошибке вернуть чтение другим запросам 
     */
     fds.push_back(newPoll);
-    mess.push_back("");
-    cnct.push_back(false);
     srvSockets.insert(newSrvSock);
     std::cout << "Host: " << hostname << ":" << port << " up succsesfuly\n";
     return (1);
@@ -128,9 +126,9 @@ void Server::disconnectClients( const size_t id ) {
     std::cout << "Client " << fds[id].fd << " disconnected." << "\n";
     close(fds[id].fd);
 
+    delete client[fds[id].fd];
+    client.erase(fds[id].fd);
     fds.erase(fds.begin() + id);
-    mess.erase(mess.begin() + id);
-    cnct.erase(cnct.begin() + id);
 }
 
 void Server::connectClients( const int & fd ) {
@@ -144,10 +142,7 @@ void Server::connectClients( const int & fd ) {
         nw.fd = newClientSock;
         nw.events = POLLIN | POLLOUT;
         nw.revents = 0;
-        fds.push_back(nw);
-        mess.push_back("");
-        cnct.push_back(false);
-        
+        fds.push_back(nw);   
         client.insert(std::make_pair(newClientSock, new Client(newClientSock)));
 
         std::cout << "New client on " << newClientSock << " socket." << "\n";
@@ -159,26 +154,26 @@ void Server::clientRequest( void ) {
     if (ret != 0)    {
         for (size_t id = 0; id < fds.size(); id++) {
             if (fds[id].revents & POLLIN) {
-                if (isServerSocket(fds[id].fd))
-                    connectClients(fds[id].fd);
-                else if (readRequest(id) <= 0)
+                size_t socket = fds[id].fd;
+                if (isServerSocket(socket))
+                    connectClients(socket);
+                else if (readRequest(socket) <= 0)
                     disconnectClients(id);
-                // else if (!client[id]->getBreakconnect()) {
-                else if (!cnct[id]) {
+                else if (!client[socket]->getBreakconnect()) {
                     // REQUEST PART
 
-                    req.parseText(mess[id]);
+                    req.parseText(client[socket]->message);
                     parseLocation();
                     //
 
-                    //  RESPONSE PART
                     // if (mess[id].size())
                     //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
                         
+                    //  RESPONSE PART
 					make_response(req, id);
                     //
-                    mess[id] = "";
-                    // client[id]->message = "";
+                    // mess[id] = "";
+                    client[socket]->message = "";
                 }
                 fds[id].revents = 0;
             }
@@ -195,18 +190,15 @@ static bool checkConnection( const std::string & mess ) {
     return false;
 }
 
-int  Server::readRequest( const size_t id ) {
+int  Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
     int bytesRead = 0;
     int rd;
     std::string text;
 
-    //if (client[id]->message.size() > 0)
-	//	text = client[id]->message;
-    
-    if (mess[id].size() > 0)
-		text = mess[id];
-    while ((rd = recv(fds[id].fd, buf, BUF_SIZE, 0)) > 0) {
+    if (client[socket]->message.size() > 0)
+		text = client[socket]->message;
+    while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
@@ -219,10 +211,8 @@ int  Server::readRequest( const size_t id ) {
         text.replace(BUF_SIZE - 2, 2, "\r\n");
         std::cout << RED << "ALERT! text more than " << BUF_SIZE << " bytes!" << RESET << "\n";
     }
-    cnct[id] = checkConnection(text);
-    mess[id] = text;
-    // client[id]->checkConnection(text);
-    // client[id]->message = text;
+    client[socket]->checkConnection(text);
+    client[socket]->message = text;
     return (bytesRead);
 }
 
@@ -240,7 +230,11 @@ void    Server::closeServer( int new_status ) {
         }
         delete (*it).second;
     }
+    for (client_iterator it = client.begin(); it != client.end(); it++) {
+        delete (*it).second;
+    }
     srvs.clear();
+    client.clear();
     this->status = new_status;
 }
 

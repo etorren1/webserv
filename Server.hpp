@@ -32,18 +32,16 @@
 #define DEFAULT_PATH "webserv.conf"
 #define srvs_iterator std::map<std::string, Server_block * >::iterator
 #define lctn_iterator std::map<std::string, Location_block * >::iterator
+#define client_iterator std::map<size_t, Client * >::iterator
 
 class Server {
 	private:
 
 		std::vector<struct pollfd>	fds;
-		std::vector<std::string>	mess;
-		std::vector<bool>			cnct;
-
 		std::set<int>				srvSockets;
-		Http_block     				*http;
 		std::map<std::string, Server_block * > srvs;
 		std::map<size_t, Client *>	client;
+		Http_block     				*http;
 
 		std::string					cfg_path;
 		int							status;

@@ -30,5 +30,6 @@ int     main(int argc, char **argv)
     server.create();
     server.run();
 
+    // while (1) {} //leack test at close
     return (0);
 }
