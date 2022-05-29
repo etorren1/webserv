@@ -68,6 +68,10 @@ void	Server::generateErrorPage(int error, int id) {
 }
 
 void Server::parseLocation() {
+    if (req.getMIMEType().empty())
+        reqType = 0; // dir
+    else
+        reqType = 1; //file
     try    {
         srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
     }
@@ -78,49 +82,61 @@ void Server::parseLocation() {
                 std::string ip = "0.0.0.0" + req.getHost().substr(pos);
                 req.setHost(ip);
             }
-            // std::cout << "req.getHost() = "<< req.getHost() << "\n";
-            std::cout << "req.getReqURI() = "<< req.getReqURI() << "\n";
             std::vector<std::string> vec = req.getDirs();
-            std::string tmp = "";
-            location = "";
+            std::string tmp, tmpDefPage;
+            std::string defPage = "index.html";
+            location = "/";
             for (size_t i = 0; i < vec.size(); i++) {
                 try {
-                    std::cout << "location which need found = " << srvs.at(req.getHost())->lctn.at(vec[i]) << "\n";
                     tmp = srvs.at(req.getHost())->lctn.at(vec[i])->get_root();
-                    std::cout << "vec[" << i << "] = " << vec[i] << "\n";
-                    std::cout << "tmp = " << tmp << "\n";
-                    if (tmp.length() > location.length())
+                    tmpDefPage = srvs.at(req.getHost())->lctn.at(vec[i])->get_default_page();
+                    if (tmp.length() > location.length()) {
                         location = tmp;
-                    std::cout << "finded location = " << location << "\n";
+                        defPage = tmpDefPage;
+                    }
                 }
                 catch(std::exception &e) { std::cout << "\n"; }
             }
-                std::cout << "location without root = " << location << "\n";
-                // location += vec[0];
-                // std::cout << "location with root = " << location << "\n";
-                if (existDir(location.c_str())) {
-                    int ret = open(location.c_str(), O_RDONLY);
-                    // struct stat s;
-                    if (!access(location.c_str(), 4)) {
-                        if (req.getMIMEType() == "none") {
-                            std::cout << "Directory exist\n";
-                        } else {
+                location += vec[0].substr(1);
+                if (reqType == 0) {
+                    if (existDir(location.c_str())) {
+                        int ret = open(location.c_str(), O_RDONLY);
+                        // struct stat s;
+                        if (!access(location.c_str(), 4)) {
+                            location += defPage;
                             FILE *file;
-                            file = fopen("index.html", "r");
+                            file = fopen(location.c_str(), "r");
                             if (file != NULL) {
-                                //make_response ???
+                                std::cout << "File " << location << " found\n";
+                        //make_response ???
                             } else {
                                 throw(codeException(404));
                             }
+                                // FILE *file;
+                                // file = fopen("index.html", "r");
+                                // if (file != NULL) {
+                                //     //make_response ???
+                                // } else {
+                                //     throw(codeException(404));
+                                // }
+                            }
+                        else {
+                            std::cout << "Permission denied\n";
+                            throw(codeException(403));
                         }
-                    }
-                    else {
-                        std::cout << "Permission denied\n";
-                        throw(codeException(403));
+                    } else {
+                        std::cout << "Dir " << location << " don't exist\n";
+                        throw(codeException(400));
                     }
                 } else {
-                    std::cout << "Dir " << location << "don't exist\n";
-                    throw(codeException(400));
+                    FILE *file;
+                    file = fopen(location.c_str(), "r");
+                    if (file != NULL) {
+                        std::cout << "File " << location << " found\n";
+                        //make_response ???
+                    } else {
+                        throw(codeException(404));
+                    }
                 }
             // srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
         }

@@ -58,6 +58,8 @@ void Request::parseText(std::string text) {
     parseMIMEType();
     if (_reqURI.length() > 1)
         splitDirectories();
+    else
+        _dirs.push_back(getReqURI());
     findType();
     findHost();
 }
@@ -171,10 +173,10 @@ void Request::splitDirectories() {
         // std::cout << GREEN << "it = " << *it << RESET << "\n";
 }
 
-bool Request::isFile(std::string name) {
-    if (_MIMEType == "none")
-        return false;
-    return true;
+void Request::cleaner() {
+    _dirs.clear();
+    _headers.clear();
+    //std::string ...
 }
 
 std::string Request::getMethod() const { return this->_method; }

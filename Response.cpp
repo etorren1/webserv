@@ -82,7 +82,7 @@ void Response::make_response_body(Request req, const size_t id, std::vector<poll
 		throw(codeException(404));
 
 	size_t file_size = getFileSize(_fileLoc.c_str());
-	std::cout << RED << file_size << RESET << "\n";	
+	// std::cout << RED << file_size << RESET << "\n";	
 
 size_t count = 0;
 while (!input.eof())
@@ -110,14 +110,14 @@ while (!input.eof())
 	// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
 	count += result;
 }
-	std::cout << GREEN << count << RESET << "\n";
+	// std::cout << GREEN << count << RESET << "\n";
 	if (input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-			std::cout << RED << "blabla" << RESET << "\n";	
+			// std::cout << RED << "blabla" << RESET << "\n";	
 		input.close();
 		_sendingFinished = 1;
 	}
-	std::cout << BLUE<< "HERE" << RESET << "\n";
+	// std::cout << BLUE<< "HERE" << RESET << "\n";
 
 	delete[] buffer;
 
@@ -153,14 +153,14 @@ void Server::make_response(Request req, const size_t id)
 {
 	std::stringstream response;
 	size_t result;
-	if (req.getReqURI() == "/") {
-		// res.setFileLoc("./site/colors/tables/yellow.html");
-		res.setFileLoc(location);
-		res.setContentType("text/html");
-	}
-	else if (req.getReqURI() == "/favicon.ico") {
+	if (req.getReqURI() == "/favicon.ico") {
 		res.setFileLoc("./site/image.png");
 		res.setContentType("image/png");
+	}
+	else  {
+		// res.setFileLoc("./site/colors/tables/yellow.html");
+		res.setFileLoc(location);
+		res.setContentType(req.getContentType());
 	}
 	// res.setFileLoc(res.find_requested_file_path(req));
 	// res.setContentType(req.getContentType());

@@ -138,11 +138,6 @@ void    Server::cfg_server_block( std::string & text, T * block ) {
     while ((last = get_block("server", &text[last], tmp, last)) > 0) {
         Server_block *nw = new Server_block(*block);
 
-        size_t pos = tmp.find("autoindex");
-        if (in_other_block(tmp, pos)) {
-            std::cout << RED << "autoindex" << RESET << "\n";
-        }
-
         cfg_listen(tmp, nw);
         cfg_server_name(tmp, nw);
         cfg_set_attributes(tmp, nw);

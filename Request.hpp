@@ -36,8 +36,7 @@ public:
 	void									findType();
 	void									findHost();
 	void									splitDirectories();
-
-	bool									isFile(std::string);
+	void									cleaner();
 
 	std::string								getMethod() const;
 	std::string								getReqURI() const;

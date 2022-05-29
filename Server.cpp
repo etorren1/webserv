@@ -21,13 +21,6 @@ void    Server::create() {
 
 void    Server::run( void ) {
 
-    for (srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
-        for (lctn_iterator jt = (*it).second->lctn.begin(); jt != (*it).second->lctn.end(); jt++) {
-            std::cout << GREEN << (*jt).first << RESET << "\n";
-            (*jt).second->show_all();
-        }
-    }
-
     if (status & ~STOP)
         std::cout << GREEN << "Server running." << RESET << "\n";
     while(status & WORKING) {
@@ -171,7 +164,8 @@ void Server::clientRequest( void ) {
                     // REQUEST PART
 
                     req.parseText(client[socket]->message);
-                    // parseLocation();
+                    if (req.getReqURI() != "/favicon.ico")
+                        parseLocation();
                     //
 
                     // if (mess[id].size())
@@ -179,6 +173,8 @@ void Server::clientRequest( void ) {
                         
                     //  RESPONSE PART
 					make_response(req, id);
+                    req.cleaner();
+                    
                     //
                     // mess[id] = "";
                     client[socket]->message = "";
