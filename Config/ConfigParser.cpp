@@ -28,9 +28,11 @@ static bool    in_other_block(std::string & text, size_t pos) {
     size_t begin, end;
     begin = text.find("{");
     end = text.find("{", begin + 1);
-    while (true) {
-        if ( begin == std::string::npos || end == std::string::npos )
-            break;
+    if (end == std::string::npos)
+            return false;
+    while (begin != std::string::npos) {
+        if (end == std::string::npos && pos > begin && pos < end)
+            return false;
         if ( pos > begin && pos < end )
             return false;
         begin = text.find("}", begin + 1);
@@ -43,7 +45,7 @@ std::string Server::get_raw_param(std::string key, std::string & text) {
     size_t pos = text.find(key);
     if (pos == std::string::npos)
         return "";
-    if (in_other_block(text, pos) && key != "location")
+    if (in_other_block(text, pos))
         return "";
     size_t end = text.find("\n", pos);
     std::string res = text.substr(pos, end - pos);
@@ -107,7 +109,7 @@ template <class T>
 void    Server::cfg_accepted_methods(std::string & text, T * block ) {
     std::string raw = get_raw_param("accepted_methods", text);
     if (raw.size())
-        block->set_index(raw);
+        block->set_accepted_methods(raw);
 }
 
 template <class T>
@@ -135,7 +137,12 @@ void    Server::cfg_server_block( std::string & text, T * block ) {
     int last = 0;
     while ((last = get_block("server", &text[last], tmp, last)) > 0) {
         Server_block *nw = new Server_block(*block);
-        
+
+        size_t pos = tmp.find("autoindex");
+        if (in_other_block(tmp, pos)) {
+            std::cout << RED << "autoindex" << RESET << "\n";
+        }
+
         cfg_listen(tmp, nw);
         cfg_server_name(tmp, nw);
         cfg_set_attributes(tmp, nw);
@@ -170,7 +177,7 @@ template <class T>
 void    Server::cfg_default_page( std::string & text, T * block ) {
     std::string raw = get_raw_param("default_page", text);
     if (raw.size())
-        block->set_root(raw);
+        block->set_default_page(raw);
 }
 
 template <class T>
@@ -193,9 +200,9 @@ void    Server::cfg_autoindex( std::string & text, T * block ) {
     std::string raw = get_raw_param("autoindex", text);
     if (raw.size()) {
         if (raw == "on")
-            block->set_sendfile(true);
+            block->set_autoindex(true);
         else if (raw == "off")
-            block->set_sendfile(false);
+            block->set_autoindex(false);
         else {
             delete block; block = NULL;
             errorShutdown(255, http->get_error_log(), "error: configuration file: invalid value: autoindex.");
@@ -225,6 +232,8 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_autoindex(text, block);
     cfg_index(text, block);
     cfg_root(text, block);
+    cfg_default_page(text, block);
+    cfg_accepted_methods(text, block);
     cfg_client_max_body_size(text, block);
 }
 
@@ -254,6 +263,22 @@ void    Server::config( const int & fd ) {
         errorShutdown(255, http->get_error_log(), "error: configuration file: not closed brackets.", text);
     cfg_set_attributes(text, http);
     cfg_server_block(text, http);
+
+    // std::cout << YELLOW << "http block" << RESET << "\n";
+    // http->show_all();
+
+    // for (srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
+
+    //     std::cout << RED << (*it).first << RESET << "\n";
+    //     (*it).second->show_all();
+
+    //     for (lctn_iterator jt = (*it).second->lctn.begin(); jt != (*it).second->lctn.end(); jt++) {
+
+    //         std::cout << GREEN << (*jt).first << RESET << "\n";
+    //         (*jt).second->show_all();
+    //     }
+    // }
+
     close (fd);
     fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
 }

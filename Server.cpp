@@ -163,7 +163,7 @@ void Server::clientRequest( void ) {
                     // REQUEST PART
 
                     req.parseText(client[socket]->message);
-                    parseLocation();
+                    // parseLocation();
                     //
 
                     // if (mess[id].size())
