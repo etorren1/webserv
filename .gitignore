@@ -1,6 +1,6 @@
 *.o
 .DS_Store
-./webserv
+webserv
 a.out
 /.vscode/
 /YoupiBanane/

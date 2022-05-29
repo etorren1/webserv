@@ -28,6 +28,7 @@
 #define WORKING 0b10
 #define RESTART 0b01
 #define BUF_SIZE 2048
+#define DEFAULT_PATH "webserv.conf"
 #define srvs_iterator std::map<std::string, Server_block * >::iterator
 #define lctn_iterator std::map<std::string, Location_block * >::iterator
 
@@ -42,6 +43,7 @@ class Server {
 		Http_block     				*http;
 		std::map<std::string, Server_block * > srvs;
 
+		std::string					cfg_path;
 		int							status;
 		Request 					req;
 		Response 					res;
@@ -77,19 +79,19 @@ class Server {
 
 		bool			isServerSocket( const int & fd );
 		void			closeServer( int status );
-		void    		writeLog( const std::string & path, const std::string & header, const std::string & text );
+		void    		writeLog( const std::string & path, const std::string & header, const std::string & text = "");
 		void			errorShutdown( int code, const std::string & path, const std::string & error, const std::string & text = "");
 
 		// for response:
 		void			make_response(Request req, const size_t id);
 
-
+		Server();
 		Server( const Server & src );
 		Server operator=( const Server & src ); 
 
 	public:
 
-		Server( const int & config_fd );
+		Server( std::string new_config_path = "" ) ;
 		~Server();
 
 		void	config( const int & fd );

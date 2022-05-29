@@ -53,7 +53,7 @@ class Block
             std::cout << "client_max_body_size = " << client_max_body_size << "\n";
             std::cout << "index = ";
             for (size_t i = 0; i < index.size(); i++) { std::cout << index[i] << " "; }
-            std::cout << "\n";
+            std::cout << " |size = " << index.size() << "\n";
         }
 
         Block() {
