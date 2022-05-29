@@ -34,12 +34,12 @@ bool existDir(const char * name) {
     if (stat(name,&s)) return false;
         return S_ISDIR(s.st_mode);
 }
-std::string	getTime()
-{
-	char buf[1000];
-	time_t now = time(0);
-	struct tm tm = *gmtime(&now);
-	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-	sprintf("Time is: [%s]\n", buf);
-	return 0;
-};
+// std::string	getTime()
+// {
+// 	char buf[1000];
+// 	time_t now = time(0);
+// 	struct tm tm = *gmtime(&now);
+// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+// 	sprintf("Time is: [%s]\n", buf);
+// 	return 0;
+// };
