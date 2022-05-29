@@ -56,6 +56,8 @@ void Request::parseText(std::string text) {
     // std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
     parseMIMEType();
+    if (_reqURI.length() > 1)
+        splitDirectories();
     findType();
     findHost();
 }
@@ -119,6 +121,8 @@ void Request::parseMIMEType() {
                 _MIMEType = _reqURI.substr(pos + 1, typeEnd - pos - 1);
             else
                 _MIMEType = _reqURI.substr(pos + 1);
+        } else {
+            _MIMEType = "none";
         }
     }
     // std::cout << GREEN << "_MIMEType = |" << _MIMEType << "|\n";
@@ -145,17 +149,42 @@ void Request::findHost() {
         std::string ip = "127.0.0.1" + _host.substr(9);
         _host = ip;
     }
-    // std::cout << getHost() << "\n";
     // std::cout << GREEN << "_host = |" << _host << "|\n";
-
 }
 
-std::string Request::getMethod() { return this->_method; }
-std::string Request::getReqURI() { return this->_reqURI; }
-std::string Request::getProtocolVer() { return this->_protocolVersion; }
-std::map<std::string, std::string> Request::getHeadears() { return this->_headers; }
-std::string Request::getBody() { return this->_body; }
-std::string Request::getMIMEType() { return this->_MIMEType; }
-std::string Request::getContentType() { return this->_responseContentType; }
-std::string Request::getHost() { return this->_host; }
+void Request::splitDirectories() {
+    std::string str;
+    _dirs.push_back(_reqURI);
+    // std::cout << "_dirs[0] = " << _dirs[0] << "\n";
+    size_t pos = _reqURI.find_last_of("/");
+    str = _reqURI.substr(0, pos);
+    for (size_t i = 1; i < _reqURI.length() - 2; i++) {
+        pos = str.find_last_of("/");
+        if (pos != std::string::npos && pos != 0) {
+            str = str.substr(0, pos);
+            _dirs.push_back(str);
+        }
+    }
+    _dirs.push_back("/");
+    // std::vector<std::string>::iterator it = _dirs.begin();
+    // for (; it != _dirs.end(); it++)
+        // std::cout << GREEN << "it = " << *it << RESET << "\n";
+}
+
+bool Request::isFile(std::string name) {
+    if (_MIMEType == "none")
+        return false;
+    return true;
+}
+
+std::string Request::getMethod() const { return this->_method; }
+std::string Request::getReqURI() const { return this->_reqURI; }
+std::string Request::getProtocolVer() const { return this->_protocolVersion; }
+std::map<std::string, std::string> Request::getHeadears() const { return this->_headers; }
+std::string Request::getBody() const { return this->_body; }
+std::string Request::getMIMEType() const { return this->_MIMEType; }
+std::string Request::getContentType() const { return this->_responseContentType; }
+std::string Request::getHost() const { return this->_host; }
+std::vector<std::string> Request::getDirs() const { return this->_dirs; }
+
 void Request::setHost(std::string host) { _host = host; }

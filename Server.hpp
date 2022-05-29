@@ -45,8 +45,10 @@ class Server {
 		int							status;
 		Request 					req;
 		Response 					res;
+
 		std::map<int, std::string>	resCode;
-		std::string					location; 
+		std::string					location;
+		bool						reqType;
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
