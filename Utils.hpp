@@ -25,6 +25,8 @@ std::string					trim(std::string str, std::string cut);
 std::string					itos( long long const & num );
 // std::string					getTime();
 long long					getFileSize(const char *fileLoc);
+bool 						existDir(const char * name);
+std::string					getTime();
 
 struct codeException : public std::exception
 {

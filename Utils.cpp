@@ -49,3 +49,19 @@ long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
 	fclose (file);
 	return (buff.st_size);
 }
+
+bool existDir(const char * name) {
+    struct stat s;
+    if (stat(name,&s)) return false;
+        return S_ISDIR(s.st_mode);
+}
+
+// std::string	getTime()
+// {
+// 	char buf[1000];
+// 	time_t now = time(0);
+// 	struct tm tm = *gmtime(&now);
+// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
+// 	sprintf("Time is: [%s]\n", buf);
+// 	return 0;
+// };

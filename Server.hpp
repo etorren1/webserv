@@ -17,9 +17,11 @@
 #include <sstream>
 #include <ctime>
 #include <cstdlib>
+#include <filesystem>
 
-#include "Utils.hpp"
 #include "Config/Config.hpp"
+#include "Client.hpp"
+#include "Utils.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 
@@ -41,12 +43,14 @@ class Server {
 		std::set<int>				srvSockets;
 		Http_block     				*http;
 		std::map<std::string, Server_block * > srvs;
+		std::map<size_t, Client *>	client;
 
 		std::string					cfg_path;
 		int							status;
 		Request 					req;
 		Response 					res;
 		std::map<int, std::string>	resCode;
+		std::string					location; 
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
@@ -98,6 +102,7 @@ class Server {
 
 		//for errors
 		void	generateErrorPage(int code, int id);
+		void	parseLocation();
 
 };
 

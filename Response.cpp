@@ -135,10 +135,8 @@ void Server::make_response(Request req, const size_t id)
 		res.setContentType("text/html");
 	}
 	else {
-		if (req.getHost() == "127.0.0.1:8080") {
-			res.setFileLoc("./site/image.png");
-			res.setContentType("image/png");
-		}
+		res.setFileLoc("./site/image.jpg");
+		res.setContentType("image/jpeg");
 	}
 	// res.setFileLoc(res.find_requested_file_path(req));
 	// res.setContentType(req.getContentType());
