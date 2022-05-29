@@ -41,7 +41,7 @@ std::string Response::make_general_header (Request req, std::string response_bod
 	_contentLength = itos(getFileSize(_fileLoc.c_str()));
 
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
-	std::string connection = "close"; //Connection: keep-alive
+	std::string connection = "keep-alive"; //Connection: keep-alive
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
@@ -75,7 +75,7 @@ void Response::make_response_body(Request req, const size_t id, std::vector<poll
 
 	std::ifstream	input;
 	int 			result;
-	char 			*buffer = new char [2048];
+	char 			*buffer = new char [512];
 
 	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
 	if(!input.is_open())
@@ -91,16 +91,17 @@ while (!input.eof())
 	// if(_readFrom && _readFrom < file_size && _readFrom > 0)
 	// 	input.seekg(_readFrom);
 
-	input.read (buffer, 2048);
+	input.read (buffer, 512);
 	int read_bytes =  input.gcount();
-	if (read_bytes != 2048)
-	{
-		std::cerr << "read = " << read_bytes << std::endl;
-		throw (123 );
-	}
+	// if (read_bytes != 512)
+	// {
+	// 	std::cerr << "read = " << read_bytes << std::endl;
+	// 	throw (123 );
+	// }
 	// std::cout << YELLOW << strlen(buffer) << RESET << "\n";
-	result = send(fds[id].fd, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
-	if (result != 2048)
+	usleep(100);
+	result = send(fds[id].fd, buffer, 512, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (result != 512)
 	{
 		std::cerr << "wrote = " << result << std::endl;
 		throw (123);
