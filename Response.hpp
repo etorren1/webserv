@@ -22,9 +22,10 @@ class Response
 		// other
 		std::string								_fileLoc;
 		int										_sendingFinished;
+		long long								_readFrom;
 
 	public:
-		Response() : _sendingFinished(0) {};
+		Response() : _sendingFinished(0), _readFrom(0) {};
 		~Response() {};
 
 		void			make_response_body(Request req, const size_t id, std::vector<struct pollfd> fds);
