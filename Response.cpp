@@ -92,14 +92,16 @@ while (!input.eof())
 	// 	input.seekg(_readFrom);
 
 	input.read (buffer, 2048);
-	int read_bytes =  input.gcount();
-	if (read_bytes != 2048)
-	{
-		std::cerr << "read = " << read_bytes << std::endl;
-		throw (123 );
-	}
+	// int read_bytes =  input.gcount();
+	// if (read_bytes != 2048)
+	// {
+	// 	std::cerr << "read = " << read_bytes << std::endl;
+	// 	throw (123 );
+	// }
 	// std::cout << YELLOW << strlen(buffer) << RESET << "\n";
-	result = send(fds[id].fd, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
+	// if (fds[id].revents & POLLOUT)
+	usleep(1000);
+		result = send(fds[id].fd, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
 	if (result != 2048)
 	{
 		std::cerr << "wrote = " << result << std::endl;
@@ -152,12 +154,12 @@ void Server::make_response(Request req, const size_t id)
 	std::stringstream response;
 	size_t result;
 	if (req.getReqURI() == "/") {
-		res.setFileLoc("./site/index.html");
+		res.setFileLoc("./site/colors/tables/yellow.html");
 		res.setContentType("text/html");
 	}
 	else {
-		res.setFileLoc("./site/image.jpg");
-		res.setContentType("image/jpeg");
+		res.setFileLoc("./site/image.png");
+		res.setContentType("image/png");
 	}
 	// res.setFileLoc(res.find_requested_file_path(req));
 	// res.setContentType(req.getContentType());

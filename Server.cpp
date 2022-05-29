@@ -142,7 +142,7 @@ void Server::connectClients( const int & fd ) {
         struct pollfd nw;
 
         nw.fd = newClientSock;
-        nw.events = POLLIN;
+        nw.events = POLLIN | POLLOUT;
         nw.revents = 0;
         fds.push_back(nw);
         mess.push_back("");
@@ -172,8 +172,8 @@ void Server::clientRequest( void ) {
                     //
 
                     //  RESPONSE PART
-                    if (mess[id].size())
-                        std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
+                    // if (mess[id].size())
+                    //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
                         
 					make_response(req, id);
                     //
@@ -182,6 +182,9 @@ void Server::clientRequest( void ) {
                 }
                 fds[id].revents = 0;
             }
+            // else if (fds[id].revents & POLLOUT) {
+            //     make_response(req, id);
+            // }
         }
     }
 }

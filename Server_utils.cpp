@@ -75,7 +75,7 @@ void Server::parseLocation() {
     // std::cout << srvs[req.getHost()]->lctn.at(req.getReqURI())->get_root() << "\n";
     std::cout << req.getHost() << ", " << req.getReqURI() << "\n";
     try    {
-        srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+        srvs.at(req.getHost())->lctn.at(req.getReqURI())->get_root();
     }
     catch(const std::exception& e)    {
         try        {
@@ -84,7 +84,7 @@ void Server::parseLocation() {
                 std::string ip = "0.0.0.0" + req.getHost().substr(pos);
                 req.setHost(ip);
             }
-            srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+            srvs.at(req.getHost())->lctn.at(req.getReqURI())->get_root();
         }
         catch(const std::exception& e)        {
             
