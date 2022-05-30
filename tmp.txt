@@ -1,0 +1,5910 @@
+Host: 0.0.0.0:3666 up succsesfuly
+Host: 0.0.0.0:8081 up succsesfuly
+Host: 127.0.0.1:4242 up succsesfuly
+[32mServer running.[0m
+New client on 6 socket.
+New client on 7 socket.
+_responseContentType = ||
+[33mClient 6 send (full message): [0mGET / HTTP/1.1
+Host: localhost:8081
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,ru;q=0.8
+
+[31mHTTP/1.1 200 OK
+Version: HTTP/1.1
+Content-Type: image/jpg
+Content-Length: 2013105
+Connection: close
+
+[0m[31m2013105[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 1969[0m
+[32m2013184[0m
+[31mblabla[0m
+[34mHERE[0m
+Client 6 disconnected.
+_responseContentType = ||
+[33mClient 7 send (full message): [0mGET /favicon.ico HTTP/1.1
+Host: localhost:8081
+Connection: keep-alive
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"
+sec-ch-ua-mobile: ?0
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36
+sec-ch-ua-platform: "macOS"
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8081/
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,ru;q=0.8
+
+[31mHTTP/1.1 200 OK
+Version: HTTP/1.1
+Content-Type: image/jpg
+Content-Length: 2013105
+Connection: close
+
+[0m[31m2013105[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 1969[0m
+[32m2013184[0m
+[31mblabla[0m
+[34mHERE[0m
+Client 7 disconnected.
+New client on 6 socket.
+New client on 7 socket.
+_responseContentType = ||
+[33mClient 6 send (full message): [0mGET / HTTP/1.1
+Host: localhost:8081
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: " Not A;Brand";v="99", "Chromium";v="101", "Google Chrome";v="101"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,ru;q=0.8
+
+[31mHTTP/1.1 200 OK
+Version: HTTP/1.1
+Content-Type: image/jpg
+Content-Length: 2013105
+Connection: close
+
+[0m[31m2013105[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:2048
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446744073709551615
+written: 2048[0m
+[33mwrote:18446

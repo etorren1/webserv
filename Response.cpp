@@ -87,10 +87,6 @@ void Response::make_response_body(Request req, const size_t id, std::vector<poll
 size_t count = 0;
 while (!input.eof())
 {
-
-	// if(_readFrom && _readFrom < file_size && _readFrom > 0)
-	// 	input.seekg(_readFrom);
-
 	input.read (buffer, 512);
 	int read_bytes =  input.gcount();
 	// if (read_bytes != 512)
@@ -119,24 +115,6 @@ while (!input.eof())
 	std::cout << BLUE<< "HERE" << RESET << "\n";
 
 	delete[] buffer;
-
-	//-------------------------------------------------
-
-	// //------------------------2------------------------
-	// std::fstream fs;
-	// std::string line;
-	// std::string result;
-	// fs.open ("./site/image.jpg", std::fstream::in);
-	// if (fs.is_open())
-	// {
-	// 	while (getline (fs,line))	//reading map
-	// 			result.append(line + "\n");
-	// 	fs.close();
-	// }
-	// std::cout << BLUE << result << "\n";
-	// std::cout << result.length() << RESET <<"\n";
-	// return(result);
-	// //-------------------------------------------------
 }
 
 void Response::clearResponseObj()
