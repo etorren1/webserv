@@ -46,7 +46,6 @@ class Server {
 		std::string					cfg_path;
 		int							status;
 		Request 					req;
-		Response 					res;
 
 		std::map<int, std::string>	resCode;
 		std::string					location;

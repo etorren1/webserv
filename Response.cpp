@@ -1,5 +1,5 @@
 #include "Server.hpp"
-#include <fstream>
+#include "Response.hpp"
 
 
 std::string Response::make_general_header (Request req, std::string response_body)
@@ -41,44 +41,42 @@ void Response::make_response_body(Request req, const size_t id, std::vector<poll
 	//------------------------1------------------------
 	// FOR PARTIAL RESPONSES
 
-	std::ifstream	input;
 	int 			result;
-	char 			*buffer = new char [512];
-
-	input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
-	if(!input.is_open())
+	char 			*buffer = new char [2048];
+	
+	// std::ifstream							_input;
+	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
+	if(!_input.is_open())
 		throw(codeException(404));
 
-	size_t file_size = getFileSize(_fileLoc.c_str());
-	// std::cout << RED << file_size << RESET << "\n";	
+	size_t file_size = getFileSize(_fileLoc.c_str());	
 
-size_t count = 0;
-while (!input.eof())
-{
-	input.read (buffer, 512);
-	// int read_bytes =  input.gcount();
-	// if (read_bytes != 512)
-	// {
-	// 	std::cerr << "read = " << read_bytes << std::endl;
-	// 	throw (123 );
-	// }
-	// std::cout << YELLOW << strlen(buffer) << RESET << "\n";
-	// if (fds[id].revents & POLLOUT)
-	usleep(100);
-		result = send(fds[id].fd, buffer, 512, 0);		// Отправляем ответ клиенту с помощью функции send
-	if (result != 512)
+	size_t count = 0;
+	while (!_input.eof())
 	{
-		std::cerr << "wrote = " << result << std::endl;
-		throw (123);
+		_input.read (buffer, 2048);
+		int read_bytes =  _input.gcount();
+		if (read_bytes == -1)
+		{
+			std::cerr << "read = " << read_bytes << std::endl;
+			throw (123 );
+		}
+		if (fds[id].revents & POLLOUT)
+		usleep(1000);
+			result = send(fds[id].fd, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
+		if (result == -1)
+		{
+			std::cerr << "wrote = " << result << std::endl;
+			throw (123);
+		}
+		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
+		count += result;
 	}
-	// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
-	count += result;
-}
 	// std::cout << GREEN << count << RESET << "\n";
-	if (input.eof())								//закрываем файл только после того как оправили все содержание файла
+	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 			// std::cout << RED << "blabla" << RESET << "\n";	
-		input.close();
+		_input.close();
 		_sendingFinished = 1;
 	}
 	// std::cout << BLUE<< "HERE" << RESET << "\n";
@@ -100,39 +98,41 @@ void Server::make_response(Request req, const size_t id)
 	
 	std::stringstream response;
 	size_t result;
-	if (req.getReqURI() == "/favicon.ico")
-	{
-		res.setFileLoc("./site/image.png");
-		res.setContentType("image/png");
-	}
-	else
-	{
-		// res.setFileLoc("./site/colors/tables/yellow.html");
-		res.setFileLoc(location);
-		res.setContentType(req.getContentType());
-	}
-
+	Response &res = client[fds[id].fd]->getResponse();
+	// if (req.getReqURI() == "/favicon.ico")
+	// {
+	// 	res.setFileLoc("./site/image.png");
+	// 	res.setContentType("image/png");
+	// }
+	// else
+	// {
+	// 	// res.setFileLoc("./site/colors/tables/yellow.html");
+	// 	res.setFileLoc(location);
+	// 	res.setContentType(req.getContentType());
+	// }
+	// res.setFileLoc("./site/video.mp4");
+	// res.setContentType("video/mp4");
+	// res.setFileLoc("./site/index.html");
+	// res.setContentType("text/html");
+	res.setFileLoc("./site/image.jpg");
+	res.setContentType("image/jpg");
 	try
 	{
 		res.make_response_header(req);
-		result = send(fds[id].fd, res.getHeader().c_str(),		// Отправляем ответ клиенту с помощью функции send
+		result = send(fds[id].fd, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
 						res.getHeader().length(), 0);
-
 		res.make_response_body(req, id, fds);
-
-		// response << res.getHeader() << res.getBody();	// Формируем весь ответ вместе с заголовками
-		// std::cout << RED << response.str() << RESET;
 	}
 	catch (codeException &e)
 	{
 		generateErrorPage(e.getErrorCode(), id);
 		return;
 	}
-	catch (std::exception &e)
-	{
-		e.what();
-		return;
-	}
+	// catch (std::exception &e)
+	// {
+	// 	e.what();
+	// 	return;
+	// }
 	res.clearResponseObj();
 }
 

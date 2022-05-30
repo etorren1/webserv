@@ -2,8 +2,9 @@
 # define RESPONSE_HPP
 
 #include "Utils.hpp"
-#include "Request.hpp"
+// #include "Request.hpp"
 #include <poll.h>
+#include <fstream>
 
 class Response
 {
@@ -23,6 +24,7 @@ class Response
 		std::string								_fileLoc;
 		int										_sendingFinished;
 		long long								_readFrom;
+		std::ifstream							_input; //поток файла из которого читает в данный момент
 
 	public:
 		Response() : _sendingFinished(0), _readFrom(0) {};

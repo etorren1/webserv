@@ -17,9 +17,11 @@ class Client
 
 		std::string	message;
 
-		void checkConnection( const std::string & mess );
+		void 		checkConnection( const std::string & mess );
 
-		bool getBreakconnect() const;
+		bool 		getBreakconnect() const;
+		Response &	getResponse();
+
 
 		Client( size_t nwsock );
 		~Client();
