@@ -174,9 +174,16 @@ void Request::splitDirectories() {
 }
 
 void Request::cleaner() {
-    _dirs.clear();
+    _method.clear();
+    _reqURI.clear();
+    _protocolVersion.clear();
     _headers.clear();
-    //std::string ...
+    _body.clear();
+    _MIMEType.clear();
+    _contentType.clear();
+    _responseContentType.clear();
+    _host.clear();
+    _dirs.clear();
 }
 
 std::string Request::getMethod() const { return this->_method; }
