@@ -1,20 +1,28 @@
+#ifndef Client_hpp
+#define Client_hpp
+
 #include "Request.hpp"
 #include "Response.hpp"
 
 class Client
 {
-private:
-	std::vector<Request*> req;
-	std::vector<Response*> res;
-public:
-	Client(/* args */);
-	~Client();
+	private:
+		Request	req;
+		Response res;
+
+		bool		breakconnect;
+		size_t		socket;
+
+	public:
+
+		std::string	message;
+
+		void checkConnection( const std::string & mess );
+
+		bool getBreakconnect() const;
+
+		Client( size_t nwsock );
+		~Client();
 };
 
-Client::Client(/* args */)
-{
-}
-
-Client::~Client()
-{
-}
+#endif

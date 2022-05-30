@@ -6,6 +6,7 @@
 # include <string>
 # include <vector>
 # include <map>
+# include "Utils.hpp"
 
 class Request {
 private:
@@ -17,10 +18,12 @@ private:
 	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_contentType;
+	std::map<std::string, std::string>		_typesMIME;
+	std::string								_host;
+	std::vector<std::string>				_dirs;
 
 	//data for response
 	std::string								_responseContentType;
-	std::map<std::string, std::string>		_typesMIME;
 
 public:
 	Request();
@@ -31,14 +34,21 @@ public:
 	size_t          						parseStrBody( std::vector<std::string> );
 	void									parseMIMEType();
 	void									findType();
+	void									findHost();
+	void									splitDirectories();
+	void									cleaner();
 
-	std::string								getMethod();
-	std::string								getReqURI();
-	std::string								getProtocolVer();
-	std::map<std::string, std::string>		getHeadears();
-	std::string								getBody();
-	std::string								getMIMEType();
-	std::string								getContentType();
+	std::string								getMethod() const;
+	std::string								getReqURI() const;
+	std::string								getProtocolVer() const;
+	std::map<std::string, std::string>		getHeadears() const;
+	std::string								getBody() const;
+	std::string								getMIMEType() const;
+	std::string								getContentType() const;
+	std::string								getHost() const;
+	std::vector<std::string>				getDirs() const;
+	
+	void									setHost(std::string);
 };
 
 

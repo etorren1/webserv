@@ -19,6 +19,8 @@ class Location_block : public Block {
             sendfile = other.get_sendfile();
             autoindex = other.get_autoindex();
             client_max_body_size = other.get_client_max_body_size();
+            default_page = other.get_default_page();
+            accepted_methods = other.get_accepted_methods();
         }
         ~Location_block() {}
 };

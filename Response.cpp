@@ -1,38 +1,6 @@
 #include "Server.hpp"
 #include <fstream>
 
-std::string Response::parse_uri(std::string uri)
-{
-	std::fstream fs;
-	fs.open (uri, std::fstream::in);
-	if (fs)
-	{
-		fs.close();
-		return(uri);
-	}
-	else
-	{
-		throw(codeException(404));
-	}
-}
-
-std::string Response::find_requested_file_path(Request req)
-{
-	std::string full_path;
-	std::string uri = req.getReqURI();
-
-	// full_path = parse_uri(uri);
-	try
-	{
-		// full_path = parse_uri(req.getReqURI());
-		full_path = parse_uri("./site/index.html");
-		return(full_path);
-	}
-	catch (codeException &e)
-	{
-		throw(codeException(404));
-	}
-}
 
 std::string Response::make_general_header (Request req, std::string response_body)
 {
@@ -82,21 +50,22 @@ void Response::make_response_body(Request req, const size_t id, std::vector<poll
 		throw(codeException(404));
 
 	size_t file_size = getFileSize(_fileLoc.c_str());
-	std::cout << RED << file_size << RESET << "\n";	
+	// std::cout << RED << file_size << RESET << "\n";	
 
 size_t count = 0;
 while (!input.eof())
 {
 	input.read (buffer, 512);
-	int read_bytes =  input.gcount();
+	// int read_bytes =  input.gcount();
 	// if (read_bytes != 512)
 	// {
 	// 	std::cerr << "read = " << read_bytes << std::endl;
 	// 	throw (123 );
 	// }
 	// std::cout << YELLOW << strlen(buffer) << RESET << "\n";
+	// if (fds[id].revents & POLLOUT)
 	usleep(100);
-	result = send(fds[id].fd, buffer, 512, 0);		// Отправляем ответ клиенту с помощью функции send
+		result = send(fds[id].fd, buffer, 512, 0);		// Отправляем ответ клиенту с помощью функции send
 	if (result != 512)
 	{
 		std::cerr << "wrote = " << result << std::endl;
@@ -105,14 +74,14 @@ while (!input.eof())
 	// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
 	count += result;
 }
-	std::cout << GREEN << count << RESET << "\n";
+	// std::cout << GREEN << count << RESET << "\n";
 	if (input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-			std::cout << RED << "blabla" << RESET << "\n";	
+			// std::cout << RED << "blabla" << RESET << "\n";	
 		input.close();
 		_sendingFinished = 1;
 	}
-	std::cout << BLUE<< "HERE" << RESET << "\n";
+	// std::cout << BLUE<< "HERE" << RESET << "\n";
 
 	delete[] buffer;
 }
@@ -128,12 +97,20 @@ void Response::clearResponseObj()
 
 void Server::make_response(Request req, const size_t id)
 {
+	
 	std::stringstream response;
 	size_t result;
-	// res.setFileLoc(res.find_requested_file_path(req));
-	res.setFileLoc("./site/image.jpg");
-	// res.setContentType(req.getContentType());
-	res.setContentType("image/jpg");
+	if (req.getReqURI() == "/favicon.ico")
+	{
+		res.setFileLoc("./site/image.png");
+		res.setContentType("image/png");
+	}
+	else
+	{
+		// res.setFileLoc("./site/colors/tables/yellow.html");
+		res.setFileLoc(location);
+		res.setContentType(req.getContentType());
+	}
 
 	try
 	{

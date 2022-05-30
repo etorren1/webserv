@@ -25,17 +25,20 @@ int    Server::get_block(const std::string& prompt, const std::string& content, 
 }
 
 static bool    in_other_block(std::string & text, size_t pos) {
-    size_t  open, close, start = text.find("{");
-    start = text.find("{", start+1);
-    open = text.find("{", start+1);
-    close = open + 1;
-    while (open < close) {
-        open = text.find("{", open+1);
-        close = text.find("}", close+1);
+    size_t begin, end;
+    begin = text.find("{");
+    end = text.find("{", begin + 1);
+    if (end == std::string::npos)
+            return false;
+    while (begin != std::string::npos) {
+        if (end == std::string::npos && pos > begin && pos < end)
+            return false;
+        if ( pos > begin && pos < end )
+            return false;
+        begin = text.find("}", begin + 1);
+        end = text.find("{", end + 1);
     }
-    if (pos > start && pos < close)
-        return true;
-    return false;
+    return true;
 }
 
 std::string Server::get_raw_param(std::string key, std::string & text) {
@@ -69,7 +72,7 @@ void Server::cfg_listen(std::string & text, T * block ) {
         delete block; block = NULL;
         errorShutdown(255, http->get_error_log(), "error: configuration file: requaired parameter: listen.");
     }
-    if (raw.find_first_not_of("0123456789.:") != std::string::npos) {
+    if (raw.find_first_not_of("0123456789.:*") != std::string::npos) {
         delete block; block = NULL;
         errorShutdown(255, http->get_error_log(), "error: configuration file: bad parameter: listen.");
     }
@@ -103,6 +106,13 @@ void    Server::cfg_index(std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_accepted_methods(std::string & text, T * block ) {
+    std::string raw = get_raw_param("accepted_methods", text);
+    if (raw.size())
+        block->set_accepted_methods(raw);
+}
+
+template <class T>
 void    Server::cfg_location_block( std::string & text, T * block ) {
     std::string tmp;
 
@@ -127,7 +137,7 @@ void    Server::cfg_server_block( std::string & text, T * block ) {
     int last = 0;
     while ((last = get_block("server", &text[last], tmp, last)) > 0) {
         Server_block *nw = new Server_block(*block);
-        
+
         cfg_listen(tmp, nw);
         cfg_server_name(tmp, nw);
         cfg_set_attributes(tmp, nw);
@@ -159,6 +169,13 @@ void    Server::cfg_root( std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_default_page( std::string & text, T * block ) {
+    std::string raw = get_raw_param("default_page", text);
+    if (raw.size())
+        block->set_default_page(raw);
+}
+
+template <class T>
 void    Server::cfg_sendfile( std::string & text, T * block ) {
     std::string raw = get_raw_param("sendfile", text);
     if (raw.size()) {
@@ -178,9 +195,9 @@ void    Server::cfg_autoindex( std::string & text, T * block ) {
     std::string raw = get_raw_param("autoindex", text);
     if (raw.size()) {
         if (raw == "on")
-            block->set_sendfile(true);
+            block->set_autoindex(true);
         else if (raw == "off")
-            block->set_sendfile(false);
+            block->set_autoindex(false);
         else {
             delete block; block = NULL;
             errorShutdown(255, http->get_error_log(), "error: configuration file: invalid value: autoindex.");
@@ -210,10 +227,20 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_autoindex(text, block);
     cfg_index(text, block);
     cfg_root(text, block);
+    cfg_default_page(text, block);
+    cfg_accepted_methods(text, block);
     cfg_client_max_body_size(text, block);
 }
 
 void    Server::config( const int & fd ) {
+    if (fd == -1) {
+        status = STOP;
+        if (http->get_error_log() != "off") {
+            writeLog(http->get_error_log(), "error: configuration file: bad descriptor.");
+            std::cerr << "error: see error_log for more information\n";
+        }
+        exit(1);
+    }
     char buf[BUF_SIZE];
     int rd;
     std::string text;
@@ -221,6 +248,7 @@ void    Server::config( const int & fd ) {
         buf[rd] = 0;
         text += buf;
     } // read config file
+
 
     http = new Http_block();
 
@@ -230,5 +258,22 @@ void    Server::config( const int & fd ) {
         errorShutdown(255, http->get_error_log(), "error: configuration file: not closed brackets.", text);
     cfg_set_attributes(text, http);
     cfg_server_block(text, http);
+
+    // std::cout << YELLOW << "http block" << RESET << "\n";
+    // http->show_all();
+
+    // for (srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
+
+    //     std::cout << RED << (*it).first << RESET << "\n";
+    //     (*it).second->show_all();
+
+    //     for (lctn_iterator jt = (*it).second->lctn.begin(); jt != (*it).second->lctn.end(); jt++) {
+
+    //         std::cout << GREEN << (*jt).first << RESET << "\n";
+    //         (*jt).second->show_all();
+    //     }
+    // }
+
     close (fd);
+    fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
 }

@@ -1,6 +1,6 @@
 *.o
 .DS_Store
-./webserv
+webserv
 a.out
 /.vscode/
 /YoupiBanane/
@@ -8,3 +8,4 @@ a.out
 index.html
 nginx.conf
 main.cpp
+test.cpp

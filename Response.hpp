@@ -1,8 +1,9 @@
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
 
-#include "Server.hpp"
 #include "Utils.hpp"
+#include "Request.hpp"
+#include <poll.h>
 
 class Response
 {
@@ -27,7 +28,7 @@ class Response
 		Response() : _sendingFinished(0), _readFrom(0) {};
 		~Response() {};
 
-		void			make_response_body(Request req, const size_t id, std::vector<pollfd> fds);
+		void			make_response_body(Request req, const size_t id, std::vector<struct pollfd> fds);
 		void			make_response_header(Request req);
 		std::string		make_general_header (Request req, std::string response_body);
 		std::string		find_requested_file_path(Request req);
