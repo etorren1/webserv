@@ -18,6 +18,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 
 #include "Config/Config.hpp"
 #include "Client.hpp"

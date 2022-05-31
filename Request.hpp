@@ -19,7 +19,6 @@ private:
 	std::map<std::string, std::string>      _headers;
 	std::string                             _body;
 	std::string								_MIMEType;
-	std::string								_contentType;
 	std::string								_host;
 	std::vector<std::string>				_dirs;
 

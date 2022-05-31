@@ -168,8 +168,8 @@ void Server::clientRequest( void ) {
                         parseLocation();
                     //
 
-                    // if (mess[id].size())
-                    //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
+                    // if (client[socket]->message.size())
+                    //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << client[socket]->message;
                         
                     //  RESPONSE PART
 					make_response(req, id);
@@ -215,6 +215,7 @@ int  Server::readRequest( const size_t socket ) {
         text.replace(BUF_SIZE - 2, 2, "\r\n");
         std::cout << RED << "ALERT! text more than " << BUF_SIZE << " bytes!" << RESET << "\n";
     }
+    std::cout << YELLOW << text << "\n" RESET;
     client[socket]->checkConnection(text);
     client[socket]->message = text;
     return (bytesRead);

@@ -32,7 +32,7 @@ std::string	itos( long long const & num )
 bool existDir(const char * name) {
     struct stat s;
     if (stat(name,&s)) return false;
-        return S_ISDIR(s.st_mode);
+    return S_ISDIR(s.st_mode);
 }
 
 long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
