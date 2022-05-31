@@ -165,7 +165,8 @@ void Request::splitDirectories() {
         pos = str.find_last_of("/");
         if (pos != std::string::npos && pos != 0) {
             str = str.substr(0, pos);
-            _dirs.push_back(str);
+            if (!str.empty())
+                _dirs.push_back(str);
         }
     }
     _dirs.push_back("/");
@@ -186,6 +187,21 @@ void Request::cleaner() {
     _dirs.clear();
 }
 
+void Request::getDirNamesWithoutRoot(std::string root) {
+    size_t pos = _reqURI.find(root);
+    std::string tmp;
+    if (pos != std::string::npos) {
+        tmp = _reqURI.substr(pos);
+        std::cout << "tmp = " << tmp << "\n";
+        _reqURI = tmp;
+        std::cout << "_reqURI = " << _reqURI << "\n";
+        // std::vector<std::string>::iterator it = _dirs.begin();
+        _dirs.clear();
+        splitDirectories();
+    }
+    // return _fileName;
+}
+
 std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
@@ -195,5 +211,14 @@ std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
+
+bool Request::isFile() {
+    if (_reqURI[_reqURI.length() - 1] == '/') {
+        _file = 0;
+        return false;
+    }
+    _file = 1;
+    return true;
+}
 
 void Request::setHost(std::string host) { _host = host; }

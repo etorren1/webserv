@@ -69,34 +69,53 @@ void	Server::generateErrorPage(int error, int id) {
 
 void Server::parseLocation() {
     std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
-    if (req.getMIMEType().empty() || req.getMIMEType() == "none")
+    if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
+    // if ()
         reqType = 0; // dir
     else
         reqType = 1; //file
+    std::string tmp, tmpDefPage;
+    Server_block *srv;
     try    {
-        srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+        srv = srvs.at(req.getHost());
     }
-    catch(const std::exception& e)    {
-        try        {
+    catch(const std::exception& e) {
+        try {
             size_t pos = req.getHost().find(":");
             if (pos != std::string::npos) {
                 std::string ip = "0.0.0.0" + req.getHost().substr(pos);
                 req.setHost(ip);
             }
+            srv = srvs.at(req.getHost());
+        }
+        catch(const codeException& e) {
+            std::cout << "Not a server!\n";
+            std::cerr << e.what() << '\n';
+            return ;
+            // throw(codeException(400));
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
+            return ;
+        }
+    }
+
+
+
             std::vector<std::string> vec = req.getDirs();
-            std::string tmp, tmpDefPage;
             std::string defPage = "index.html";
             std::string desiredPath = "/";
             location = "/";
             for (size_t i = 0; i < vec.size(); i++) {
                 std::cout << "vec[" << i << "] = " << vec[i] << "\n";
                 try {
-                    tmp = srvs.at(req.getHost())->lctn.at(vec[i])->get_root();
-                    tmpDefPage = srvs.at(req.getHost())->lctn.at(vec[i])->get_default_page();
+
+                    tmp = srv->lctn.at(vec[i])->get_root();
+                    tmpDefPage = srv->lctn.at(vec[i])->get_default_page();
                     // std::cout << RED << "if (vec[i] = " << vec[i] << " > (desiredPath = " << desiredPath << ")\n" << RESET;
                     // std::cout << "      vec[i].length() = " << vec[i].length() << ", desiredPath.length() = " << desiredPath.length() << "\n";
-                    std::cout << "tmp = " << tmp << ", tmpDefPage = " << tmpDefPage << "\n";
                     if (vec[i].length() >= desiredPath.length()) {
+                        std::cout << "tmp = " << tmp << ", tmpDefPage = " << tmpDefPage << "\n";
                         std::cout << "      desiredPath = " << desiredPath << ", vec[i] = " << vec[i] << "\n";
                         desiredPath = vec[i];
                         location = tmp;
@@ -108,10 +127,14 @@ void Server::parseLocation() {
                 }
                 catch(std::exception &e) { std::cout << "\n"; }
             }
+            std::cout << "\nbefore getDirNamesWithoutRoot - " << location << "\n";
+            req.getDirNamesWithoutRoot(location);
+            std::cout << "\nfter getDirNamesWithoutRoot - " << location << "\n";
+
             location += vec[0].substr(1);
             std::cout << "\n\nlocation after += vec[0] - " << location << "\n";
             if (reqType == 0) {
-                // std::cout << "if path - dir\n";
+                std::cout << "if path - dir\n";
                 // std::cout << RED << "existDir - " << existDir(location.c_str()) << "\n" << RESET;
                 // if (existDir(location.c_str())) {
                 if (existDir(location.c_str())) {
@@ -119,7 +142,11 @@ void Server::parseLocation() {
                     int ret = open(location.c_str(), O_RDONLY);
                     // struct stat s;
                     if (!access(location.c_str(), 4)) {
+                        std::cout << "location without defPage - " << location << "\n";
+                        if (location.back() != '/')
+                            location.push_back('/');
                         location += defPage;
+                        std::cout << "location with defPage - " << location << "\n";
                         std::ifstream ifile;
                         ifile.open(location.c_str());
                         if (ifile) {
@@ -154,6 +181,7 @@ void Server::parseLocation() {
                     return ;
                 }
             } else {
+                std::cout << "if " << location << " is file\n";
                 FILE *file;
                 std::cout << "location = " << location << "\n";
                 file = fopen(location.c_str(), "r");
@@ -168,16 +196,4 @@ void Server::parseLocation() {
                 }
             }
             // srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
-        }
-        catch(const codeException& e)        {
-            std::cout << "Directory doesn't exist\n";
-            std::cerr << e.what() << '\n';
-            return ;
-            // throw(codeException(400));
-        }
-        catch(const std::exception& e) {
-            std::cerr << e.what() << '\n';
-            return ;
-        }
-    }
 }
