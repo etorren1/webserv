@@ -34,22 +34,20 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	_header = statusLine + generalHeader;
 
 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
-	size_t file_size = getFileSize(_fileLoc.c_str());	
+
 	std::cout << RED << _header << RESET;
 	
 }
 
+int count = 0;
+
 void Response::make_response_body(Request req, const size_t socket, std::vector<pollfd> fds)
 {
-
-	//------------------------1------------------------
-	// FOR PARTIAL RESPONSES
-
-	int 			result;
 	char 			*buffer = new char [2048];
+	size_t			file_size;
 	
-	// std::cout << "HEWAE\n";
-	// std::ifstream							_input;
+	std::fill(&buffer[0], &buffer[2048], 0);
+	file_size = getFileSize(_fileLoc.c_str());
 
 	// if (_hasSent != 1) {
 	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
@@ -59,28 +57,38 @@ void Response::make_response_body(Request req, const size_t socket, std::vector<
 	if(!_input.is_open())
 		throw(codeException(404));
 
-	size_t count = 0;
+	// size_t count = 0;
 	// while (!_input.eof())
 	// {
-		_input.read (buffer, 2048);
-		int read_bytes =  _input.gcount();
-		// if (read_bytes == -1)
-		// {
-		// 	std::cerr << "read = " << read_bytes << std::endl;
-		// 	throw (123 );
-		// }
-		// if (fds[id].revents & POLLOUT)
-		// usleep(1000);
-			result = send(socket, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
-		if (result == -1)
-		{
-			std::cerr << "wrote = " << result << std::endl;
-			throw (123);
-		}
-		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
-		// count += result;
+	_input.read (buffer, 2048);
+	_bytesRead = _input.gcount(); //The number of successfully extracted characters can be queried using gcount() - https://en.cppreference.com/w/cpp/io/basic_istream/read
+	if (_bytesRead < 2048)
+		throw codeException(500);
+	_totalBytesRead += _bytesRead;
+	if (_bytesRead == -1)
+	{
+		std::cerr << "read = " << _bytesRead << std::endl;
+		throw (123 );
+	}
+
+	_bytesSent = send(socket, buffer, _bytesRead, 0);	// Отправляем ответ клиенту с помощью функции send
+	if (_bytesSent == -1)
+	{
+		std::cerr << "wrote = " << _bytesSent << std::endl;
+		throw (123);
+	}
+	if (_bytesSent < _bytesRead)
+	{
+		std::cout << "HERE";
+		_bytesRead -= _bytesRead - _bytesSent;
+		if(_bytesRead && _bytesRead < file_size && _bytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
+			_input.seekg(_bytesRead);
+	}
+
+	count += _bytesSent;
+	std::cout << YELLOW << "sent:" << _bytesSent << "\nwritten: " << _bytesRead << RESET << "\n";
 	// }
-	// std::cout << GREEN << count << RESET << "\n";
+	std::cout << GREEN << count << RESET << "\n";
 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 			// std::cout << RED << "blabla" << RESET << "\n";	
@@ -99,6 +107,13 @@ void Response::clearResponseObj()
 	_contentType.clear();
 	_statusCode.clear();
 	_reasonPhrase.clear();
+	_connection.clear();
+	_fileLoc.clear();
+	_sendingFinished = 0;
+	_range_begin = 0;
+	_bytesRead = 0;
+	_bytesSent = 0;
+	_totalBytesRead = 0;
 }
 
 void Server::make_response(Request req, const size_t socket)
