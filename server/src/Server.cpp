@@ -161,19 +161,21 @@ void Server::clientRequest( void ) {
                 else if (readRequest(socket) <= 0)
                     disconnectClients(id);
                 else if (!client[socket]->getBreakconnect()) {
+                    // if (client[socket]->message.size())
+                    //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << client[socket]->message;
+
                     // REQUEST PART
-
                     req.parseText(client[socket]->message);
-                    if (req.getReqURI() != "/favicon.ico")
-                        parseLocation();
+                    // if (req.getReqURI() != "/favicon.ico")
+                    //     parseLocation();
                     //
-
-                    // if (mess[id].size())
-                    //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << mess[id];
-                        
+                    client[socket]->status |= REQ_DONE; // вкл
+                    // std::cout<< (client[socket]->status & REQ_DONE) << "\n";
+                    // client[socket]->status &= ~REQ_DONE; // выкл
+                    // std::cout<< (client[socket]->status & REQ_DONE) << "\n";
                     //  RESPONSE PART
-					make_response(req, id);
-                    req.cleaner();
+					// make_response(req, socket);
+                    // req.cleaner();
                     
                     //
                     // mess[id] = "";
@@ -181,9 +183,15 @@ void Server::clientRequest( void ) {
                 }
                 fds[id].revents = 0;
             }
-            // else if (fds[id].revents & POLLOUT) {
-            //     make_response(req, id);
-            // }
+            else if (fds[id].revents & POLLOUT) {
+                size_t socket = fds[id].fd;
+                if (req.getReqURI() != "/favicon.ico" && !isServerSocket(socket)) {
+                    if (client[socket]->status & REQ_DONE)
+                        make_response(req, socket);
+                    // writeLog(http->get_access_log(), "POLLOUT ping socket: " + itos(socket));
+                }
+                fds[id].revents = 0;
+            }
         }
     }
 }
@@ -200,19 +208,53 @@ int  Server::readRequest( const size_t socket ) {
     int rd;
     std::string text;
 
-    if (client[socket]->message.size() > 0)
+    if (client[socket]->message.size() > 0) {
 		text = client[socket]->message;
+        bytesRead += text.size();
+    }
+    else {
+        if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
+            buf[rd] = 0;
+            bytesRead += rd;
+            text += buf;
+            size_t pos = text.find("Host: ") + 6;
+            if (pos != std::string::npos) {
+                std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
+                if ((pos = host.find("localhost")) != std::string::npos)
+                    host = "127.0.0.1" + host.substr(9);
+                client[socket]->setHost(host);
+                size_t max;
+                try {
+                    max = srvs.at(host)->get_client_max_body_size();
+                }
+                catch(const std::exception& e) {
+                    pos = host.find(":");
+                    host = "0.0.0.0" + host.substr(pos);
+                    max = srvs[host]->get_client_max_body_size();
+                }
+                client[socket]->setMaxBodySize(max);
+                if (max < bytesRead) {
+                    std::cout << "ERROR PAGE\n";
+                    generateErrorPage(404, socket);
+                    return (0);
+                }
+            }
+        }
+    }
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
-        if (text.find("\n") != std::string::npos)
-            break;
+        if (client[socket]->getMaxBodySize() < bytesRead) {
+            std::cout << "ERROR PAGE\n";
+            generateErrorPage(404, socket);
+            return (0);
+        }
     }
     while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
     if (text.size() > BUF_SIZE) {
-        text.replace(BUF_SIZE - 2, 2, "\r\n");
+        // text.replace(BUF_SIZE - 2, 2, "\r\n");
         std::cout << RED << "ALERT! text more than " << BUF_SIZE << " bytes!" << RESET << "\n";
     }
     client[socket]->checkConnection(text);

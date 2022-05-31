@@ -27,7 +27,8 @@ class Response
 		std::ifstream							_input; //поток файла из которого читает в данный момент
 
 	public:
-		Response() : _sendingFinished(0), _readFrom(0) {};
+		int										_hasSent;
+		Response() : _sendingFinished(0), _readFrom(0), _hasSent(0) {};
 		~Response() {};
 
 		void			make_response_body(Request req, const size_t id, std::vector<struct pollfd> fds);

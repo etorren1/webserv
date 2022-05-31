@@ -51,7 +51,7 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
     }
 }
 
-void	Server::generateErrorPage(int error, int id) {
+void	Server::generateErrorPage(int error, size_t socket) {
     std::string mess = "none";
     const int &code = error;
     std::map<int, std::string>::iterator it = resCode.begin();
@@ -60,15 +60,22 @@ void	Server::generateErrorPage(int error, int id) {
             mess = (*it).second;
         }
     }
-    std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>Error page </title></head><body><div class=\"container\"><h2>" + itos(code) + "</h2><h3>" + mess + "</h3><p><a href=\"#homepage\">Click here</a> to redirect to homepage.</p></div></body></html>";
-    std::string header = req.getProtocolVer() + " " + itos(code) + " " + mess + "\n" + "Version: " + req.getProtocolVer() + "\n" + "Content-Type: " + req.getContentType() + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
+    std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
+                                <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
+                                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
+                                <title>Error page </title></head><body><div class=\"container\"><h2>" \
+                                + itos(code) + "</h2><h3>" + mess + "</h3> \
+                                <p><a href=\"#homepage\">Click here</a> to redirect to homepage.</p></div></body></html>";
+    std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\n" + "Version: " + "HTTP/1.1" \
+                         + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
-    size_t res = send(fds[id].fd, response.c_str(), response.length(), 0);
+    size_t res = send(socket, response.c_str(), response.length(), 0);
     // std::cout << GREEN << response << RESET;
 }
 
 void Server::parseLocation() {
-    if (req.getMIMEType().empty())
+    std::cout << "MIME type: " << req.getMIMEType() << "\n";
+    if (req.getMIMEType().empty())// || req.getMIMEType() == "none")
         reqType = 0; // dir
     else
         reqType = 1; //file
@@ -104,6 +111,7 @@ void Server::parseLocation() {
                         // struct stat s;
                         if (!access(location.c_str(), 4)) {
                             location += defPage;
+                            std::cout << "default_page: " <<defPage << "\n";
                             FILE *file;
                             file = fopen(location.c_str(), "r");
                             if (file != NULL) {
@@ -132,7 +140,7 @@ void Server::parseLocation() {
                     FILE *file;
                     file = fopen(location.c_str(), "r");
                     if (file != NULL) {
-                        std::cout << "File " << location << " found\n";
+                        std::cout << "File " << location << " found \n";
                         //make_response ???
                     } else {
                         throw(codeException(404));

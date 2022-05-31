@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include <filesystem>
 
-#include "Config/Config.hpp"
+#include "config/Config.hpp"
 #include "Client.hpp"
 #include "Utils.hpp"
 #include "Request.hpp"
@@ -28,7 +28,7 @@
 #define	STOP	0b00
 #define WORKING 0b10
 #define RESTART 0b01
-#define BUF_SIZE 2048
+#define BUF_SIZE 1024
 #define DEFAULT_PATH "webserv.conf"
 #define srvs_iterator std::map<std::string, Server_block * >::iterator
 #define lctn_iterator std::map<std::string, Location_block * >::iterator
@@ -100,7 +100,7 @@ class Server {
 		void	run( void );
 
 		//for errors
-		void	generateErrorPage(int code, int id);
+		void	generateErrorPage(int code, size_t socket);
 		void	parseLocation();
 
 };
