@@ -39,15 +39,15 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	
 }
 
-int count = 0;
 
-void Response::make_response_body(Request req, const size_t socket, std::vector<pollfd> fds)
+
+int Response::make_response_body(Request req, const size_t socket)
 {
-	char 			*buffer = new char [2048];
+	// char 			*buffer = new char [RES_BUF_SIZE];
 	size_t			file_size;
 	
-	std::fill(&buffer[0], &buffer[2048], 0);
-	file_size = getFileSize(_fileLoc.c_str());
+	// std::fill(&buffer[0], &buffer[RES_BUF_SIZE], 0);
+	// file_size = getFileSize(_fileLoc.c_str());
 
 	// if (_hasSent != 1) {
 	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
@@ -57,48 +57,114 @@ void Response::make_response_body(Request req, const size_t socket, std::vector<
 	if(!_input.is_open())
 		throw(codeException(404));
 
-	// size_t count = 0;
-	// while (!_input.eof())
-	// {
-	_input.read (buffer, 2048);
+
+	_input.read (buffer, RES_BUF_SIZE);
 	_bytesRead = _input.gcount(); //The number of successfully extracted characters can be queried using gcount() - https://en.cppreference.com/w/cpp/io/basic_istream/read
-	if (_bytesRead < 2048)
+	if (_bytesRead < RES_BUF_SIZE)
 		throw codeException(500);
-	_totalBytesRead += _bytesRead;
+	// _totalBytesRead += _bytesRead;
 	if (_bytesRead == -1)
 	{
 		std::cerr << "read = " << _bytesRead << std::endl;
-		throw (123 );
+		throw (codeException(25));
 	}
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);	// Отправляем ответ клиенту с помощью функции send
+	// if (_bytesSent < RES_BUF_SIZE)
+	// {
+		
+	// }
+
 	if (_bytesSent == -1)
 	{
 		std::cerr << "wrote = " << _bytesSent << std::endl;
-		throw (123);
+		throw (codeException(20));
 	}
-	if (_bytesSent < _bytesRead)
-	{
-		std::cout << "HERE";
-		_bytesRead -= _bytesRead - _bytesSent;
-		if(_bytesRead && _bytesRead < file_size && _bytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
-			_input.seekg(_bytesRead);
-	}
-
-	count += _bytesSent;
-	std::cout << YELLOW << "sent:" << _bytesSent << "\nwritten: " << _bytesRead << RESET << "\n";
+	// if (_bytesSent < _bytesRead)
+	// {
+	// 	std::cout << "HERE\n";
+	// 	_totalBytesRead -= (_bytesRead - _bytesSent);
+	// 	// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
+	// 		_input.seekg(_totalBytesRead);
 	// }
-	std::cout << GREEN << count << RESET << "\n";
+
+	// count += _bytesSent;
+	// std::cout << "sent:" << _bytesSent << "\nread: " << _bytesRead << "\ntotal read:" << _totalBytesRead\
+	// << "\ntotal send:" << count << "\n";
+
 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 			// std::cout << RED << "blabla" << RESET << "\n";	
 		_input.close();
 		_sendingFinished = 1;
+		// delete[] buffer;
+		return (1);
 	}
 	// std::cout << BLUE<< "HERE" << RESET << "\n";
 
-	delete[] buffer;
+	// delete[] buffer;
+	return (0);
 }
+
+// int Response::make_response_body(Request req, const size_t socket)
+// {
+// 	int 			result;
+// 	char 			*buffer = new char [RES_BUF_SIZE];
+	
+// 	// std::cout << "HEWAE\n";
+// 	// std::ifstream							_input;
+
+// 	// if (_hasSent != 1) {
+// 	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
+// 	// 	size_t file_size = getFileSize(_fileLoc.c_str());	
+// 	// }
+
+// 	if(!_input.is_open())
+// 		throw(codeException(404));
+
+// 	size_t count = 0;
+// 	// while (!_input.eof())
+// 	// {
+// 		_input.read (buffer, RES_BUF_SIZE);
+// 		int read_bytes =  _input.gcount();
+// 		_totalBytesRead += _bytesRead;
+// 		// if (read_bytes == -1)
+// 		// {
+// 		// 	std::cerr << "read = " << read_bytes << std::endl;
+// 		// 	throw (123 );
+// 		// }
+// 		// if (fds[id].revents & POLLOUT)
+// 		// usleep(1000);
+// 			result = send(socket, buffer, read_bytes, 0);		// Отправляем ответ клиенту с помощью функции send
+// 		if (result == -1)
+// 		{
+// 			std::cerr << "wrote = " << result << std::endl;
+// 			throw (123);
+// 		}
+// 			if (result < read_bytes)
+// 	{
+// 		std::cout << "HERE\n";
+// 		_totalBytesRead -= (read_bytes - result);
+// 		// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
+// 			_input.seekg(_totalBytesRead);
+// 	}
+// 		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
+// 		// count += result;
+// 	// }
+// 	// std::cout << GREEN << count << RESET << "\n";
+// 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
+// 	{
+// 			// std::cout << RED << "blabla" << RESET << "\n";	
+// 		_input.close();
+// 		_sendingFinished = 1;
+// 		delete[] buffer;
+// 		return (1);
+// 	}
+// 	// std::cout << BLUE<< "HERE" << RESET << "\n";
+
+// 	delete[] buffer;
+// 	return (0);
+// }
 
 void Response::clearResponseObj()
 {
@@ -116,52 +182,52 @@ void Response::clearResponseObj()
 	_totalBytesRead = 0;
 }
 
-void Server::make_response(Request req, const size_t socket)
-{
-	std::stringstream response;
-	size_t result;
-	Response &res = client[socket]->getResponse();
-	// if (req.getReqURI() == "/favicon.ico")
-	// {
-	// 	res.setFileLoc("./site/image.png");
-	// 	res.setContentType("image/png");
-	// }
-	// else
-	// {
-	// 	res.setFileLoc(location);
-	// 	res.setContentType(req.getContentType());
-	// }
-	res.setFileLoc("./site/video.mp4");
-	res.setContentType("video/mp4");
-	// res.setFileLoc("./site/index.html");
-	// res.setContentType("text/html");
-	// res.setFileLoc("./site/image.jpg");
-	// res.setContentType("image/jpg");
-	try
-	{
-		if (res._hasSent == 0)
-		{
-			res.make_response_header(req);
-			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
-							res.getHeader().length(), 0);	
-			res._hasSent = 1;
-		}
-		// std::cout << "location: " << location << "\n";
-		if (res._hasSent == 1)
-			res.make_response_body(req, socket, fds);
-	}
-	catch (codeException &e)
-	{
-		generateErrorPage(e.getErrorCode(), socket);
-		return;
-	}
-	// catch (std::exception &e)
-	// {
-	// 	e.what();
-	// 	return;
-	// }
-	// res.clearResponseObj();
-}
+// void Server::make_response(Request req, const size_t socket)
+// {
+// 	std::stringstream response;
+// 	size_t result;
+// 	Response &res = client[socket]->getResponse();
+// 	// if (req.getReqURI() == "/favicon.ico")
+// 	// {
+// 	// 	res.setFileLoc("./site/image.png");
+// 	// 	res.setContentType("image/png");
+// 	// }
+// 	// else
+// 	// {
+// 	// 	res.setFileLoc(location);
+// 	// 	res.setContentType(req.getContentType());
+// 	// }
+// 	res.setFileLoc("./site/video.mp4");
+// 	res.setContentType("video/mp4");
+// 	// res.setFileLoc("./site/index.html");
+// 	// res.setContentType("text/html");
+// 	// res.setFileLoc("./site/image.jpg");
+// 	// res.setContentType("image/jpg");
+// 	try
+// 	{
+// 		if (res._hasSent == 0)
+// 		{
+// 			res.make_response_header(req);
+// 			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
+// 							res.getHeader().length(), 0);	
+// 			res._hasSent = 1;
+// 		}
+// 		// std::cout << "location: " << location << "\n";
+// 		if (res._hasSent == 1)
+// 			res.make_response_body(req, socket, fds);
+// 	}
+// 	catch (codeException &e)
+// 	{
+// 		generateErrorPage(e.getErrorCode(), socket);
+// 		return;
+// 	}
+// 	// catch (std::exception &e)
+// 	// {
+// 	// 	e.what();
+// 	// 	return;
+// 	// }
+// 	// res.clearResponseObj();
+// }
 
 std::string	Response::getHeader() { return(_header); }
 std::string	Response::getBody() { return(_body); }

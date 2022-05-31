@@ -3,8 +3,9 @@
 
 #include "Utils.hpp"
 // #include "Request.hpp"
-#include <poll.h>
 #include <fstream>
+
+#define RES_BUF_SIZE 2048
 
 class Response
 {
@@ -32,13 +33,16 @@ class Response
 		long									_bytesSent;
 		long									_totalBytesRead;
 
+		int 									count;
+
+		char 			buffer[RES_BUF_SIZE];
 	public:
 		int										_hasSent;
 		Response() : _sendingFinished(0), _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
-					_hasSent(0), _range_begin(0) {};
+					_hasSent(0), _range_begin(0), count(0) {};
 		~Response() {};
 
-		void			make_response_body(Request req, const size_t id, std::vector<struct pollfd> fds);
+		int				make_response_body(Request req, const size_t id);
 		void			make_response_header(Request req);
 		std::string		make_general_header (Request req, std::string response_body);
 		std::string		find_requested_file_path(Request req);

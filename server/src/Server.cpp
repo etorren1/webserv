@@ -152,46 +152,28 @@ void Server::connectClients( const int & fd ) {
 
 void Server::clientRequest( void ) {
     int ret = poll(fds.data(), fds.size(), 0);
+    int wd ;
     if (ret != 0)    {
         for (size_t id = 0; id < fds.size(); id++) {
+            size_t socket = fds[id].fd;
             if (fds[id].revents & POLLIN) {
-                size_t socket = fds[id].fd;
                 if (isServerSocket(socket))
                     connectClients(socket);
-                else if (readRequest(socket) <= 0)
+                else if ((wd = readRequest(socket)) <= 0) {
                     disconnectClients(id);
-                else if (!client[socket]->getBreakconnect()) {
-                    // if (client[socket]->message.size())
-                    //     std::cout << YELLOW << "Client " << fds[id].fd << " send (full message): " << RESET << client[socket]->message;
-
-                    // REQUEST PART
-                    req.parseText(client[socket]->message);
-                    // if (req.getReqURI() != "/favicon.ico")
-                    //     parseLocation();
-                    //
-                    client[socket]->status |= REQ_DONE; // вкл
-                    // std::cout<< (client[socket]->status & REQ_DONE) << "\n";
-                    // client[socket]->status &= ~REQ_DONE; // выкл
-                    // std::cout<< (client[socket]->status & REQ_DONE) << "\n";
-                    //  RESPONSE PART
-					// make_response(req, socket);
-                    // req.cleaner();
-                    
-                    //
-                    // mess[id] = "";
-                    client[socket]->message = "";
                 }
-                fds[id].revents = 0;
+                else if (!client[socket]->getBreakconnect())
+                {
+                    std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+                    std::cout << client[socket]->getMessage();
+                    client[socket]->handleRequest();
+                }
             }
             else if (fds[id].revents & POLLOUT) {
-                size_t socket = fds[id].fd;
-                if (req.getReqURI() != "/favicon.ico" && !isServerSocket(socket)) {
-                    if (client[socket]->status & REQ_DONE)
-                        make_response(req, socket);
-                    // writeLog(http->get_access_log(), "POLLOUT ping socket: " + itos(socket));
-                }
-                fds[id].revents = 0;
+                if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
+                    client[socket]->makeResponse();
             }
+            fds[id].revents = 0;
         }
     }
 }
@@ -208,8 +190,8 @@ int  Server::readRequest( const size_t socket ) {
     int rd;
     std::string text;
 
-    if (client[socket]->message.size() > 0) {
-		text = client[socket]->message;
+    if (client[socket]->getMessage().size() > 0) {
+		text = client[socket]->getMessage();
         bytesRead += text.size();
     }
     else {
@@ -235,7 +217,7 @@ int  Server::readRequest( const size_t socket ) {
                 client[socket]->setMaxBodySize(max);
                 if (max < bytesRead) {
                     std::cout << "ERROR PAGE\n";
-                    generateErrorPage(404, socket);
+                    client[socket]->generateErrorPage(404);
                     return (0);
                 }
             }
@@ -247,7 +229,7 @@ int  Server::readRequest( const size_t socket ) {
         text += buf;
         if (client[socket]->getMaxBodySize() < bytesRead) {
             std::cout << "ERROR PAGE\n";
-            generateErrorPage(404, socket);
+            client[socket]->generateErrorPage(404);
             return (0);
         }
     }
@@ -258,7 +240,7 @@ int  Server::readRequest( const size_t socket ) {
         std::cout << RED << "ALERT! text more than " << BUF_SIZE << " bytes!" << RESET << "\n";
     }
     client[socket]->checkConnection(text);
-    client[socket]->message = text;
+    client[socket]->setMessage(text);
     return (bytesRead);
 }
 
@@ -297,31 +279,6 @@ Server::Server( std::string nw_cfg_path ) {
 
     status = WORKING;
     nw_cfg_path.size() ? cfg_path = nw_cfg_path : cfg_path =  DEFAULT_PATH;
-    //Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
-    // отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
-    this->resCode.insert(std::make_pair(100, "Continue"));
-    this->resCode.insert(std::make_pair(101, "Switching Protocols"));
-    this->resCode.insert(std::make_pair(200, "OK"));
-    this->resCode.insert(std::make_pair(201, "Created"));
-    this->resCode.insert(std::make_pair(202, "Accepted"));
-    this->resCode.insert(std::make_pair(203, "Non-Authoritative Information"));
-    this->resCode.insert(std::make_pair(204, "No Content"));
-    this->resCode.insert(std::make_pair(304, "Not Modified"));
-    this->resCode.insert(std::make_pair(400, "Bad Request"));
-    this->resCode.insert(std::make_pair(401, "Unauthorized"));
-    this->resCode.insert(std::make_pair(402, "Payment Required"));
-    this->resCode.insert(std::make_pair(403, "Forbidden"));
-    this->resCode.insert(std::make_pair(404, "Not Found"));
-    this->resCode.insert(std::make_pair(405, "Method Not Allowed"));
-    this->resCode.insert(std::make_pair(406, "Not Acceptable"));
-    this->resCode.insert(std::make_pair(407, "Proxy Authentication Required"));
-    this->resCode.insert(std::make_pair(408, "Request Timeout"));
-    this->resCode.insert(std::make_pair(409, "Conflict"));
-    this->resCode.insert(std::make_pair(500, "Internal Server Error"));
-    this->resCode.insert(std::make_pair(501, "Not Implemented"));
-    this->resCode.insert(std::make_pair(502, "Bad Gateway"));
-    this->resCode.insert(std::make_pair(503, "Service Unavailable"));
-    this->resCode.insert(std::make_pair(504, "Gateway Timeout"));
 }
 
 Server::~Server() {

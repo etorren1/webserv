@@ -47,7 +47,6 @@ class Server {
 		int							status;
 		Request 					req;
 
-		std::map<int, std::string>	resCode;
 		std::string					location;
 		bool						reqType;
 		
@@ -100,7 +99,6 @@ class Server {
 		void	run( void );
 
 		//for errors
-		void	generateErrorPage(int code, size_t socket);
 		void	parseLocation();
 
 };
