@@ -51,28 +51,6 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
     }
 }
 
-void	Server::generateErrorPage(int error, size_t socket) {
-    std::string mess = "none";
-    const int &code = error;
-    std::map<int, std::string>::iterator it = resCode.begin();
-    for (; it != this->resCode.end(); it++) {
-        if (code == (*it).first) {
-            mess = (*it).second;
-        }
-    }
-    std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
-                                <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
-                                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
-                                <title>Error page </title></head><body><div class=\"container\"><h2>" \
-                                + itos(code) + "</h2><h3>" + mess + "</h3> \
-                                <p><a href=\"#homepage\">Click here</a> to redirect to homepage.</p></div></body></html>";
-    std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\n" + "Version: " + "HTTP/1.1" \
-                         + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
-    std::string response = header + responseBody;
-    size_t res = send(socket, response.c_str(), response.length(), 0);
-    // std::cout << GREEN << response << RESET;
-}
-
 void Server::parseLocation() {
     std::cout << "MIME type: " << req.getMIMEType() << "\n";
     if (req.getMIMEType().empty())// || req.getMIMEType() == "none")

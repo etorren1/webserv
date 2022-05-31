@@ -3,7 +3,6 @@
 
 #include "Utils.hpp"
 // #include "Request.hpp"
-#include <poll.h>
 #include <fstream>
 
 class Response
@@ -31,7 +30,7 @@ class Response
 		Response() : _sendingFinished(0), _readFrom(0), _hasSent(0) {};
 		~Response() {};
 
-		void			make_response_body(Request req, const size_t id, std::vector<struct pollfd> fds);
+		int				make_response_body(Request req, const size_t id);
 		void			make_response_header(Request req);
 		std::string		make_general_header (Request req, std::string response_body);
 		std::string		find_requested_file_path(Request req);

@@ -39,7 +39,7 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	
 }
 
-void Response::make_response_body(Request req, const size_t socket, std::vector<pollfd> fds)
+int Response::make_response_body(Request req, const size_t socket)
 {
 
 	//------------------------1------------------------
@@ -71,7 +71,7 @@ void Response::make_response_body(Request req, const size_t socket, std::vector<
 		// }
 		// if (fds[id].revents & POLLOUT)
 		// usleep(1000);
-			result = send(socket, buffer, 2048, 0);		// Отправляем ответ клиенту с помощью функции send
+			result = send(socket, buffer, read_bytes, 0);		// Отправляем ответ клиенту с помощью функции send
 		if (result == -1)
 		{
 			std::cerr << "wrote = " << result << std::endl;
@@ -86,10 +86,13 @@ void Response::make_response_body(Request req, const size_t socket, std::vector<
 			// std::cout << RED << "blabla" << RESET << "\n";	
 		_input.close();
 		_sendingFinished = 1;
+		delete[] buffer;
+		return (1);
 	}
 	// std::cout << BLUE<< "HERE" << RESET << "\n";
 
 	delete[] buffer;
+	return (0);
 }
 
 void Response::clearResponseObj()
@@ -101,52 +104,52 @@ void Response::clearResponseObj()
 	_reasonPhrase.clear();
 }
 
-void Server::make_response(Request req, const size_t socket)
-{
-	std::stringstream response;
-	size_t result;
-	Response &res = client[socket]->getResponse();
-	// if (req.getReqURI() == "/favicon.ico")
-	// {
-	// 	res.setFileLoc("./site/image.png");
-	// 	res.setContentType("image/png");
-	// }
-	// else
-	// {
-	// 	res.setFileLoc(location);
-	// 	res.setContentType(req.getContentType());
-	// }
-	res.setFileLoc("./site/video.mp4");
-	res.setContentType("video/mp4");
-	// res.setFileLoc("./site/index.html");
-	// res.setContentType("text/html");
-	// res.setFileLoc("./site/image.jpg");
-	// res.setContentType("image/jpg");
-	try
-	{
-		if (res._hasSent == 0)
-		{
-			res.make_response_header(req);
-			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
-							res.getHeader().length(), 0);	
-			res._hasSent = 1;
-		}
-		// std::cout << "location: " << location << "\n";
-		if (res._hasSent == 1)
-			res.make_response_body(req, socket, fds);
-	}
-	catch (codeException &e)
-	{
-		generateErrorPage(e.getErrorCode(), socket);
-		return;
-	}
-	// catch (std::exception &e)
-	// {
-	// 	e.what();
-	// 	return;
-	// }
-	// res.clearResponseObj();
-}
+// void Server::make_response(Request req, const size_t socket)
+// {
+// 	std::stringstream response;
+// 	size_t result;
+// 	Response &res = client[socket]->getResponse();
+// 	// if (req.getReqURI() == "/favicon.ico")
+// 	// {
+// 	// 	res.setFileLoc("./site/image.png");
+// 	// 	res.setContentType("image/png");
+// 	// }
+// 	// else
+// 	// {
+// 	// 	res.setFileLoc(location);
+// 	// 	res.setContentType(req.getContentType());
+// 	// }
+// 	res.setFileLoc("./site/video.mp4");
+// 	res.setContentType("video/mp4");
+// 	// res.setFileLoc("./site/index.html");
+// 	// res.setContentType("text/html");
+// 	// res.setFileLoc("./site/image.jpg");
+// 	// res.setContentType("image/jpg");
+// 	try
+// 	{
+// 		if (res._hasSent == 0)
+// 		{
+// 			res.make_response_header(req);
+// 			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
+// 							res.getHeader().length(), 0);	
+// 			res._hasSent = 1;
+// 		}
+// 		// std::cout << "location: " << location << "\n";
+// 		if (res._hasSent == 1)
+// 			res.make_response_body(req, socket, fds);
+// 	}
+// 	catch (codeException &e)
+// 	{
+// 		generateErrorPage(e.getErrorCode(), socket);
+// 		return;
+// 	}
+// 	// catch (std::exception &e)
+// 	// {
+// 	// 	e.what();
+// 	// 	return;
+// 	// }
+// 	// res.clearResponseObj();
+// }
 
 std::string	Response::getHeader() { return(_header); }
 std::string	Response::getBody() { return(_body); }
