@@ -3,6 +3,7 @@
 
 #include "Request.hpp"
 #include "Response.hpp"
+#include "config/Server_block.hpp"
 #include <sys/socket.h>
 #include <map>
 
@@ -14,6 +15,7 @@ class Client
 	private:
 		Request	req;
 		Response res;
+		Server_block * srv;
 
 		bool		breakconnect;
 		size_t		socket;
@@ -35,12 +37,14 @@ class Client
 		void		setHost( const std::string & nwhost );
 		void		setMaxBodySize( const size_t n );
 		void		setMessage( const std::string & mess );
+		void		setServer( Server_block * s );
 
 		bool 		getBreakconnect( void ) const;
 		std::string	getHost( void ) const;
 		size_t		getMaxBodySize( void ) const;
 		Response &	getResponse( void );
 		Request &	getRequest( void );
+		Server_block * getServer( void );
 		std::string getMessage( void ) const;
 
 

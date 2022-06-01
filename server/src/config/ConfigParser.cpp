@@ -208,12 +208,12 @@ void    Server::cfg_autoindex( std::string & text, T * block ) {
 template <class T>
 void    Server::cfg_client_max_body_size( std::string & text, T * block ) {
     std::string raw = get_raw_param("client_max_body_size", text);
-    if (raw.find_first_not_of("0123456789m") != std::string::npos) {
+    if (raw.find_first_not_of("0123456789Mm") != std::string::npos) {
         delete block; block = NULL;
         errorShutdown(255, http->get_error_log(), "error: configuration file: invalid value: client_max_body_size.");
     }
     int     size = atoi(raw.c_str());
-    if (raw[raw.size() - 1] == 'm')
+    if (raw[raw.size() - 1] == 'm' || raw[raw.size() - 1] == 'M')
         size *= 1024;
     if (size != 0)
         block->set_client_max_body_size(size);

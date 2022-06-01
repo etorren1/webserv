@@ -38,7 +38,7 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
         else
             while (read(fd, buf, BUF_SIZE) > 0) {}
         if (fd) {
-            std::time_t result = std::time(nullptr);
+            std::time_t result = std::time(NULL);
             std::string time = std::asctime(std::localtime(&result));
             time = "[" + time.erase(time.size() - 1) + "] ";
             write(fd, time.c_str(), time.size());
@@ -49,6 +49,18 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
             close (fd);
         }
     }
+}
+
+int     Server::checkBodySize( const size_t socket, const std::string & text ) {
+    size_t bodySize;
+    size_t pos = text.find("\r\n\r\n");
+    if (pos != std::string::npos)
+        bodySize = text.size() - pos - 4;
+    if (bodySize > client[socket]->getMaxBodySize() ) {
+        client[socket]->generateErrorPage(400);
+        return (1);
+    }
+    return (0);
 }
 
 void Server::parseLocation() {

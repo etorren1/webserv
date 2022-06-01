@@ -12,7 +12,7 @@ void		Client::handleRequest( void ) {
 	message.clear();
 }
 
-void		Client::makeResponse( void ) {
+void		Client::makeResponse() {
 	std::stringstream response;
 	size_t result;
 	// if (req.getReqURI() == "/favicon.ico")
@@ -25,8 +25,10 @@ void		Client::makeResponse( void ) {
 	// 	res.setFileLoc(location);
 	// 	res.setContentType(req.getContentType());
 	// }
-	res.setFileLoc("./site/video.mp4");
-	res.setContentType("video/mp4");
+	// res.setFileLoc("./site/video.mp4");
+	// res.setContentType("video/mp4");
+	res.setFileLoc("./site/colors/red.html");
+	res.setContentType("text/html");
 	// res.setFileLoc("./site/index.html");
 	// res.setContentType("text/html");
 	// res.setFileLoc("./site/image.jpg");
@@ -76,6 +78,7 @@ void	Client::generateErrorPage( const int error ) {
 void		Client::setHost( const std::string & nwhost ) { host = nwhost; }
 void		Client::setMaxBodySize( const size_t n ) { max_body_size = n; }
 void		Client::setMessage( const std::string & mess ) { message = mess; }
+void		Client::setServer( Server_block * s ) { srv = s; }
 
 bool 		Client::getBreakconnect() const { return breakconnect; }
 Response &	Client::getResponse() { return res; }
@@ -83,6 +86,7 @@ Request &	Client::getRequest() { return req; }
 size_t		Client::getMaxBodySize() const { return max_body_size; }
 std::string	Client::getHost() const { return host; }
 std::string Client::getMessage() const { return message; }
+Server_block * Client::getServer( void ) { return srv;}
 
 Client::Client(size_t nwsock) {
 	breakconnect = false;
