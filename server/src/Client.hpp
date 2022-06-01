@@ -19,8 +19,6 @@ class Client
 
 		bool		breakconnect;
 		size_t		socket;
-		std::string host;
-		size_t		max_body_size;
 		std::string	message;
 
 		std::map<int, std::string>	resCode;
@@ -34,8 +32,6 @@ class Client
 		void		handleRequest( void );
 		void		makeResponse( void );
 
-		void		setHost( const std::string & nwhost );
-		void		setMaxBodySize( const size_t n );
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );
 

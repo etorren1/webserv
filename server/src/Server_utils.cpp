@@ -52,7 +52,7 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
 }
 
 int     Server::checkBodySize( const size_t socket, const std::string & text ) {
-    size_t bodySize;
+    size_t bodySize = 0;
     size_t pos = text.find("\r\n\r\n");
     if (pos != std::string::npos)
         bodySize = text.size() - pos - 4;

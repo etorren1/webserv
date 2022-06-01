@@ -17,13 +17,16 @@ void		Client::makeResponse() {
 	size_t result;
 	// if (req.getReqURI() == "/favicon.ico")
 	// {
-	// 	res.setFileLoc("./site/image.png");
-	// 	res.setContentType("image/png");
+		// generateErrorPage(404);
+		// res.setFileLoc("./site/image.png");
+		// res.setContentType("image/png");
 	// }
 	// else
 	// {
-	// 	res.setFileLoc(location);
-	// 	res.setContentType(req.getContentType());
+		// res.setFileLoc(location);
+		// res.setContentType(req.getContentType());
+	// 	res.setFileLoc("./site/image.jpg");
+	// 	res.setContentType("image/jpg");
 	// }
 	// res.setFileLoc("./site/video.mp4");
 	// res.setContentType("video/mp4");
@@ -31,8 +34,6 @@ void		Client::makeResponse() {
 	res.setContentType("text/html");
 	// res.setFileLoc("./site/index.html");
 	// res.setContentType("text/html");
-	// res.setFileLoc("./site/image.jpg");
-	// res.setContentType("image/jpg");
 	int rd = 0;
 	try {
 		if (res._hasSent == 0) {
@@ -58,33 +59,30 @@ void	Client::generateErrorPage( const int error ) {
     std::string mess = "none";
     const int &code = error;
     std::map<int, std::string>::iterator it = resCode.begin();
-    for (; it != this->resCode.end(); it++) {
-        if (code == (*it).first) {
-            mess = (*it).second;
-        }
-    }
+	try {
+		mess = resCode.at(code);
+	} catch(const std::exception& e) {}
+	
     std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
                                 <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
                                 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
-                                <title>Error page </title></head><body><div class=\"container\"><h2>" \
-                                + itos(code) + "</h2><h3>" + mess + "</h3> \
-                                <p><a href=\"#homepage\">Click here</a> to redirect to homepage.</p></div></body></html>";
+                                <title>" + itos(code) + " " + mess + "</title></head><body  align=\"center\"><div class=\"container\"><h1>" \
+                                + itos(code) + " " + mess + "</h1><hr></hr> \
+                                <p>webserver</p></div></body></html>";
     std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\n" + "Version: " + "HTTP/1.1" \
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
 }
 
-void		Client::setHost( const std::string & nwhost ) { host = nwhost; }
-void		Client::setMaxBodySize( const size_t n ) { max_body_size = n; }
 void		Client::setMessage( const std::string & mess ) { message = mess; }
 void		Client::setServer( Server_block * s ) { srv = s; }
 
 bool 		Client::getBreakconnect() const { return breakconnect; }
 Response &	Client::getResponse() { return res; }
 Request &	Client::getRequest() { return req; }
-size_t		Client::getMaxBodySize() const { return max_body_size; }
-std::string	Client::getHost() const { return host; }
+size_t		Client::getMaxBodySize() const { return srv->get_client_max_body_size(); }
+std::string	Client::getHost() const { return srv->get_listen(); }
 std::string Client::getMessage() const { return message; }
 Server_block * Client::getServer( void ) { return srv;}
 

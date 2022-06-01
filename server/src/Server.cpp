@@ -162,8 +162,8 @@ void Server::clientRequest( void ) {
                     disconnectClients(id);
                 else if (!client[socket]->getBreakconnect())
                 {
-                    // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-                    // std::cout << client[socket]->getMessage();
+                    std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+                    std::cout << client[socket]->getMessage();
                     client[socket]->handleRequest();
                 }
             }
@@ -186,7 +186,7 @@ static bool checkConnection( const std::string & mess ) {
 int     Server::readHeader( const size_t socket, std::string & text ) {
     char buf[BUF_SIZE + 1];
     int rd;
-    int bytesRead;
+    int bytesRead = 0;
 
     if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
@@ -199,20 +199,23 @@ int     Server::readHeader( const size_t socket, std::string & text ) {
             std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
             if ((pos = host.find("localhost")) != std::string::npos)
                 host = "127.0.0.1" + host.substr(9);
-            client[socket]->setHost(host);
-            size_t max;
             try {
                 srv = srvs.at(host);
-                max = srv->get_client_max_body_size();
+            } catch(const std::exception& e) {
+                try {
+                    pos = host.find(":");
+                    host = "0.0.0.0" + host.substr(pos);
+                    srv = srvs.at(host);
+                } catch(const std::exception& e) {
+                    client[socket]->generateErrorPage(400);
+                    return (0);
+                }
             }
-            catch(const std::exception& e) {
-                pos = host.find(":");
-                host = "0.0.0.0" + host.substr(pos);
-                srv = srvs.at(host);
-                max = srv->get_client_max_body_size();
-            }
-            client[socket]->setMaxBodySize(max);
             client[socket]->setServer(srv);
+        }
+        else {
+            client[socket]->generateErrorPage(400);
+            return (0);
         }
     }
     return (bytesRead);
@@ -227,7 +230,8 @@ int     Server::readRequest( const size_t socket ) {
     if (client[socket]->getMessage().size() > 0)
 		text = client[socket]->getMessage();
     else
-        bytesRead = readHeader(socket, text);
+        if ((bytesRead = readHeader(socket, text)) <= 0)
+            return (0);
     if (checkBodySize(socket, text))
         return (0);
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
@@ -237,7 +241,6 @@ int     Server::readRequest( const size_t socket ) {
         if (checkBodySize(socket, text))
             return (0);
     }
-    bytesRead += rd;
     while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
     client[socket]->checkConnection(text);
