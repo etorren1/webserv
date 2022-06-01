@@ -42,61 +42,6 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	
 }
 
-
-
-// int Response::make_response_body(Request req, const size_t socket)//1
-// {
-// 	size_t			file_size;
-// 	// file_size = getFileSize(_fileLoc.c_str());
-
-// 	// if (_hederHasSent != 1) {
-// 	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
-// 	// 	size_t file_size = getFileSize(_fileLoc.c_str());	
-// 	// }
-
-// 	if(!_input.is_open())
-// 		throw(codeException(404));
-
-// 	_input.read (buffer, RES_BUF_SIZE);
-// 	_bytesRead = _input.gcount(); //The number of successfully extracted characters can be queried using gcount() - https://en.cppreference.com/w/cpp/io/basic_istream/read
-// 	if (_bytesRead < RES_BUF_SIZE)
-// 		throw codeException(500);
-// 	// _totalBytesRead += _bytesRead;
-// 	if (_bytesRead == -1)
-// 	{
-// 		std::cerr << "read = " << _bytesRead << std::endl;
-// 		throw (codeException(25));
-// 	}
-
-// 	_bytesSent = send(socket, buffer, _bytesRead, 0);	// Отправляем ответ клиенту с помощью функции send
-// 	std::cout << _bytesSent << "\n";
-// 	if (_bytesSent == -1)
-// 	{
-// 		std::cerr << "wrote = " << _bytesSent << std::endl;
-// 		throw (codeException(20));
-// 	}
-
-// 	// if (_bytesSent < _bytesRead)
-// 	// {
-// 	// 	std::cout << "HERE\n";
-// 	// 	_totalBytesRead -= (_bytesRead - _bytesSent);
-// 	// 	// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
-// 	// 		_input.seekg(_totalBytesRead);
-// 	// }
-
-// 	// count += _bytesSent;
-// 	// std::cout << "sent:" << _bytesSent << "\nread: " << _bytesRead << "\ntotal read:" << _totalBytesRead\
-// 	// << "\ntotal send:" << count << "\n";
-
-// 	if (_input.eof())
-// 	{
-// 		_input.close();	//закрываем файл только после того как оправили все содержание файла
-// 		_sendingFinished = 1;
-// 		return (1);
-// 	}
-// 	return (0);
-// }
-
 int Response::make_response_body(Request req, const size_t socket)//2
 {
 	// int 			result;
@@ -108,20 +53,20 @@ int Response::make_response_body(Request req, const size_t socket)//2
 	// size_t count = 0;
 
 		_input.read (buffer, RES_BUF_SIZE);
-		 _bytesRead = _input.gcount();
+		_bytesRead = _input.gcount();
+		// if (_bytesRead < RES_BUF_SIZE) // ломает отправку файла
+		// 	throw codeException(500);
+
 		_totalBytesRead += _bytesRead;
+
 		// if (_bytesRead == -1)
 		// {
 		// 	std::cerr << "read = " << _bytesRead << std::endl;
 		// 	throw (123 );
 		// }
-		// if (fds[id].revents & POLLOUT)
-		// usleep(1000);
-		if (socket)
-		{
-			_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
 
-		}
+		_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+
 		if (_bytesSent == -1)
 		{
 			// throw (codeException(500));
@@ -129,26 +74,22 @@ int Response::make_response_body(Request req, const size_t socket)//2
 			std::cout << strerror(errno);
 			throw (123);
 		}
-			if (_bytesSent < _bytesRead)
-	{
-		std::cout << "HERE\n";
-		_totalBytesRead -= (_bytesRead - _bytesSent);
-		// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
-			_input.seekg(_totalBytesRead);
-	}
-		// std::cout << YELLOW << "wrote:" << _bytesSent << "\nwritten: " << _bytesRead << RESET << "\n";
+		if (_bytesSent < _bytesRead)
+		{
+			_totalBytesRead -= (_bytesRead - _bytesSent);
+			// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
+				_input.seekg(_totalBytesRead);
+		}
 		// count += _bytesSent;
-
-	// std::cout << GREEN << count << RESET << "\n";
+		// std::cout << "sent:" << _bytesSent << "\nread: " << _bytesRead << "\ntotal read:" << _totalBytesRead\
+		// << "\ntotal send:" << count << "\n";
 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-			// std::cout << RED << "blabla" << RESET << "\n";	
 		_input.close();
 		_sendingFinished = 1;
 		delete[] buffer;
 		return (1);
 	}
-	// std::cout << BLUE<< "HERE" << RESET << "\n";
 
 	delete[] buffer;
 	return (0);
