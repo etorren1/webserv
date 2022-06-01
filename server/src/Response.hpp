@@ -2,8 +2,9 @@
 # define RESPONSE_HPP
 
 #include "Utils.hpp"
-// #include "Request.hpp"
+#include "Request.hpp"
 #include <fstream>
+#include <sys/socket.h>
 
 class Response
 {

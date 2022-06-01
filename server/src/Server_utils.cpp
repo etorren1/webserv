@@ -21,22 +21,18 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
     if (path != "off") {
         int fd;
         char buf[BUF_SIZE];
-        fd = open(path.c_str(), O_RDWR | O_CREAT , 0777); // | O_TRUNC
+        fd = open(path.c_str(), O_RDWR | O_CREAT | O_APPEND , 0777); // | O_TRUNC
         if (fd < 0) {
             int sep = path.find_last_of("/");
             if (sep != std::string::npos) {
                 rek_mkdir(path.substr(0, sep));
             }
-            fd = open(path.c_str(), O_RDWR | O_CREAT , 0777); // | O_TRUNC
+            fd = open(path.c_str(), O_RDWR | O_CREAT | O_APPEND, 0777); // | O_TRUNC
             if (fd < 0) {
                 std::cerr << RED << "Error: can not open or create log file" << RESET << "\n";
                 return ;
             }
-            else
-                while (read(fd, buf, BUF_SIZE) > 0) {}
         }
-        else
-            while (read(fd, buf, BUF_SIZE) > 0) {}
         if (fd) {
             std::time_t result = std::time(NULL);
             std::string time = std::asctime(std::localtime(&result));

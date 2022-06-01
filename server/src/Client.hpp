@@ -50,6 +50,8 @@ class Client
 		std::string getMessage( void ) const;
 		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
 
+		void    	autoindex( const std::string & path );
+
 
 		Client( size_t nwsock );
 		~Client();

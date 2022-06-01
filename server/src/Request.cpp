@@ -172,7 +172,7 @@ void Request::splitDirectories() {
     _dirs.push_back("/");
     // std::vector<std::string>::iterator it = _dirs.begin();
     // for (; it != _dirs.end(); it++)
-    //     std::cout << GREEN << "it = " << *it << RESET << "\n";
+    //     std::cout << RED << "it = " << *it << RESET << "\n";
 }
 
 void Request::cleaner() {
@@ -187,8 +187,8 @@ void Request::cleaner() {
     _dirs.clear();
 }
 
-std::string Request::getDirNamesWithoutRoot(std::string root) {
-    size_t pos = _reqURI.find(root);
+std::string Request::getDirNamesWithoutRoot(std::string path) {
+    size_t pos = _reqURI.find(path);
     std::string tmp;
     if (pos != std::string::npos) {
         tmp = _reqURI.substr(pos);

@@ -126,6 +126,7 @@ void    Server::cfg_location_block( std::string & text, T * block ) {
             delete nw;
             errorShutdown(255, http->get_error_log(), "error: configuration file: invalid value: location.");
         }
+        nw->set_path(raw);
         block->lctn.insert(std::make_pair(raw, nw));
     }
 }
