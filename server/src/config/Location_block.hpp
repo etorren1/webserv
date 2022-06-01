@@ -6,10 +6,16 @@
 
 class Location_block : public Block {
     private:
+        std::string     path;
+
         Location_block() {}
 
     public:
     
+        void    set_path( const std::string & s ) { path = s; }
+
+        std::string get_path( void ) const { return path; }
+
         Location_block( Block & other ) {
             error_log = other.get_error_log();
             error_page = other.get_error_page();

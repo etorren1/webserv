@@ -15,6 +15,7 @@ void		Client::handleRequest( void ) {
 void		Client::makeResponse() {
 	std::stringstream response;
 	size_t result;
+
 	// if (req.getReqURI() == "/favicon.ico")
 	// {
 		// generateErrorPage(404);
@@ -28,23 +29,27 @@ void		Client::makeResponse() {
 	// 	res.setFileLoc("./site/image.jpg");
 	// 	res.setContentType("image/jpg");
 	// }
-	// res.setFileLoc("./site/video.mp4");
-	// res.setContentType("video/mp4");
-	res.setFileLoc("./site/colors/red.html");
-	res.setContentType("text/html");
+	res.setFileLoc("./site/video.mp4");
+	res.setContentType("video/mp4");
+	// res.setFileLoc("./site/colors/red.html");
+	// res.setContentType("text/html");
 	// res.setFileLoc("./site/index.html");
 	// res.setContentType("text/html");
 	int rd = 0;
 	try {
-		if (res._hasSent == 0) {
+		if (res._hasSent == 0) { // change _hasSent on status client macros!
+			// autoindex("site");
 			res.make_response_header(req);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
 			res._hasSent = 1;
+			// rd = 1;
 		}
 		if (res._hasSent == 1)
 			rd = res.make_response_body(req, socket);
-		if (rd)
+		if (rd) {
 			req.cleaner();
+			status |= RESP_DONE;
+		}
 	}
 	catch (codeException &e) {
 		generateErrorPage(e.getErrorCode());
@@ -105,7 +110,8 @@ Client::Client(size_t nwsock) {
 	breakconnect = false;
 	socket = nwsock;
 	status = 0;
-	    //Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
+	srv = NULL;
+	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
     // отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
     this->resCode.insert(std::make_pair(100, "Continue"));
     this->resCode.insert(std::make_pair(101, "Switching Protocols"));
