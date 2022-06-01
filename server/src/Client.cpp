@@ -22,18 +22,19 @@ void		Client::makeResponse( void ) {
 	}
 	else
 	{
-	// 	res.setFileLoc(location);
-	// 	res.setContentType(req.getContentType());
-	// }
-	res.setFileLoc("./site/video.mp4");
-	res.setContentType("video/mp4");
+		// 	res.setFileLoc(location);
+		// 	res.setContentType(req.getContentType());
+		// }
+		res.setFileLoc("./site/video.mp4");
+		res.setContentType("video/mp4");
 	}
 	// res.setFileLoc("./site/index.html");
 	// res.setContentType("text/html");
 	// res.setFileLoc("./site/image.jpg");
 	// res.setContentType("image/jpg");
 	int rd = 0;
-	try {
+	try
+	{
 		if (res._hasSent == 0) {
 			res.make_response_header(req);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
@@ -44,7 +45,8 @@ void		Client::makeResponse( void ) {
 		if (rd)
 			req.cleaner();
 	}
-	catch (codeException &e) {
+	catch (codeException &e)
+	{
 		generateErrorPage(e.getErrorCode());
 		return;
 	}
