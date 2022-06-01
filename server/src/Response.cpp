@@ -99,7 +99,7 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 
 int Response::make_response_body(Request req, const size_t socket)//2
 {
-	int 			result;
+	// int 			result;
 	char 			*buffer = new char [RES_BUF_SIZE];
 
 	if(!_input.is_open())
@@ -108,36 +108,36 @@ int Response::make_response_body(Request req, const size_t socket)//2
 	// size_t count = 0;
 
 		_input.read (buffer, RES_BUF_SIZE);
-		int read_bytes = _input.gcount();
+		 _bytesRead = _input.gcount();
 		_totalBytesRead += _bytesRead;
-		// if (read_bytes == -1)
+		// if (_bytesRead == -1)
 		// {
-		// 	std::cerr << "read = " << read_bytes << std::endl;
+		// 	std::cerr << "read = " << _bytesRead << std::endl;
 		// 	throw (123 );
 		// }
 		// if (fds[id].revents & POLLOUT)
 		// usleep(1000);
 		if (socket)
 		{
-			result = send(socket, buffer, read_bytes, 0);		// Отправляем ответ клиенту с помощью функции send
+			_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
 
 		}
-		if (result == -1)
+		if (_bytesSent == -1)
 		{
 			// throw (codeException(500));
-			std::cerr << "wrote = " << result << std::endl;
+			std::cerr << "wrote = " << _bytesSent << std::endl;
 			std::cout << strerror(errno);
 			throw (123);
 		}
-			if (result < read_bytes)
+			if (_bytesSent < _bytesRead)
 	{
 		std::cout << "HERE\n";
-		_totalBytesRead -= (read_bytes - result);
+		_totalBytesRead -= (_bytesRead - _bytesSent);
 		// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
 			_input.seekg(_totalBytesRead);
 	}
-		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
-		// count += result;
+		// std::cout << YELLOW << "wrote:" << _bytesSent << "\nwritten: " << _bytesRead << RESET << "\n";
+		// count += _bytesSent;
 
 	// std::cout << GREEN << count << RESET << "\n";
 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла

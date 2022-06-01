@@ -51,8 +51,8 @@ void		Client::makeResponse() {
 		generateErrorPage(e.getErrorCode());
 		return;
 	}
-	if (rd)
-		res.clearResponseObj();
+	// if (rd)
+	// 	res.clearResponseObj(); //ломает передачу данных
 }
 
 
