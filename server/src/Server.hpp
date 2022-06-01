@@ -48,9 +48,7 @@ class Server {
 		int							status;
 		Request 					req;
 
-		std::map<int, std::string>	resCode;
 		std::string					location;
-		bool						reqType;
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
@@ -60,6 +58,8 @@ class Server {
 		int			createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv );
 		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
+		int			checkBodySize( const size_t socket, const std::string & text );
+		int		    readHeader( const size_t socket, std::string & text );
 		// config file parser utilites
 			std::string get_raw_param(std::string key, std::string & text);
 			int    	get_block(const std::string& prompt,const std::string& content, std::string& dest, int last = 0);
@@ -101,7 +101,6 @@ class Server {
 		void	run( void );
 
 		//for errors
-		void	generateErrorPage(int code, size_t socket);
 		void	parseLocation();
 
 };
