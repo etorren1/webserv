@@ -63,86 +63,107 @@ int     Server::checkBodySize( const size_t socket, const std::string & text ) {
     return (0);
 }
 
-void Server::parseLocation() {
-    std::cout << "MIME type: " << req.getMIMEType() << "\n";
-    if (req.getMIMEType().empty())// || req.getMIMEType() == "none")
-        reqType = 0; // dir
-    else
-        reqType = 1; //file
-    try    {
-        srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
-    }
-    catch(const std::exception& e)    {
-        try        {
-            size_t pos = req.getHost().find(":");
-            if (pos != std::string::npos) {
-                std::string ip = "0.0.0.0" + req.getHost().substr(pos);
-                req.setHost(ip);
-            }
-            std::vector<std::string> vec = req.getDirs();
-            std::string tmp, tmpDefPage;
-            std::string defPage = "index.html";
-            location = "/";
-            for (size_t i = 0; i < vec.size(); i++) {
-                try {
-                    tmp = srvs.at(req.getHost())->lctn.at(vec[i])->get_root();
-                    tmpDefPage = srvs.at(req.getHost())->lctn.at(vec[i])->get_default_page();
-                    if (tmp.length() > location.length()) {
-                        location = tmp;
-                        defPage = tmpDefPage;
-                    }
-                }
-                catch(std::exception &e) { std::cout << "\n"; }
-            }
-                location += vec[0].substr(1);
-                if (reqType == 0) {
-                    if (existDir(location.c_str())) {
-                        int ret = open(location.c_str(), O_RDONLY);
-                        // struct stat s;
-                        if (!access(location.c_str(), 4)) {
-                            location += defPage;
-                            std::cout << "default_page: " <<defPage << "\n";
-                            FILE *file;
-                            file = fopen(location.c_str(), "r");
-                            if (file != NULL) {
-                                std::cout << "File " << location << " found\n";
-                        //make_response ???
-                            } else {
-                                throw(codeException(404));
-                            }
-                                // FILE *file;
-                                // file = fopen("index.html", "r");
-                                // if (file != NULL) {
-                                //     //make_response ???
-                                // } else {
-                                //     throw(codeException(404));
-                                // }
-                            }
-                        else {
-                            std::cout << "Permission denied\n";
-                            throw(codeException(403));
-                        }
-                    } else {
-                        std::cout << "Dir " << location << " don't exist\n";
-                        throw(codeException(400));
-                    }
-                } else {
-                    FILE *file;
-                    file = fopen(location.c_str(), "r");
-                    if (file != NULL) {
-                        std::cout << "File " << location << " found \n";
-                        //make_response ???
-                    } else {
-                        throw(codeException(404));
-                    }
-                }
-            // srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
-        }
-        catch(const codeException& e)        {
-            throw(codeException(400));
-        }
-        catch(const std::exception& e) {
-            std::cerr << e.what() << '\n';
+Server_block * Server::getServerBlock( std::string host ) const {
+
+    Server_block * srv;
+    size_t pos;
+    if ((pos = host.find("localhost")) != std::string::npos)
+        host = "127.0.0.1" + host.substr(9);
+    try {
+        srv = srvs.at(host);
+    } catch(const std::exception& e) {
+        try {
+            pos = host.find(":");
+            host = "0.0.0.0" + host.substr(pos);
+            srv = srvs.at(host);
+        } catch(const std::exception& e) {
+            return (NULL);
         }
     }
+    return srv; 
 }
+
+// ПЕРЕНЕСТИ В CLIENT
+// void Server::parseLocation() {
+//     std::cout << "MIME type: " << req.getMIMEType() << "\n";
+//     if (req.getMIMEType().empty())// || req.getMIMEType() == "none")
+//         reqType = 0; // dir
+//     else
+//         reqType = 1; //file
+//     try    {
+//         srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+//     }
+//     catch(const std::exception& e)    {
+//         try        {
+//             size_t pos = req.getHost().find(":");
+//             if (pos != std::string::npos) {
+//                 std::string ip = "0.0.0.0" + req.getHost().substr(pos);
+//                 req.setHost(ip);
+//             }
+//             std::vector<std::string> vec = req.getDirs();
+//             std::string tmp, tmpDefPage;
+//             std::string defPage = "index.html";
+//             location = "/";
+//             for (size_t i = 0; i < vec.size(); i++) {
+//                 try {
+//                     tmp = srvs.at(req.getHost())->lctn.at(vec[i])->get_root();
+//                     tmpDefPage = srvs.at(req.getHost())->lctn.at(vec[i])->get_default_page();
+//                     if (tmp.length() > location.length()) {
+//                         location = tmp;
+//                         defPage = tmpDefPage;
+//                     }
+//                 }
+//                 catch(std::exception &e) { std::cout << "\n"; }
+//             }
+//                 location += vec[0].substr(1);
+//                 if (reqType == 0) {
+//                     if (existDir(location.c_str())) {
+//                         int ret = open(location.c_str(), O_RDONLY);
+//                         // struct stat s;
+//                         if (!access(location.c_str(), 4)) {
+//                             location += defPage;
+//                             std::cout << "default_page: " <<defPage << "\n";
+//                             FILE *file;
+//                             file = fopen(location.c_str(), "r");
+//                             if (file != NULL) {
+//                                 std::cout << "File " << location << " found\n";
+//                         //make_response ???
+//                             } else {
+//                                 throw(codeException(404));
+//                             }
+//                                 // FILE *file;
+//                                 // file = fopen("index.html", "r");
+//                                 // if (file != NULL) {
+//                                 //     //make_response ???
+//                                 // } else {
+//                                 //     throw(codeException(404));
+//                                 // }
+//                             }
+//                         else {
+//                             std::cout << "Permission denied\n";
+//                             throw(codeException(403));
+//                         }
+//                     } else {
+//                         std::cout << "Dir " << location << " don't exist\n";
+//                         throw(codeException(400));
+//                     }
+//                 } else {
+//                     FILE *file;
+//                     file = fopen(location.c_str(), "r");
+//                     if (file != NULL) {
+//                         std::cout << "File " << location << " found \n";
+//                         //make_response ???
+//                     } else {
+//                         throw(codeException(404));
+//                     }
+//                 }
+//             // srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
+//         }
+//         catch(const codeException& e)        {
+//             throw(codeException(400));
+//         }
+//         catch(const std::exception& e) {
+//             std::cerr << e.what() << '\n';
+//         }
+//     }
+// }

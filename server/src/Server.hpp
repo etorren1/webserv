@@ -45,7 +45,6 @@ class Server {
 
 		std::string					cfg_path;
 		int							status;
-		Request 					req;
 
 		std::string					location;
 		bool						reqType;
@@ -60,6 +59,8 @@ class Server {
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
 		int			checkBodySize( const size_t socket, const std::string & text );
 		int		    readHeader( const size_t socket, std::string & text );
+		Server_block * getServerBlock( std::string host ) const;
+
 		// config file parser utilites
 			std::string get_raw_param(std::string key, std::string & text);
 			int    	get_block(const std::string& prompt,const std::string& content, std::string& dest, int last = 0);

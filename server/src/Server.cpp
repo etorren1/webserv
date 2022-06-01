@@ -195,21 +195,11 @@ int     Server::readHeader( const size_t socket, std::string & text ) {
         size_t pos = text.find("Host: ");
         if (pos != std::string::npos) {
             pos += 6;
-            Server_block * srv;
             std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
-            if ((pos = host.find("localhost")) != std::string::npos)
-                host = "127.0.0.1" + host.substr(9);
-            try {
-                srv = srvs.at(host);
-            } catch(const std::exception& e) {
-                try {
-                    pos = host.find(":");
-                    host = "0.0.0.0" + host.substr(pos);
-                    srv = srvs.at(host);
-                } catch(const std::exception& e) {
-                    client[socket]->generateErrorPage(400);
-                    return (0);
-                }
+            Server_block * srv = getServerBlock(host);
+            if (srv == NULL) {
+                client[socket]->generateErrorPage(400);
+                return (0);
             }
             client[socket]->setServer(srv);
         }

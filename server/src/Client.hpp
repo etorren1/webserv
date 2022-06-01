@@ -42,6 +42,7 @@ class Client
 		Request &	getRequest( void );
 		Server_block * getServer( void );
 		std::string getMessage( void ) const;
+		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
 
 
 		Client( size_t nwsock );

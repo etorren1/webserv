@@ -86,6 +86,21 @@ std::string	Client::getHost() const { return srv->get_listen(); }
 std::string Client::getMessage() const { return message; }
 Server_block * Client::getServer( void ) { return srv;}
 
+Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const {
+
+    Location_block * lctn;
+    size_t pos, i = 0;
+    while ( i < vec.size() ) {
+		try {
+			lctn = srv->lctn.at(vec[i]);
+			return (lctn);
+		} catch ( const std::exception &e ) {
+			i++;
+		}
+	}
+    return NULL; 
+}
+
 Client::Client(size_t nwsock) {
 	breakconnect = false;
 	socket = nwsock;
