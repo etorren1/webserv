@@ -12,7 +12,7 @@ void		Client::handleRequest( void ) {
 	message.clear();
 }
 
-void		Client::makeResponse( void ) {
+void		Client::makeResponse() {
 	std::stringstream response;
 	size_t result;
 	if (req.getReqURI() == "/favicon.ico")
@@ -35,12 +35,13 @@ void		Client::makeResponse( void ) {
 	int rd = 0;
 	try
 	{
-		if (res._hasSent == 0) {
+		if (res._hederHasSent == 0)
+		{
 			res.make_response_header(req);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
-			res._hasSent = 1;
+			res._hederHasSent = 1;
 		}
-		if (res._hasSent == 1)
+		if (res._hederHasSent == 1)
 			rd = res.make_response_body(req, socket);
 		if (rd)
 			req.cleaner();
@@ -79,6 +80,7 @@ void	Client::generateErrorPage( const int error ) {
 void		Client::setHost( const std::string & nwhost ) { host = nwhost; }
 void		Client::setMaxBodySize( const size_t n ) { max_body_size = n; }
 void		Client::setMessage( const std::string & mess ) { message = mess; }
+void		Client::setServer( Server_block * s ) { srv = s; }
 
 bool 		Client::getBreakconnect() const { return breakconnect; }
 Response &	Client::getResponse() { return res; }
@@ -86,6 +88,7 @@ Request &	Client::getRequest() { return req; }
 size_t		Client::getMaxBodySize() const { return max_body_size; }
 std::string	Client::getHost() const { return host; }
 std::string Client::getMessage() const { return message; }
+Server_block * Client::getServer( void ) { return srv;}
 
 Client::Client(size_t nwsock) {
 	breakconnect = false;

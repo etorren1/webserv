@@ -1,6 +1,8 @@
 #include "Server.hpp"
 #include "Response.hpp"
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 
 std::string Response::make_general_header (Request req, std::string response_body)
@@ -42,12 +44,12 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 
 
 
-// int Response::make_response_body(Request req, const size_t socket)
+// int Response::make_response_body(Request req, const size_t socket)//1
 // {
 // 	size_t			file_size;
 // 	// file_size = getFileSize(_fileLoc.c_str());
 
-// 	// if (_hasSent != 1) {
+// 	// if (_hederHasSent != 1) {
 // 	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
 // 	// 	size_t file_size = getFileSize(_fileLoc.c_str());	
 // 	// }
@@ -65,10 +67,7 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 // 		std::cerr << "read = " << _bytesRead << std::endl;
 // 		throw (codeException(25));
 // 	}
-// 	if (socket.revents & POLLOUT)
-// 	{
 
-// 	}
 // 	_bytesSent = send(socket, buffer, _bytesRead, 0);	// Отправляем ответ клиенту с помощью функции send
 // 	std::cout << _bytesSent << "\n";
 // 	if (_bytesSent == -1)
@@ -98,27 +97,18 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 // 	return (0);
 // }
 
-int Response::make_response_body(Request req, const size_t socket)
+int Response::make_response_body(Request req, const size_t socket)//2
 {
 	int 			result;
 	char 			*buffer = new char [RES_BUF_SIZE];
-	
-	// std::cout << "HEWAE\n";
-	// std::ifstream							_input;
-
-	// if (_hasSent != 1) {
-	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
-	// 	size_t file_size = getFileSize(_fileLoc.c_str());	
-	// }
 
 	if(!_input.is_open())
 		throw(codeException(404));
 
-	size_t count = 0;
-	// while (!_input.eof())
-	// {
+	// size_t count = 0;
+
 		_input.read (buffer, RES_BUF_SIZE);
-		int read_bytes =  _input.gcount();
+		int read_bytes = _input.gcount();
 		_totalBytesRead += _bytesRead;
 		// if (read_bytes == -1)
 		// {
@@ -127,9 +117,14 @@ int Response::make_response_body(Request req, const size_t socket)
 		// }
 		// if (fds[id].revents & POLLOUT)
 		// usleep(1000);
+		if (socket)
+		{
 			result = send(socket, buffer, read_bytes, 0);		// Отправляем ответ клиенту с помощью функции send
+
+		}
 		if (result == -1)
 		{
+			// throw (codeException(500));
 			std::cerr << "wrote = " << result << std::endl;
 			std::cout << strerror(errno);
 			throw (123);
@@ -143,7 +138,7 @@ int Response::make_response_body(Request req, const size_t socket)
 	}
 		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
 		// count += result;
-	// }
+
 	// std::cout << GREEN << count << RESET << "\n";
 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
@@ -198,15 +193,15 @@ void Response::clearResponseObj()
 // 	// res.setContentType("image/jpg");
 // 	try
 // 	{
-// 		if (res._hasSent == 0)
+// 		if (res._hederHasSent == 0)
 // 		{
 // 			res.make_response_header(req);
 // 			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
 // 							res.getHeader().length(), 0);	
-// 			res._hasSent = 1;
+// 			res._hederHasSent = 1;
 // 		}
 // 		// std::cout << "location: " << location << "\n";
-// 		if (res._hasSent == 1)
+// 		if (res._hederHasSent == 1)
 // 			res.make_response_body(req, socket, fds);
 // 	}
 // 	catch (codeException &e)
