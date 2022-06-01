@@ -8,6 +8,8 @@ void		Client::checkConnection( const std::string & mess ) {
 
 void		Client::handleRequest( void ) {
 	req.parseText(message);
+	if (req.getReqURI() != "/favicon.ico")
+		parseLocation();
 	status |= REQ_DONE;
 	message.clear();
 }
@@ -17,13 +19,16 @@ void		Client::makeResponse() {
 	size_t result;
 	// if (req.getReqURI() == "/favicon.ico")
 	// {
-	// 	res.setFileLoc("./site/image.png");
-	// 	res.setContentType("image/png");
+		// generateErrorPage(404);
+		// res.setFileLoc("./site/image.png");
+		// res.setContentType("image/png");
 	// }
 	// else
 	// {
-	// 	res.setFileLoc(location);
-	// 	res.setContentType(req.getContentType());
+		// res.setFileLoc(location);
+		// res.setContentType(req.getContentType());
+	// 	res.setFileLoc("./site/image.jpg");
+	// 	res.setContentType("image/jpg");
 	// }
 	// res.setFileLoc("./site/video.mp4");
 	// res.setContentType("video/mp4");
@@ -31,8 +36,6 @@ void		Client::makeResponse() {
 	res.setContentType("text/html");
 	// res.setFileLoc("./site/index.html");
 	// res.setContentType("text/html");
-	// res.setFileLoc("./site/image.jpg");
-	// res.setContentType("image/jpg");
 	int rd = 0;
 	try {
 		if (res._hasSent == 0) {
@@ -58,35 +61,46 @@ void	Client::generateErrorPage( const int error ) {
     std::string mess = "none";
     const int &code = error;
     std::map<int, std::string>::iterator it = resCode.begin();
-    for (; it != this->resCode.end(); it++) {
-        if (code == (*it).first) {
-            mess = (*it).second;
-        }
-    }
+	try {
+		mess = resCode.at(code);
+	} catch(const std::exception& e) {}
+	
     std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
                                 <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
                                 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
-                                <title>Error page </title></head><body><div class=\"container\"><h2>" \
-                                + itos(code) + "</h2><h3>" + mess + "</h3> \
-                                <p><a href=\"#homepage\">Click here</a> to redirect to homepage.</p></div></body></html>";
+                                <title>" + itos(code) + " " + mess + "</title></head><body  align=\"center\"><div class=\"container\"><h1>" \
+                                + itos(code) + " " + mess + "</h1><hr></hr> \
+                                <p>webserver</p></div></body></html>";
     std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\n" + "Version: " + "HTTP/1.1" \
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
 }
 
-void		Client::setHost( const std::string & nwhost ) { host = nwhost; }
-void		Client::setMaxBodySize( const size_t n ) { max_body_size = n; }
 void		Client::setMessage( const std::string & mess ) { message = mess; }
 void		Client::setServer( Server_block * s ) { srv = s; }
 
 bool 		Client::getBreakconnect() const { return breakconnect; }
 Response &	Client::getResponse() { return res; }
 Request &	Client::getRequest() { return req; }
-size_t		Client::getMaxBodySize() const { return max_body_size; }
-std::string	Client::getHost() const { return host; }
+size_t		Client::getMaxBodySize() const { return srv->get_client_max_body_size(); }
+std::string	Client::getHost() const { return srv->get_listen(); }
 std::string Client::getMessage() const { return message; }
 Server_block * Client::getServer( void ) { return srv;}
+
+Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const {
+    Location_block * lctn;
+    size_t pos, i = 0;
+    while ( i < vec.size() ) {
+		try {
+			lctn = srv->lctn.at(vec[i]);
+			return (lctn);
+		} catch ( const std::exception &e ) {
+			i++;
+		}
+	}
+    return NULL; 
+}
 
 Client::Client(size_t nwsock) {
 	breakconnect = false;
@@ -125,66 +139,51 @@ Client::~Client() {}
 void Client::parseLocation() {
     std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
     if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
-    // if ()
         reqType = 0; // dir
     else
         reqType = 1; //file
-    std::string tmp, tmpDefPage;
-    Server_block *serv;
-    try    {
-        serv = srv.at(req.getHost());
-    }
-    catch(const std::exception& e) {
-        try {
-            size_t pos = req.getHost().find(":");
-            if (pos != std::string::npos) {
-                std::string ip = "0.0.0.0" + req.getHost().substr(pos);
-                req.setHost(ip);
-            }
-            serv = srv.at(req.getHost());
-        }
-        catch(const codeException& e) {
-            std::cout << "Not a server!\n";
-            std::cerr << e.what() << '\n';
-            return ;
-            // throw(codeException(400));
-        }
-        catch(const std::exception& e) {
-            std::cerr << e.what() << '\n';
-            return ;
-        }
-    }
+	Location_block *loc = getLocationBlock(req.getDirs());
+	if (loc == NULL) {
+		generateErrorPage(404);
+		return ;
+	}
+	std::string root = loc->get_root();
+	std::cout << GREEN << "this is root - " << root << "\n" << RESET;
+    std::vector<std::string> vec = req.getDirs();
+    std::vector<std::string> indexPages = loc->get_index();
+	std::string defPage = indexPages[0];  //пройтись по вектору и подобрать файл, который открывается
+    // std::string request = req.getDirNamesWithoutRoot(loc);
+    location = root + req.getReqURI();
+	std::cout << GREEN << "this is location - " << location << "\n" << RESET;
+
+
+				// if url /kapouet is rooted to /tmp/www, url /kapouet/pouic/toto/pouet is
+				// /tmp/www/pouic/toto/pouet).
 
 
 
-            std::vector<std::string> vec = req.getDirs();
-            std::string defPage = "index.html";
-            std::string desiredPath = "/";
-            location = "/";
-            for (size_t i = 0; i < vec.size(); i++) {
-                std::cout << "vec[" << i << "] = " << vec[i] << "\n";
-                try {
+            // for (size_t i = 0; i < vec.size(); i++) {
+            //     std::cout << "vec[" << i << "] = " << vec[i] << "\n";
+            //     try {
 
-                    tmp = srv->lctn.at(vec[i])->get_root();
-                    tmpDefPage = srv->lctn.at(vec[i])->get_default_page();
-                    // std::cout << RED << "if (vec[i] = " << vec[i] << " > (desiredPath = " << desiredPath << ")\n" << RESET;
-                    // std::cout << "      vec[i].length() = " << vec[i].length() << ", desiredPath.length() = " << desiredPath.length() << "\n";
-                    if (vec[i].length() >= desiredPath.length()) {
-                        std::cout << "tmp = " << tmp << ", tmpDefPage = " << tmpDefPage << "\n";
-                        std::cout << "      desiredPath = " << desiredPath << ", vec[i] = " << vec[i] << "\n";
-                        desiredPath = vec[i];
-                        location = tmp;
-                        defPage = tmpDefPage;
-                        std::cout << "root = " << location << ", defPage = " << defPage << "\n";
-                    }
-                    // if (tmp.length() > location.length()) {
-                    // }
-                }
-                catch(std::exception &e) { std::cout << "\n"; }
-            }
-            std::cout << "\nbefore getDirNamesWithoutRoot - " << location << "\n";
-            req.getDirNamesWithoutRoot(location);
-            std::cout << "\nfter getDirNamesWithoutRoot - " << location << "\n";
+            //         tmp = srv->lctn.at(vec[i])->get_root();
+            //         tmpDefPage = srv->lctn.at(vec[i])->get_index();
+            //         // std::cout << RED << "if (vec[i] = " << vec[i] << " > (desiredPath = " << desiredPath << ")\n" << RESET;
+            //         // std::cout << "      vec[i].length() = " << vec[i].length() << ", desiredPath.length() = " << desiredPath.length() << "\n";
+            //         if (vec[i].length() >= desiredPath.length()) {
+            //             std::cout << "tmp = " << tmp << ", tmpDefPage = " << tmpDefPage << "\n";
+            //             std::cout << "      desiredPath = " << desiredPath << ", vec[i] = " << vec[i] << "\n";
+            //             desiredPath = vec[i];
+            //             location = tmp;
+            //             defPage = tmpDefPage;
+            //             std::cout << "root = " << location << ", defPage = " << defPage << "\n";
+            //         }
+            //     }
+            //     catch(std::exception &e) { std::cout << "\n"; }
+            // }
+            // std::cout << "\nbefore getDirNamesWithoutRoot - " << location << "\n";
+            // req.getDirNamesWithoutRoot(location);
+            // std::cout << "\nafter getDirNamesWithoutRoot - " << location << "\n";
 
             location += vec[0].substr(1);
             std::cout << "\n\nlocation after += vec[0] - " << location << "\n";
@@ -213,26 +212,18 @@ void Client::parseLocation() {
                         file = fopen(location.c_str(), "r");
                         if (file != NULL) {
                             std::cout << "File " << location << " found\n";
-                    //make_response ???
                         } else {
-                            throw(codeException(404));
+                            generateErrorPage(404);
                         }
-                            // FILE *file;
-                            // file = fopen("index.html", "r");
-                            // if (file != NULL) {
-                            //     //make_response ???
-                            // } else {
-                            //     throw(codeException(404));
-                            // }
                         }
                     else {
                         std::cout << "Permission denied\n";
-                        throw(codeException(403));
+                        generateErrorPage(403);
                         return ;
                     }
                 } else {
                     std::cout << "Dir " << location << " doesn't exist\n";
-                    throw(codeException(404));
+                    generateErrorPage(404);
                     return ;
                 }
             } else {
@@ -243,12 +234,10 @@ void Client::parseLocation() {
                 std::cout << "if location can't open = " << location << "\n";
                 if (file != NULL) {
                     std::cout << "File " << location << " found\n";
-                    //make_response ???
                 } else {
                     std::cout << "file == NULL\n";
-                    throw(codeException(404));
+                    generateErrorPage(404);
                     return;
                 }
             }
-            // srvs.at(req.getHost())->lctn.at(req.getReqURI())->show_all();
 }

@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <sstream>
+# include <unistd.h>
 # include <string>
 # include <vector>
 # include <map>
@@ -39,8 +40,8 @@ public:
 	void									findHost();
 	void									splitDirectories();
 	void									cleaner();
-	void									getDirNamesWithoutRoot(std::string);
 
+	std::string								getDirNamesWithoutRoot(std::string);
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;

@@ -187,7 +187,7 @@ void Request::cleaner() {
     _dirs.clear();
 }
 
-void Request::getDirNamesWithoutRoot(std::string root) {
+std::string Request::getDirNamesWithoutRoot(std::string root) {
     size_t pos = _reqURI.find(root);
     std::string tmp;
     if (pos != std::string::npos) {
@@ -199,7 +199,7 @@ void Request::getDirNamesWithoutRoot(std::string root) {
         _dirs.clear();
         splitDirectories();
     }
-    // return _fileName;
+    return _reqURI;
 }
 
 std::string Request::getMethod() const { return this->_method; }

@@ -35,7 +35,7 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 
 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 	size_t file_size = getFileSize(_fileLoc.c_str());	
-	std::cout << RED << _header << RESET;
+	// std::cout << RED << _header << RESET;
 	
 }
 

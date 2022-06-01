@@ -5,6 +5,10 @@
 #include "Response.hpp"
 #include "config/Server_block.hpp"
 #include <sys/socket.h>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <fcntl.h>
 #include <map>
 
 #define REQ_DONE	0x01
@@ -17,11 +21,9 @@ class Client
 		Response					res;
 		Server_block				*srv;
 
-		bool						breakconnect;
-		size_t						socket;
-		std::string					host;
-		size_t						max_body_size;
-		std::string					message;
+		bool		breakconnect;
+		size_t		socket;
+		std::string	message;
 
 		std::map<int, std::string>	resCode;
 		bool						reqType;
@@ -36,8 +38,6 @@ class Client
 		void		makeResponse( void );
 		void		parseLocation( void );
 
-		void		setHost( const std::string & nwhost );
-		void		setMaxBodySize( const size_t n );
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );
 
@@ -48,6 +48,7 @@ class Client
 		Request &	getRequest( void );
 		Server_block * getServer( void );
 		std::string getMessage( void ) const;
+		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
 
 
 		Client( size_t nwsock );
