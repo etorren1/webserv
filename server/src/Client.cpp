@@ -1,12 +1,12 @@
 #include "Client.hpp"
 
-void		Client::checkConnection( const std::string & mess ) {
+void	Client::checkConnection( const std::string & mess ) {
 	if (mess.find_last_of("\n") != mess.size() - 1)
 		breakconnect = true;
 	breakconnect = false;
 }
 
-void		Client::handleRequest( void ) {
+void	Client::handleRequest( void ) {
 	req.parseText(message);
 	message.clear();
 	location.clear();
@@ -16,12 +16,17 @@ void		Client::handleRequest( void ) {
 		status |= REQ_DONE;
 }
 
-void		Client::makeResponse() {
+void	Client::makeGetResponse()
+{
 	std::stringstream response;
 	size_t result;
 
+	std::cout << location << "\n";
 	res.setFileLoc(location);
 	res.setContentType(req.getContentType());
+
+	// res.setFileLoc("./site/video.mp4");
+	// res.setContentType("video/mp4");
 
 	int rd = 0;
 	try
@@ -50,6 +55,14 @@ void		Client::makeResponse() {
 	}
 	// if (rd)
 	// 	res.clearResponseObj(); //ломает передачу данных
+}
+
+void	Client::makeResponse()
+{
+		if (req.getMethod() == "GET")
+			makeGetResponse();
+		// if (req.getMethod() == "GET")
+		// 	makeGetResponse();
 }
 
 

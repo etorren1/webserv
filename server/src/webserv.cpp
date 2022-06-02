@@ -9,7 +9,7 @@ void     ft(int) {
 int     main(int argc, char **argv)
 {
 
-    signal(SIGPIPE, ft);
+    // signal(SIGPIPE, ft);
 
     int fd;
     std::string path;

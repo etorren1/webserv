@@ -37,8 +37,13 @@ class Client
 		int			generateErrorPage( const int error );
 		void 		checkConnection( const std::string & mess );
 		void		handleRequest( void );
-		void		makeResponse( void );
 		int			parseLocation( void );
+
+		//for respomse:
+		void		makeResponse( void );
+		void		makeGetResponse( void );
+		void		makePostResponse( void );
+		void		makeDeleteResponse( void );
 
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );
