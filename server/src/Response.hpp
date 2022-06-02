@@ -37,14 +37,13 @@ class Response
 		long									_bytesSent;
 		long									_totalBytesRead;
 
-		int 									count;
 
 		char 			buffer[RES_BUF_SIZE];
 	public:
 		int										_hederHasSent; //сделать геттер и сеттер
 
 		Response() : _sendingFinished(0), _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
-					_hederHasSent(0), _range_begin(0), count(0) {};
+					_hederHasSent(0), _range_begin(0) {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
@@ -63,6 +62,9 @@ class Response
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
+
+		//for makePostResponse:
+		void addCgiVar(char ***envp, Request req);
 };
 
 #endif

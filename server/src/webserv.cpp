@@ -6,7 +6,7 @@ void     ft(int) {
     std::cout << "ALERT\n";
 }
 
-int     main(int argc, char **argv)
+int     main(int argc, char **argv, char **envp)
 {
 
     // signal(SIGPIPE, ft);
@@ -35,7 +35,7 @@ int     main(int argc, char **argv)
     }
     Server server(path);
 
-
+	server.setEnvp(envp);
 
     server.config(fd);
     server.create();

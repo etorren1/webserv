@@ -1,5 +1,7 @@
 #include "Client.hpp"
 
+#define PATH_INFO "./cgi/cgi_tester"
+
 void	Client::checkConnection( const std::string & mess ) {
 	if (mess.find_last_of("\n") != mess.size() - 1)
 		breakconnect = true;
@@ -20,8 +22,7 @@ void	Client::makeGetResponse()
 {
 	std::stringstream response;
 	size_t result;
-
-	std::cout << location << "\n";
+	
 	res.setFileLoc(location);
 	res.setContentType(req.getContentType());
 
@@ -57,12 +58,24 @@ void	Client::makeGetResponse()
 	// 	res.clearResponseObj(); //ломает передачу данных
 }
 
+void Client::makePostResponse()
+{
+	int ex;
+	char **envp;
+
+	res.addCgiVar(&envp, req);
+
+	
+
+	ex =  execve(PATH_INFO, NULL, envp);
+}
+
 void	Client::makeResponse()
 {
 		if (req.getMethod() == "GET")
 			makeGetResponse();
-		// if (req.getMethod() == "GET")
-		// 	makeGetResponse();
+		if (req.getMethod() == "POST")
+			makePostResponse();
 }
 
 
