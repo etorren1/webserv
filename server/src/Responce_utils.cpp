@@ -1,6 +1,5 @@
 #include "Response.hpp"
 #include "Client.hpp"
-#include <dirent.h>
 
 // void    Response::autoindex() {
 //     DIR *dir;

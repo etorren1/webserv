@@ -29,7 +29,7 @@ std::string	itos( long long const & num )
 	return(ss.str());
 }
 
-bool existDir(const char * name) {
+bool existDir(const char * name) { // don't work with relative path
     struct stat s;
     if (stat(name,&s)) return false;
     return S_ISDIR(s.st_mode);

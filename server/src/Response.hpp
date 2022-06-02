@@ -4,7 +4,10 @@
 #include "Utils.hpp"
 #include "Request.hpp"
 #include <fstream>
+#include <dirent.h> 
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <cstring>
 
 #define RES_BUF_SIZE 2048
 

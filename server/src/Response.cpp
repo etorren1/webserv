@@ -1,9 +1,4 @@
 #include "Response.hpp"
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <cstring>
-
 
 std::string Response::make_general_header (Request req, std::string response_body)
 {
@@ -111,53 +106,6 @@ void Response::clearResponseObj()
 	_bytesSent = 0;
 	_totalBytesRead = 0;
 }
-
-// void Server::make_response(Request req, const size_t socket)
-// {
-// 	std::stringstream response;
-// 	size_t result;
-// 	Response &res = client[socket]->getResponse();
-// 	// if (req.getReqURI() == "/favicon.ico")
-// 	// {
-// 	// 	res.setFileLoc("./site/image.png");
-// 	// 	res.setContentType("image/png");
-// 	// }
-// 	// else
-// 	// {
-// 	// 	res.setFileLoc(location);
-// 	// 	res.setContentType(req.getContentType());
-// 	// }
-// 	res.setFileLoc("./site/video.mp4");
-// 	res.setContentType("video/mp4");
-// 	// res.setFileLoc("./site/index.html");
-// 	// res.setContentType("text/html");
-// 	// res.setFileLoc("./site/image.jpg");
-// 	// res.setContentType("image/jpg");
-// 	try
-// 	{
-// 		if (res._hederHasSent == 0)
-// 		{
-// 			res.make_response_header(req);
-// 			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
-// 							res.getHeader().length(), 0);	
-// 			res._hederHasSent = 1;
-// 		}
-// 		// std::cout << "location: " << location << "\n";
-// 		if (res._hederHasSent == 1)
-// 			res.make_response_body(req, socket, fds);
-// 	}
-// 	catch (codeException &e)
-// 	{
-// 		generateErrorPage(e.getErrorCode(), socket);
-// 		return;
-// 	}
-// 	// catch (std::exception &e)
-// 	// {
-// 	// 	e.what();
-// 	// 	return;
-// 	// }
-// 	// res.clearResponseObj();
-// }
 
 std::string	Response::getHeader() { return(_header); }
 std::string	Response::getBody() { return(_body); }

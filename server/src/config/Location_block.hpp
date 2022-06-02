@@ -6,15 +6,15 @@
 
 class Location_block : public Block {
     private:
-        std::string     path;
+        std::string     location;
 
         Location_block() {}
 
     public:
     
-        void    set_path( const std::string & s ) { path = s; }
+        void    set_location( const std::string & s ) { location = s; }
 
-        std::string get_path( void ) const { return path; }
+        std::string get_location( void ) const { return location; }
 
         Location_block( Block & other ) {
             error_log = other.get_error_log();
@@ -25,7 +25,6 @@ class Location_block : public Block {
             sendfile = other.get_sendfile();
             autoindex = other.get_autoindex();
             client_max_body_size = other.get_client_max_body_size();
-            default_page = other.get_default_page();
             accepted_methods = other.get_accepted_methods();
         }
         ~Location_block() {}

@@ -4,7 +4,7 @@
 # include <iostream>
 # include <sstream>
 # include <unistd.h>
-# include <string>
+// # include <string>
 # include <vector>
 # include <map>
 # include "Utils.hpp"
@@ -52,7 +52,7 @@ public:
 	std::string								getHost() const;
 	std::vector<std::string>				getDirs() const;
 
-	bool									isFile();
+	// bool									isFile();
 	
 	void									setHost(std::string);
 };

@@ -10,7 +10,6 @@ class Block
         std::string     error_log;
         std::string     error_page;
         std::string     access_log;
-        std::string     default_page;
         std::string     root;
         std::vector<std::string>     accepted_methods;
         std::vector<std::string>     index;
@@ -25,7 +24,6 @@ class Block
         void set_autoindex( bool t ) { autoindex = t; }
         void set_client_max_body_size( const size_t size ) { client_max_body_size = size; }
         void set_root( const std::string & s ) { root = s; }
-        void set_default_page( const std::string & s ) { default_page = s; }
         void set_index( const std::string & s ) { index = split(s, " "); }
         void set_accepted_methods( const std::string & s ) { accepted_methods = split(s, " "); }
 
@@ -36,7 +34,6 @@ class Block
         bool get_autoindex() const { return autoindex; }
         size_t get_client_max_body_size() const { return client_max_body_size; }
         std::string get_root() const { return root; }
-        std::string get_default_page() const { return default_page; }
         std::vector<std::string> get_index() const { return index; }
         std::vector<std::string> get_accepted_methods() const { return accepted_methods; }
 
@@ -66,7 +63,6 @@ class Block
             std::cout << "sendfile = " << sendfile << "\n";
             std::cout << "autoindex = " << autoindex << "\n";
             std::cout << "client_max_body_size = " << client_max_body_size << "\n";
-            std::cout << "default_page = " << default_page << "\n";
             std::cout << "index = ";
             for (size_t i = 0; i < index.size(); i++) { std::cout << index[i] << " "; }
             std::cout << "\n";

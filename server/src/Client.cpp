@@ -8,30 +8,21 @@ void		Client::checkConnection( const std::string & mess ) {
 
 void		Client::handleRequest( void ) {
 	req.parseText(message);
-	if (req.getReqURI() != "/favicon.ico")
-		parseLocation();
-	status |= REQ_DONE;
 	message.clear();
+	location.clear();
+	status &= ~IS_DIR;
+	status &= ~IS_FILE;
+	if (parseLocation() == 0)
+		status |= REQ_DONE;
 }
 
 void		Client::makeResponse() {
 	std::stringstream response;
 	size_t result;
-	if (req.getReqURI() == "/favicon.ico")
-	{
-		res.setFileLoc("./site/image.png");
-		res.setContentType("image/png");
-	}
-	else
-	{
-		// 	res.setFileLoc(location);
-		// 	res.setContentType(req.getContentType());
-		// }
-		res.setFileLoc("./site/video.mp4");
-		res.setContentType("video/mp4");
-	}
-	// res.setFileLoc("./site/index.html");
-	// res.setContentType("text/html");
+
+	res.setFileLoc(location);
+	res.setContentType(req.getContentType());
+
 	int rd = 0;
 	try
 	{
@@ -45,11 +36,15 @@ void		Client::makeResponse() {
 			rd = res.make_response_body(req, socket);
 		if (rd) {
 			req.cleaner();
+			res._hederHasSent = 0;
+			// res.clearResponseObj();
+			status &= ~REQ_DONE;
 			status |= RESP_DONE;
 		}
 	}
 	catch (codeException &e)
 	{
+		std::cout << "exception error make responce, code: " << e.getErrorCode() << "\n";
 		generateErrorPage(e.getErrorCode());
 		return;
 	}
@@ -58,7 +53,7 @@ void		Client::makeResponse() {
 }
 
 
-void	Client::generateErrorPage( const int error ) {
+int	Client::generateErrorPage( const int error ) {
     std::string mess = "none";
     const int &code = error;
     std::map<int, std::string>::iterator it = resCode.begin();
@@ -76,6 +71,7 @@ void	Client::generateErrorPage( const int error ) {
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
+	return res;
 }
 
 void		Client::setMessage( const std::string & mess ) { message = mess; }
@@ -97,14 +93,21 @@ Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const 
 			lctn = srv->lctn.at(vec[i]);
 			return (lctn);
 		} catch ( const std::exception &e ) {
-			i++;
+			try {
+				vec[i] += "/";
+				lctn = srv->lctn.at(vec[i]);
+				return (lctn);
+			} catch ( const std::exception &e ) {
+				i++;
+			}
 		}
 	}
     return NULL; 
 }
 
-Client::Client(size_t nwsock) {
+Client::Client( size_t nwsock ) {
 	breakconnect = false;
+	location = "";
 	socket = nwsock;
 	status = 0;
 	srv = NULL;
@@ -137,88 +140,112 @@ Client::Client(size_t nwsock) {
 
 Client::~Client() {}
 
-
-void Client::parseLocation() {
+int Client::parseLocation() {
     // std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
-    if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
-        reqType = 0; // dir
+    // if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
+	if (req.getMIMEType() == "none")
+        status |= IS_DIR;
     else
-        reqType = 1; //file
+		status |= IS_FILE;
 	Location_block *loc = getLocationBlock(req.getDirs());
-	if (loc == NULL) {
-		generateErrorPage(404);
-		return ;
-	}
+	if (loc == NULL)
+		return generateErrorPage(404);
+	size_t pos;
 	std::string root = loc->get_root();
-	// std::cout << GREEN << "this is root - " << root << "\n" << RESET;
-    std::vector<std::string> vec = req.getDirs();
-    std::vector<std::string> indexPages = loc->get_index();
-	std::string defPage, rqst;
-	// std::cout << GREEN << "\n	loc->get_path() - " << loc->get_path() << "\n" << RESET;
-    std::string request = req.getDirNamesWithoutRoot(loc->get_path());
-	// std::cout << GREEN << "this is request - " << request << "\n" << RESET;
-	if (request.front() == '/')
-		rqst = request.substr(1);
-	else rqst = request;
-    location = root + rqst;
+	std::string	locn = loc->get_location();
+	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
+		root = root.substr(0, pos);
+	location = root + locn + req.getReqURI().substr(locn.size());
+	while ((pos = location.find("//")) != std::string::npos)
+		location.erase(pos, 1);
+	if (location[0] == '/')
+		location = location.substr(1);
+	// std::string root = loc->get_root();
+	// // std::cout << GREEN << "this is root - " << root << "\n" << RESET;
+    // std::vector<std::string> vec = req.getDirs();
+    // std::vector<std::string> indexPages = loc->get_index();
+	// std::string defPage, rqst;
+	// // std::cout << GREEN << "\n	loc->get_path() - " << loc->get_path() << "\n" << RESET;
+    // std::string request = req.getDirNamesWithoutRoot(loc->get_path());
+	// // std::cout << GREEN << "this is request - " << request << "\n" << RESET;
+	// if (request[0] == '/')
+	// 	rqst = request.substr(1);
+	// else rqst = request;
+    // location = root + rqst;
+	// location = "/home/etorren/webserv" + location;
+	// location += "yellow.html";
 	// std::cout << GREEN << "this is location - " << location << "\n" << RESET;
-	if (reqType == 0) {
-		if (existDir(location.c_str())) {
-            int ret = open(location.c_str(), O_RDONLY);
-			if (!access(location.c_str(), 4)) {
+	if (status & IS_DIR) {
+		// if (existDir(location.c_str())) {
+            // int ret = open(location.c_str(), O_RDONLY);
+			std::vector<std::string>indexes = loc->get_index();
+			int i = -1;
+			while (++i < indexes.size()) {
+				std::string tmp = location + indexes[i];
+				if (access(tmp.c_str(), 0) != -1) {
+					location = tmp;
+					break;
+				}
+			}
+			if (i == indexes.size())
+				return generateErrorPage(404);
+			// if (access(location.c_str(), 4) != -1) {
         		// std::cout << "if path - dir\n";
 			    // std::cout << "location before .back(/) " << location << "\n";
-				if (location.back() != '/')
-            	    location.push_back('/');
-            	// std::cout << "location after .back(/) " << location << "\n";
-				try	{
-					std::vector<std::string>::iterator it = indexPages.begin();
-					for (; it < indexPages.end(); it++) {
-						std::string path = location + *it;
-						FILE *file;
-        		        file = fopen(path.c_str(), "r");
-        		        // std::cout << RED << "path -" << path << " \n" << RESET;
-        		        if (file != NULL) {
-							defPage = *it;
-        		            // std::cout << "defPage " << defPage << " found\n";
-        		        }
-					}
-				}
-				catch(const std::exception& e)	{
-					generateErrorPage(404);
-					std::cerr << e.what() << '\n';
-				}
-			} else {
-                std::cout << "Permission denied\n";
-                generateErrorPage(403);
-                return ;
-            }
-            location += defPage;
-            // std::cout << "location after += defPage " << location << "\n";
-  			FILE *file;
-            file = fopen(location.c_str(), "r");
-            if (file != NULL) {
-                std::cout << "File " << location << " found\n";
-            } else {
-                generateErrorPage(404);
-            }
-		} else {
-            // std::cout << "Dir " << location << " doesn't exist\n";
-            generateErrorPage(404);
-            return ;
-        }
-	} else {
-        // std::cout << "if " << location << " is file\n";
-        FILE *file;
-        // std::cout << "location = " << location << "\n";
-        file = fopen(location.c_str(), "r");
-        // std::cout << "if location can't open = " << location << "\n";
-        if (file != NULL) {
-            std::cout << "File " << location << " found\n";
-        } else {
-            // std::cout << "file == NULL\n";
-            generateErrorPage(404);
-            return;
-        }
+				// if (location[location.size()-1] != '/')
+            	//     location.push_back('/');
+            	// // std::cout << "location after .back(/) " << location << "\n";
+				// try	{
+				// 	std::vector<std::string>::iterator it = indexPages.begin();
+				// 	for (; it < indexPages.end(); it++) {
+				// 		std::string path = location + *it;
+				// 		FILE *file;
+        		//         file = fopen(path.c_str(), "r");
+        		//         // std::cout << RED << "path -" << path << " \n" << RESET;
+        		//         if (file != NULL) {
+				// 			defPage = *it;
+        		//             // std::cout << "defPage " << defPage << " found\n";
+        		//         }
+				// 	}
+				// }
+				// catch(const std::exception& e)	{
+				// 	std::cerr << e.what() << '\n';
+				// 	return generateErrorPage(404);
+				// }
+			// } else {
+            //     std::cout << "Permission denied\n";
+            //     return generateErrorPage(403);
+            // }
+            // location += defPage;
+            // // std::cout << "location after += defPage " << location << "\n";
+  			// FILE *file;
+            // file = fopen(location.c_str(), "r");
+            // if (file != NULL) {
+            //     std::cout << "File " << location << " found\n";
+            // } else {
+            //     return generateErrorPage(404);
+            // }
+		// } else {
+        //     // std::cout << "Dir " << location << " doesn't exist\n";
+        //     return generateErrorPage(404);
+        // }
+	} else if (status & IS_FILE) {
+		if (access(location.c_str(), 0) == -1)
+			return generateErrorPage(404);
+    //     // std::cout << "if " << location << " is file\n";
+    //     FILE *file;
+    //     // std::cout << "location = " << location << "\n";
+    //     file = fopen(location.c_str(), "r");
+    //     // std::cout << "if location can't open = " << location << "\n";
+    //     if (file != NULL) {
+    //         std::cout << "File " << location << " found\n";
+    //     } else {
+    //         // std::cout << "file == NULL\n";
+    //         return generateErrorPage(404);
+    //     }
     }
+	if (access(location.c_str(), 4) == -1)
+		return generateErrorPage(403);
+	// std::cout << RED << "final loc: " << location << RESET << "\n";
+	return (0);
 }

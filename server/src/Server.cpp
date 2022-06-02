@@ -47,10 +47,10 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
 
     pe = getprotobyname("tcp");
     if ((newSrvSock = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == 0)
-        return closeVirtualServer(srv, newSrvSock, "error: create socket failed.", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " socket failed");
     int enable = 1;
     if (setsockopt(newSrvSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-        return closeVirtualServer(srv, newSrvSock, "error: setsockopt(SO_REUSEADDR) failed.", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " setsockopt failed");
     newPoll.fd = newSrvSock;
     newPoll.events = POLLIN;
     newPoll.revents = 0;
@@ -58,9 +58,10 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     address.sin_addr.s_addr = inet_addr(hostname.c_str());
     address.sin_port = htons(atoi(port.c_str()));
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
-        return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
+        // return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
     if (listen(newSrvSock, 5) < 0)
-        return closeVirtualServer(srv, newSrvSock, "error: listen failed.", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
     / F_SETFL устанавливет флаг O_NONBLOCK для подаваемого дескриптора 
@@ -78,6 +79,8 @@ int    Server::closeVirtualServer( Server_block * srv, int sock, const std::stri
         writeLog(srv->get_error_log(), error, text);
         std::cerr << "error: can not up domain: see error_log for more information\n";
     }
+    else
+        std::cerr << RED << "Host: " << srv->get_listen() << " break down" << RESET << "\n";
     for (lctn_iterator it = srv->lctn.begin(); it != srv->lctn.end(); it++) {
         delete (*it).second;
     }
@@ -162,8 +165,8 @@ void Server::clientRequest( void ) {
                     disconnectClients(id);
                 else if (!client[socket]->getBreakconnect())
                 {
-                    std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-                    std::cout << client[socket]->getMessage();
+                    // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+                    // std::cout << client[socket]->getMessage();
                     client[socket]->handleRequest();
                 }
             }

@@ -6,13 +6,15 @@
 #include "config/Server_block.hpp"
 #include <sys/socket.h>
 #include <cstdlib>
-#include <filesystem>
+// #include <filesystem> C++17 !!!
 #include <fstream>
 #include <fcntl.h>
 #include <map>
 
 #define REQ_DONE	0x01
 #define RESP_DONE	0x02
+#define IS_DIR		0x04
+#define IS_FILE		0x08
 
 class Client
 {
@@ -26,18 +28,17 @@ class Client
 		std::string	message;
 
 		std::map<int, std::string>	resCode;
-		bool						reqType;
 		std::string					location;
 
 
 	public:
 		int			status;
 
-		void		generateErrorPage( const int error );
+		int			generateErrorPage( const int error );
 		void 		checkConnection( const std::string & mess );
 		void		handleRequest( void );
 		void		makeResponse( void );
-		void		parseLocation( void );
+		int			parseLocation( void );
 
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );

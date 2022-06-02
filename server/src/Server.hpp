@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <errno.h>
 #include <unistd.h>
 #include <vector>
 #include <list>

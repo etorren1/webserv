@@ -116,6 +116,7 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
 void Request::parseMIMEType() {
     size_t pos = 0;
     size_t typeEnd = _reqURI.find("?");
+    // std::cout << GREEN << "_reqURI = |" << _reqURI << "|\n";
     if (_reqURI.length() > 1) {
         pos = _reqURI.find(".");
         if (pos != std::string::npos) {
@@ -127,6 +128,8 @@ void Request::parseMIMEType() {
             _MIMEType = "none";
         }
     }
+    else
+        _MIMEType = "none";
     // std::cout << GREEN << "_MIMEType = |" << _MIMEType << "|\n";
 }
 
@@ -212,13 +215,13 @@ std::string Request::getContentType() const { return this->_responseContentType;
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 
-bool Request::isFile() {
-    if (_reqURI[_reqURI.length() - 1] == '/') {
-        _file = 0;
-        return false;
-    }
-    _file = 1;
-    return true;
-}
+// bool Request::isFile() {
+//     if (_reqURI[_reqURI.length() - 1] == '/') {
+//         _file = 0;
+//         return false;
+//     }
+//     _file = 1;
+//     return true;
+// }
 
 void Request::setHost(std::string host) { _host = host; }
