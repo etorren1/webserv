@@ -84,6 +84,7 @@ int	Client::generateErrorPage( const int error ) {
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
+	req.cleaner();
 	return res;
 }
 
@@ -156,10 +157,14 @@ Client::~Client() {}
 int Client::parseLocation() {
     // std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
     // if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
-	if (req.getMIMEType() == "none")
+	if (req.getMIMEType() == "none") {
+		std::cout << "IS_DIR\n";
         status |= IS_DIR;
-    else
+	}
+    else {
+		std::cout << "IS_FILE\n";
 		status |= IS_FILE;
+	}
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		return generateErrorPage(404);
@@ -187,10 +192,12 @@ int Client::parseLocation() {
     // location = root + rqst;
 	// location = "/home/etorren/webserv" + location;
 	// location += "yellow.html";
-	// std::cout << GREEN << "this is location - " << location << "\n" << RESET;
+	std::cout << GREEN << "this is location - " << location << "\n" << RESET;
 	if (status & IS_DIR) {
 		// if (existDir(location.c_str())) {
             // int ret = open(location.c_str(), O_RDONLY);
+			if (location[location.size()-1] != '/')
+				location.push_back('/');
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
 			while (++i < indexes.size()) {
@@ -205,8 +212,6 @@ int Client::parseLocation() {
 			// if (access(location.c_str(), 4) != -1) {
         		// std::cout << "if path - dir\n";
 			    // std::cout << "location before .back(/) " << location << "\n";
-				// if (location[location.size()-1] != '/')
-            	//     location.push_back('/');
             	// // std::cout << "location after .back(/) " << location << "\n";
 				// try	{
 				// 	std::vector<std::string>::iterator it = indexPages.begin();
