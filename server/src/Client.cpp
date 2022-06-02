@@ -8,6 +8,8 @@ void		Client::checkConnection( const std::string & mess ) {
 
 void		Client::handleRequest( void ) {
 	req.parseText(message);
+	if (req.getReqURI() != "/favicon.ico")
+		parseLocation();
 	status |= REQ_DONE;
 	message.clear();
 }
@@ -88,7 +90,6 @@ std::string Client::getMessage() const { return message; }
 Server_block * Client::getServer( void ) { return srv;}
 
 Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const {
-
     Location_block * lctn;
     size_t pos, i = 0;
     while ( i < vec.size() ) {
@@ -135,3 +136,89 @@ Client::Client(size_t nwsock) {
 }
 
 Client::~Client() {}
+
+
+void Client::parseLocation() {
+    // std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
+    if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
+        reqType = 0; // dir
+    else
+        reqType = 1; //file
+	Location_block *loc = getLocationBlock(req.getDirs());
+	if (loc == NULL) {
+		generateErrorPage(404);
+		return ;
+	}
+	std::string root = loc->get_root();
+	// std::cout << GREEN << "this is root - " << root << "\n" << RESET;
+    std::vector<std::string> vec = req.getDirs();
+    std::vector<std::string> indexPages = loc->get_index();
+	std::string defPage, rqst;
+	// std::cout << GREEN << "\n	loc->get_path() - " << loc->get_path() << "\n" << RESET;
+    std::string request = req.getDirNamesWithoutRoot(loc->get_path());
+	// std::cout << GREEN << "this is request - " << request << "\n" << RESET;
+	if (request.front() == '/')
+		rqst = request.substr(1);
+	else rqst = request;
+    location = root + rqst;
+	// std::cout << GREEN << "this is location - " << location << "\n" << RESET;
+	if (reqType == 0) {
+		if (existDir(location.c_str())) {
+            int ret = open(location.c_str(), O_RDONLY);
+			if (!access(location.c_str(), 4)) {
+        		// std::cout << "if path - dir\n";
+			    // std::cout << "location before .back(/) " << location << "\n";
+				if (location.back() != '/')
+            	    location.push_back('/');
+            	// std::cout << "location after .back(/) " << location << "\n";
+				try	{
+					std::vector<std::string>::iterator it = indexPages.begin();
+					for (; it < indexPages.end(); it++) {
+						std::string path = location + *it;
+						FILE *file;
+        		        file = fopen(path.c_str(), "r");
+        		        // std::cout << RED << "path -" << path << " \n" << RESET;
+        		        if (file != NULL) {
+							defPage = *it;
+        		            // std::cout << "defPage " << defPage << " found\n";
+        		        }
+					}
+				}
+				catch(const std::exception& e)	{
+					generateErrorPage(404);
+					std::cerr << e.what() << '\n';
+				}
+			} else {
+                std::cout << "Permission denied\n";
+                generateErrorPage(403);
+                return ;
+            }
+            location += defPage;
+            // std::cout << "location after += defPage " << location << "\n";
+  			FILE *file;
+            file = fopen(location.c_str(), "r");
+            if (file != NULL) {
+                std::cout << "File " << location << " found\n";
+            } else {
+                generateErrorPage(404);
+            }
+		} else {
+            // std::cout << "Dir " << location << " doesn't exist\n";
+            generateErrorPage(404);
+            return ;
+        }
+	} else {
+        // std::cout << "if " << location << " is file\n";
+        FILE *file;
+        // std::cout << "location = " << location << "\n";
+        file = fopen(location.c_str(), "r");
+        // std::cout << "if location can't open = " << location << "\n";
+        if (file != NULL) {
+            std::cout << "File " << location << " found\n";
+        } else {
+            // std::cout << "file == NULL\n";
+            generateErrorPage(404);
+            return;
+        }
+    }
+}

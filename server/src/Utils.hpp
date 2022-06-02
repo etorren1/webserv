@@ -35,7 +35,8 @@ struct codeException : public std::exception
 	int errorCode;
 	const char * what () const throw ()
 	{
-		return "Error while opnening file";
+		std::string error = "Error while opening file with code " + itos(errorCode);
+		return error.c_str();
 	}
 	int getErrorCode() { return(errorCode); }
 };

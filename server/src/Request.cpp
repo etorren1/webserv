@@ -160,17 +160,19 @@ void Request::splitDirectories() {
     // std::cout << "_dirs[0] = " << _dirs[0] << "\n";
     size_t pos = _reqURI.find_last_of("/");
     str = _reqURI.substr(0, pos);
-    for (size_t i = 1; i < _reqURI.length() - 2; i++) {
+    _dirs.push_back(str);
+    for (size_t i = 1; i < _reqURI.length() - 1; i++) {
         pos = str.find_last_of("/");
         if (pos != std::string::npos && pos != 0) {
             str = str.substr(0, pos);
-            _dirs.push_back(str);
+            if (!str.empty())
+                _dirs.push_back(str);
         }
     }
     _dirs.push_back("/");
     // std::vector<std::string>::iterator it = _dirs.begin();
     // for (; it != _dirs.end(); it++)
-        // std::cout << GREEN << "it = " << *it << RESET << "\n";
+    //     std::cout << RED << "it = " << *it << RESET << "\n";
 }
 
 void Request::cleaner() {
@@ -180,10 +182,24 @@ void Request::cleaner() {
     _headers.clear();
     _body.clear();
     _MIMEType.clear();
-    _contentType.clear();
     _responseContentType.clear();
     _host.clear();
     _dirs.clear();
+}
+
+std::string Request::getDirNamesWithoutRoot(std::string path) {
+    size_t pos = _reqURI.find(path);
+    std::string tmp;
+    if (pos != std::string::npos) {
+        tmp = _reqURI.substr(pos);
+        std::cout << "tmp = " << tmp << "\n";
+        _reqURI = tmp;
+        std::cout << "_reqURI = " << _reqURI << "\n";
+        // std::vector<std::string>::iterator it = _dirs.begin();
+        _dirs.clear();
+        splitDirectories();
+    }
+    return _reqURI;
 }
 
 std::string Request::getMethod() const { return this->_method; }
@@ -195,5 +211,14 @@ std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
+
+bool Request::isFile() {
+    if (_reqURI[_reqURI.length() - 1] == '/') {
+        _file = 0;
+        return false;
+    }
+    _file = 1;
+    return true;
+}
 
 void Request::setHost(std::string host) { _host = host; }

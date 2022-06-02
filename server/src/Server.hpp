@@ -18,6 +18,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 
 #include "config/Config.hpp"
 #include "Client.hpp"
@@ -47,7 +48,6 @@ class Server {
 		int							status;
 
 		std::string					location;
-		bool						reqType;
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );

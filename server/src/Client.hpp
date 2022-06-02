@@ -5,6 +5,10 @@
 #include "Response.hpp"
 #include "config/Server_block.hpp"
 #include <sys/socket.h>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <fcntl.h>
 #include <map>
 
 #define REQ_DONE	0x01
@@ -13,25 +17,27 @@
 class Client
 {
 	private:
-		Request	req;
-		Response res;
-		Server_block * srv;
+		Request						req;
+		Response					res;
+		Server_block				*srv;
 
 		bool		breakconnect;
 		size_t		socket;
 		std::string	message;
 
 		std::map<int, std::string>	resCode;
+		bool						reqType;
+		std::string					location;
 
 
 	public:
-
 		int			status;
 
 		void		generateErrorPage( const int error );
 		void 		checkConnection( const std::string & mess );
 		void		handleRequest( void );
 		void		makeResponse( void );
+		void		parseLocation( void );
 
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );
