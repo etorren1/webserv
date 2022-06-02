@@ -40,6 +40,7 @@ public:
 	void									findHost();
 	void									splitDirectories();
 	void									cleaner();
+	void									setMIMEType(std::string);
 
 	std::string								getDirNamesWithoutRoot(std::string);
 	std::string								getMethod() const;

@@ -191,11 +191,17 @@ int Client::parseLocation() {
 				std::string tmp = location + indexes[i];
 				if (access(tmp.c_str(), 0) != -1) {
 					location = tmp;
+					// std::cout<< GREEN << "indexes - " << indexes[i] << "\n" << RESET;
+					req.setMIMEType(indexes[i]);
+					// std::cout<< GREEN << "MIME type - " << req.getMIMEType() << "\n" << RESET;
+					// std::cout<< GREEN << "location - " << location << "\n" << RESET;
 					break;
 				}
 			}
-			if (i == indexes.size())
+			if (i == indexes.size()) {
+				std::cout << "i == indexes.size()\n";
 				throw codeException(404);
+			}
 				// return generateErrorPage(404);
 			// if (access(location.c_str(), 4) != -1) {
         		// std::cout << "if path - dir\n";
@@ -236,8 +242,10 @@ int Client::parseLocation() {
         //     return generateErrorPage(404);
         // }
 	} else if (status & IS_FILE) {
-		if (access(location.c_str(), 0) == -1)
+		if (access(location.c_str(), 0) == -1) {
+			std::cout << location << " - access(location.c_str(), 0) == -1\n";
 			throw codeException(404);
+		}
 			// return generateErrorPage(404);
     //     // std::cout << "if " << location << " is file\n";
     //     FILE *file;
