@@ -71,6 +71,7 @@ int	Client::generateErrorPage( const int error ) {
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
+	req.cleaner();
 	return res;
 }
 
@@ -188,7 +189,8 @@ int Client::parseLocation() {
 				}
 			}
 			if (i == indexes.size())
-				return generateErrorPage(404);
+				throw codeException(404);
+				// return generateErrorPage(404);
 			// if (access(location.c_str(), 4) != -1) {
         		// std::cout << "if path - dir\n";
 			    // std::cout << "location before .back(/) " << location << "\n";
@@ -231,7 +233,8 @@ int Client::parseLocation() {
         // }
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1)
-			return generateErrorPage(404);
+			throw codeException(404);
+			// return generateErrorPage(404);
     //     // std::cout << "if " << location << " is file\n";
     //     FILE *file;
     //     // std::cout << "location = " << location << "\n";
@@ -245,7 +248,8 @@ int Client::parseLocation() {
     //     }
     }
 	if (access(location.c_str(), 4) == -1)
-		return generateErrorPage(403);
+		throw codeException(403);
+		// return generateErrorPage(403);
 	// std::cout << RED << "final loc: " << location << RESET << "\n";
 	return (0);
 }
