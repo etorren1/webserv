@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sys/socket.h>
 
+#define RES_BUF_SIZE 2048
+
 class Response
 {
 	private:
@@ -18,17 +20,28 @@ class Response
 		std::string								_statusCode;
 		std::string								_reasonPhrase;
 		std::string								_connection;
+
 		// std::string								_date;
 
 		// other
 		std::string								_fileLoc;
 		int										_sendingFinished;
-		long long								_readFrom;
 		std::ifstream							_input; //поток файла из которого читает в данный момент
+		size_t									_range_begin;
 
+		// for boby sending procces 
+		long									_bytesRead;
+		long									_bytesSent;
+		long									_totalBytesRead;
+
+		int 									count;
+
+		char 			buffer[RES_BUF_SIZE];
 	public:
-		int										_hasSent;
-		Response() : _sendingFinished(0), _readFrom(0), _hasSent(0) {};
+		int										_hederHasSent; //сделать геттер и сеттер
+
+		Response() : _sendingFinished(0), _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
+					_hederHasSent(0), _range_begin(0), count(0) {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);

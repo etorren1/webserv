@@ -15,48 +15,44 @@ void		Client::handleRequest( void ) {
 void		Client::makeResponse() {
 	std::stringstream response;
 	size_t result;
-
-	// if (req.getReqURI() == "/favicon.ico")
-	// {
-		// generateErrorPage(404);
-		// res.setFileLoc("./site/image.png");
-		// res.setContentType("image/png");
-	// }
-	// else
-	// {
-		// res.setFileLoc(location);
-		// res.setContentType(req.getContentType());
-	// 	res.setFileLoc("./site/image.jpg");
-	// 	res.setContentType("image/jpg");
-	// }
-	res.setFileLoc("./site/video.mp4");
-	res.setContentType("video/mp4");
-	// res.setFileLoc("./site/colors/red.html");
-	// res.setContentType("text/html");
+	if (req.getReqURI() == "/favicon.ico")
+	{
+		res.setFileLoc("./site/image.png");
+		res.setContentType("image/png");
+	}
+	else
+	{
+		// 	res.setFileLoc(location);
+		// 	res.setContentType(req.getContentType());
+		// }
+		res.setFileLoc("./site/video.mp4");
+		res.setContentType("video/mp4");
+	}
 	// res.setFileLoc("./site/index.html");
 	// res.setContentType("text/html");
 	int rd = 0;
-	try {
-		if (res._hasSent == 0) { // change _hasSent on status client macros!
-			// autoindex("site");
+	try
+	{
+		if (res._hederHasSent == 0)
+		{
 			res.make_response_header(req);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
-			res._hasSent = 1;
-			// rd = 1;
+			res._hederHasSent = 1;
 		}
-		if (res._hasSent == 1)
+		if (res._hederHasSent == 1)
 			rd = res.make_response_body(req, socket);
 		if (rd) {
 			req.cleaner();
 			status |= RESP_DONE;
 		}
 	}
-	catch (codeException &e) {
+	catch (codeException &e)
+	{
 		generateErrorPage(e.getErrorCode());
 		return;
 	}
-	if (rd)
-		res.clearResponseObj();
+	// if (rd)
+	// 	res.clearResponseObj(); //ломает передачу данных
 }
 
 

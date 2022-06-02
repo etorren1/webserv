@@ -1,4 +1,8 @@
 #include "Response.hpp"
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <cstring>
 
 
 std::string Response::make_general_header (Request req, std::string response_body)
@@ -33,62 +37,60 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	_header = statusLine + generalHeader;
 
 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
-	size_t file_size = getFileSize(_fileLoc.c_str());	
+
 	// std::cout << RED << _header << RESET;
 	
 }
 
-int Response::make_response_body(Request req, const size_t socket)
+int Response::make_response_body(Request req, const size_t socket)//2
 {
-
-	//------------------------1------------------------
-	// FOR PARTIAL RESPONSES
-
-	int 			result;
-	char 			*buffer = new char [2048];
-	
-	// std::cout << "HEWAE\n";
-	// std::ifstream							_input;
-
-	// if (_hasSent != 1) {
-	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
-	// 	size_t file_size = getFileSize(_fileLoc.c_str());	
-	// }
+	// int 			result;
+	char 			*buffer = new char [RES_BUF_SIZE];
 
 	if(!_input.is_open())
 		throw(codeException(404));
 
-	size_t count = 0;
-	// while (!_input.eof())
-	// {
-		_input.read (buffer, 2048);
-		int read_bytes =  _input.gcount();
-		// if (read_bytes == -1)
+	// size_t count = 0;
+
+		_input.read (buffer, RES_BUF_SIZE);
+		_bytesRead = _input.gcount();
+		// if (_bytesRead < RES_BUF_SIZE) // ломает отправку файла
+		// 	throw codeException(500);
+
+		_totalBytesRead += _bytesRead;
+
+		// if (_bytesRead == -1)
 		// {
-		// 	std::cerr << "read = " << read_bytes << std::endl;
+		// 	std::cerr << "read = " << _bytesRead << std::endl;
 		// 	throw (123 );
 		// }
-		// if (fds[id].revents & POLLOUT)
-		// usleep(1000);
-			result = send(socket, buffer, read_bytes, 0);		// Отправляем ответ клиенту с помощью функции send
-		if (result == -1)
+
+		_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+
+		if (_bytesSent == -1)
 		{
-			std::cerr << "wrote = " << result << std::endl;
+			// throw (codeException(500));
+			std::cerr << "wrote = " << _bytesSent << std::endl;
+			std::cout << strerror(errno);
+			// std::cout << errno;
 			throw (123);
 		}
-		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
-		// count += result;
-	// }
-	// std::cout << GREEN << count << RESET << "\n";
+		if (_bytesSent < _bytesRead)
+		{
+			_totalBytesRead -= (_bytesRead - _bytesSent);
+			// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
+				_input.seekg(_totalBytesRead);
+		}
+		// count += _bytesSent;
+		// std::cout << "sent:" << _bytesSent << "\nread: " << _bytesRead << "\ntotal read:" << _totalBytesRead\
+		// << "\ntotal send:" << count << "\n";
 	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-			// std::cout << RED << "blabla" << RESET << "\n";	
 		_input.close();
 		_sendingFinished = 1;
 		delete[] buffer;
 		return (1);
 	}
-	// std::cout << BLUE<< "HERE" << RESET << "\n";
 
 	delete[] buffer;
 	return (0);
@@ -101,6 +103,13 @@ void Response::clearResponseObj()
 	_contentType.clear();
 	_statusCode.clear();
 	_reasonPhrase.clear();
+	_connection.clear();
+	_fileLoc.clear();
+	_sendingFinished = 0;
+	_range_begin = 0;
+	_bytesRead = 0;
+	_bytesSent = 0;
+	_totalBytesRead = 0;
 }
 
 // void Server::make_response(Request req, const size_t socket)
@@ -126,15 +135,15 @@ void Response::clearResponseObj()
 // 	// res.setContentType("image/jpg");
 // 	try
 // 	{
-// 		if (res._hasSent == 0)
+// 		if (res._hederHasSent == 0)
 // 		{
 // 			res.make_response_header(req);
 // 			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
 // 							res.getHeader().length(), 0);	
-// 			res._hasSent = 1;
+// 			res._hederHasSent = 1;
 // 		}
 // 		// std::cout << "location: " << location << "\n";
-// 		if (res._hasSent == 1)
+// 		if (res._hederHasSent == 1)
 // 			res.make_response_body(req, socket, fds);
 // 	}
 // 	catch (codeException &e)

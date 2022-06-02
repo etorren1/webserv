@@ -23,6 +23,7 @@ class Client
 
 		std::map<int, std::string>	resCode;
 
+
 	public:
 
 		int			status;
