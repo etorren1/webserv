@@ -48,11 +48,11 @@ class Response
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
-		void			make_response_header(Request req);
+		void			make_response_header(Request req, int code, std::string status);
 		std::string		make_general_header (Request req, std::string response_body);
 		std::string		find_requested_file_path(Request req);
 		std::string		parse_uri(std::string uri);
-		void			clearResponseObj();
+		void			cleaner();
 
 		std::string		getHeader();
 		std::string		getBody();
@@ -63,6 +63,25 @@ class Response
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
+
+
+		//trash
+		void	show_all() {
+			std::cout << "_header: " << _header << "\n";
+			std::cout << "_body: " << _body << "\n";
+			std::cout << "_contentType: " << _contentType << "\n";
+			std::cout << "_contentLength: " << _contentLength << "\n";
+			std::cout << "_statusCode: " << _statusCode << "\n";
+			std::cout << "_reasonPhrase: " << _reasonPhrase << "\n";
+			std::cout << "_connection: " << _connection << "\n";
+			std::cout << "_fileLoc: " << _fileLoc << "\n";
+			std::cout << "_sendingFinished: " << _sendingFinished << "\n";
+			std::cout << "_range_begin: " << _range_begin << "\n";
+			std::cout << "_bytesRead: " << _bytesRead << "\n";
+			std::cout << "_bytesSent: " << _bytesSent << "\n";
+			std::cout << "_totalBytesRead: " << _totalBytesRead << "\n";
+			std::cout << "count: " << count << "\n";
+		}
 };
 
 #endif

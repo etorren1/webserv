@@ -75,7 +75,7 @@ class Block
             client_max_body_size = 1024;
             error_log = "logs/error.log";
             access_log = "logs/access.log";
-            root = "site/";
+            root = "/";
             sendfile = false;
             autoindex = false;
         }

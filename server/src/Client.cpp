@@ -28,18 +28,29 @@ void		Client::makeResponse() {
 	{
 		if (res._hederHasSent == 0)
 		{
-			res.make_response_header(req);
+
+
+			res.make_response_header(req, statusCode, resCode[statusCode]);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
 			res._hederHasSent = 1;
+			if (result != res.getHeader().length()) {
+				std::cout << RED << "send.result: " << result << " != " << "header.hength: " << res.getHeader() << "\n";
+				codeException(1024);
+			}
+			else
+				std::cout << "All header sended!\n";
+			// res.show_all();
 		}
 		if (res._hederHasSent == 1)
 			rd = res.make_response_body(req, socket);
 		if (rd) {
 			req.cleaner();
 			res._hederHasSent = 0;
-			// res.clearResponseObj();
+			res.cleaner();
+			statusCode = 0;
 			status &= ~REQ_DONE;
 			status |= RESP_DONE;
+			std::cout << "All body sended!\n";
 		}
 	}
 	catch (codeException &e)
@@ -111,6 +122,7 @@ Client::Client( size_t nwsock ) {
 	location = "";
 	socket = nwsock;
 	status = 0;
+	statusCode = 0;
 	srv = NULL;
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
     // отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
@@ -145,11 +157,11 @@ int Client::parseLocation() {
     // std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
     // if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
 	if (req.getMIMEType() == "none") {
-		std::cout << "IS_DIR\n";
+		// std::cout << "IS_DIR\n";
         status |= IS_DIR;
 	}
     else {
-		std::cout << "IS_FILE\n";
+		// std::cout << "IS_FILE\n";
 		status |= IS_FILE;
 	}
 	Location_block *loc = getLocationBlock(req.getDirs());
@@ -183,8 +195,10 @@ int Client::parseLocation() {
 	if (status & IS_DIR) {
 		// if (existDir(location.c_str())) {
             // int ret = open(location.c_str(), O_RDONLY);
-			if (location[location.size()-1] != '/')
+			if (location[location.size()-1] != '/') {
+				statusCode = 301;
 				location.push_back('/');
+			}
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
 			while (++i < indexes.size()) {
@@ -251,6 +265,7 @@ int Client::parseLocation() {
     }
 	if (access(location.c_str(), 4) == -1)
 		return generateErrorPage(403);
+	statusCode = 200;
 	// std::cout << RED << "final loc: " << location << RESET << "\n";
 	return (0);
 }

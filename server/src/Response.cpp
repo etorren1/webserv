@@ -18,13 +18,13 @@ std::string Response::make_general_header (Request req, std::string response_bod
 			+ "\r\n");
 }
 
-void Response::make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+void Response::make_response_header(Request req, int code, std::string status) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
 	std::string statusLine;
 	std::string generalHeader;
 
-	_statusCode = "200";
-	_reasonPhrase = "OK";
+	_statusCode = itos(code);
+	_reasonPhrase = status;
 
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, _body);
@@ -33,7 +33,7 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 
 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 
-	// std::cout << RED << _header << RESET;
+	std::cout << RED << _header << RESET;
 	
 }
 
@@ -54,22 +54,22 @@ int Response::make_response_body(Request req, const size_t socket)//2
 
 		_totalBytesRead += _bytesRead;
 
-		// if (_bytesRead == -1)
-		// {
-		// 	std::cerr << "read = " << _bytesRead << std::endl;
-		// 	throw (123 );
-		// }
+		if (_bytesRead == -1)
+		{
+			std::cerr << "read = " << _bytesRead << std::endl;
+			throw (123 );
+		}
 
 		_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
 
-		if (_bytesSent == -1)
-		{
-			// throw (codeException(500));
-			std::cerr << "wrote = " << _bytesSent << std::endl;
-			std::cout << strerror(errno);
-			// std::cout << errno;
-			throw (123);
-		}
+		// if (_bytesSent == -1)
+		// {
+		// 	// throw (codeException(500));
+		// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// 	std::cout << strerror(errno);
+		// 	// std::cout << errno;
+		// 	throw (123);
+		// }
 		if (_bytesSent < _bytesRead)
 		{
 			_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -91,11 +91,12 @@ int Response::make_response_body(Request req, const size_t socket)//2
 	return (0);
 }
 
-void Response::clearResponseObj()
+void Response::cleaner()
 {
 	_header.clear();
 	_body.clear();
 	_contentType.clear();
+	_contentLength.clear();
 	_statusCode.clear();
 	_reasonPhrase.clear();
 	_connection.clear();
@@ -105,6 +106,7 @@ void Response::clearResponseObj()
 	_bytesRead = 0;
 	_bytesSent = 0;
 	_totalBytesRead = 0;
+	count = 0;
 }
 
 std::string	Response::getHeader() { return(_header); }
