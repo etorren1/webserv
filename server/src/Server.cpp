@@ -158,22 +158,27 @@ void Server::clientRequest( void ) {
     if (ret != 0)    {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
-            if (fds[id].revents & POLLIN) {
-                if (isServerSocket(socket))
-                    connectClients(socket);
-                else if (readRequest(socket) <= 0)
-                    disconnectClients(id);
-                else if (!client[socket]->getBreakconnect())
-                {
-                    std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-                    std::cout << client[socket]->getMessage();
-                    client[socket]->handleRequest();
+            try {
+                if (fds[id].revents & POLLIN) {
+                    if (isServerSocket(socket))
+                        connectClients(socket);
+                    else if (readRequest(socket) <= 0)
+                        disconnectClients(id);
+                    else if (!client[socket]->getBreakconnect())
+                    {
+                        // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+                        // std::cout << client[socket]->getMessage();
+                        client[socket]->handleRequest();
+                    }
+                }  else if (fds[id].revents & POLLOUT) {
+                    // std::cout << "POLLOUT" << "\n";
+                    if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
+                        client[socket]->makeResponse();
                 }
             }
-            else if (fds[id].revents & POLLOUT) {
-                // std::cout << "POLLOUT" << "\n";
-                if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
-                    client[socket]->makeResponse();
+            catch(codeException& e) {
+                client[socket]->generateErrorPage(e.getErrorCode());;
+                std::cerr << e.what() << '\n';
             }
             fds[id].revents = 0;
         }

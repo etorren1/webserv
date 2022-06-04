@@ -1,16 +1,20 @@
 #include "Response.hpp"
 
-std::string Response::make_general_header (Request req, std::string response_body)
+std::string Response::make_general_header (Request req, std::string response_body, int statusCode)
 {
 	// std::string Server = "webserv";
 	// _date = getTime();
 	_contentLength = itos(getFileSize(_fileLoc.c_str()));
-
+	std::string location;
+	if (statusCode == 301)
+		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
 	std::string connection = "keep-alive"; //Connection: keep-alive
+
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
+			location +
 			"Content-Type: " + _contentType + "\r\n" +
 			"Content-Length: " + _contentLength + "\r\n" +
 			"Connection: " + connection + "\r\n" +
@@ -27,13 +31,13 @@ void Response::make_response_header(Request req, int code, std::string status) /
 	_reasonPhrase = status;
 
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
-	generalHeader = make_general_header(req, _body);
+	generalHeader = make_general_header(req, _body, code);
 
 	_header = statusLine + generalHeader;
 
 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 
-	std::cout << RED << _header << RESET;
+	// std::cout << RED << _header << RESET;
 	
 }
 

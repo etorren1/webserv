@@ -49,7 +49,7 @@ class Response
 
 		int				make_response_body(Request req, const size_t id);
 		void			make_response_header(Request req, int code, std::string status);
-		std::string		make_general_header (Request req, std::string response_body);
+		std::string		make_general_header (Request req, std::string response_body, int statusCode);
 		std::string		find_requested_file_path(Request req);
 		std::string		parse_uri(std::string uri);
 		void			cleaner();

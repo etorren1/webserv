@@ -215,13 +215,17 @@ std::string Request::getContentType() const { return this->_responseContentType;
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 
-// bool Request::isFile() {
-//     if (_reqURI[_reqURI.length() - 1] == '/') {
-//         _file = 0;
-//         return false;
-//     }
-//     _file = 1;
-//     return true;
-// }
-
 void Request::setHost(std::string host) { _host = host; }
+void Request::setMIMEType(std::string type) { 
+    size_t pos = type.find(".");
+    if (pos != std::string::npos) {
+        try {
+            _MIMEType = type.substr(pos + 1);
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+    } else {
+        _MIMEType = "none";
+    }
+}

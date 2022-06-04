@@ -22,14 +22,12 @@ void		Client::makeResponse() {
 
 	res.setFileLoc(location);
 	res.setContentType(req.getContentType());
-
+	// autoindex("site/");
 	int rd = 0;
 	try
 	{
 		if (res._hederHasSent == 0)
 		{
-
-
 			res.make_response_header(req, statusCode, resCode[statusCode]);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
 			res._hederHasSent = 1;
@@ -82,6 +80,7 @@ int	Client::generateErrorPage( const int error ) {
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
+	// statusCode = error;
 	req.cleaner();
 	return res;
 }
@@ -133,7 +132,13 @@ Client::Client( size_t nwsock ) {
     this->resCode.insert(std::make_pair(202, "Accepted"));
     this->resCode.insert(std::make_pair(203, "Non-Authoritative Information"));
     this->resCode.insert(std::make_pair(204, "No Content"));
+    this->resCode.insert(std::make_pair(300, "Multiple Choices"));
+    this->resCode.insert(std::make_pair(301, "Moved Permanently"));
+    this->resCode.insert(std::make_pair(302, "Found"));
+    this->resCode.insert(std::make_pair(303, "See Other"));
     this->resCode.insert(std::make_pair(304, "Not Modified"));
+    this->resCode.insert(std::make_pair(305, "Use Proxy"));
+    this->resCode.insert(std::make_pair(307, "Temporary Redirect"));
     this->resCode.insert(std::make_pair(400, "Bad Request"));
     this->resCode.insert(std::make_pair(401, "Unauthorized"));
     this->resCode.insert(std::make_pair(402, "Payment Required"));
@@ -205,11 +210,18 @@ int Client::parseLocation() {
 				std::string tmp = location + indexes[i];
 				if (access(tmp.c_str(), 0) != -1) {
 					location = tmp;
+					// std::cout<< GREEN << "indexes - " << indexes[i] << "\n" << RESET;
+					req.setMIMEType(indexes[i]);
+					// std::cout<< GREEN << "MIME type - " << req.getMIMEType() << "\n" << RESET;
+					// std::cout<< GREEN << "location - " << location << "\n" << RESET;
 					break;
 				}
 			}
-			if (i == indexes.size())
-				return generateErrorPage(404);
+			if (i == indexes.size()) {
+				std::cout << "i == indexes.size()\n";
+				throw codeException(404);
+			}
+				// return generateErrorPage(404);
 			// if (access(location.c_str(), 4) != -1) {
         		// std::cout << "if path - dir\n";
 			    // std::cout << "location before .back(/) " << location << "\n";
@@ -249,8 +261,11 @@ int Client::parseLocation() {
         //     return generateErrorPage(404);
         // }
 	} else if (status & IS_FILE) {
-		if (access(location.c_str(), 0) == -1)
-			return generateErrorPage(404);
+		if (access(location.c_str(), 0) == -1) {
+			std::cout << location << " - access(location.c_str(), 0) == -1\n";
+			throw codeException(404);
+		}
+			// return generateErrorPage(404);
     //     // std::cout << "if " << location << " is file\n";
     //     FILE *file;
     //     // std::cout << "location = " << location << "\n";
@@ -264,8 +279,10 @@ int Client::parseLocation() {
     //     }
     }
 	if (access(location.c_str(), 4) == -1)
-		return generateErrorPage(403);
-	statusCode = 200;
+		throw codeException(403);
+		// return generateErrorPage(403);
+	if (statusCode != 301)
+		statusCode = 200;
 	// std::cout << RED << "final loc: " << location << RESET << "\n";
 	return (0);
 }
