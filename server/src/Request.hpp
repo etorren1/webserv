@@ -4,7 +4,6 @@
 # include <iostream>
 # include <sstream>
 # include <unistd.h>
-// # include <string>
 # include <vector>
 # include <map>
 # include "Utils.hpp"
@@ -22,8 +21,6 @@ private:
 	std::string								_MIMEType;
 	std::string								_host;
 	std::vector<std::string>				_dirs;
-	bool									_file;
-	// std::string								_fileName;
 
 	//data for response
 	std::string								_responseContentType;
@@ -53,8 +50,6 @@ public:
 	std::string								getHost() const;
 	std::vector<std::string>				getDirs() const;
 
-	// bool									isFile();
-	
 	void									setHost(std::string);
 };
 
