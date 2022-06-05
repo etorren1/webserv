@@ -34,7 +34,6 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 
 	// std::cout << RED << _header << RESET;
-	
 }
 
 int Response::make_response_body(Request req, const size_t socket)//2
@@ -93,32 +92,30 @@ int Response::make_response_body(Request req, const size_t socket)//2
 
 void Response::addCgiVar(char ***envp, Request req)
 {
-	std::cout << "HERE\n";
 	char **tmp;
 	size_t numOfLines = 0;
 	size_t i = 0;
 
-	std::string req_metod = ("REQUEST_METHOD=" + req.getMethod());				// REQUEST_METHOD=Post
-	std::string serv_protocol = ("SERVER_PROTOCOL=" + req.getProtocolVer());	//SERVER_PROTOCOL=HTTP/1.1
-	std::string path_info = ("PATH_INFO=");
+	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
+	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
+	std::string path_info = ("PATH_INFO=.");
 
-	for (int i = 0; *envp[i] != NULL; ++i)
+	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
 	tmp = (char **)malloc(sizeof(char *) * numOfLines + 4); // 3 for new vars and additional 1 for NULL ptr
 
-	for (int i = 0; i < numOfLines; ++i)
 	while (i < numOfLines)
 	{
-		(*envp)[i] = tmp[i];
+		tmp[i] = (*envp)[i];
 		i++;
 	}
-	(*envp)[i++] = (char *)req_metod.c_str();
-	(*envp)[i++] = (char *)serv_protocol.c_str();
-	(*envp)[i++] = (char *)path_info.c_str();
-	(*envp)[i] = NULL;
+	tmp[i++] = (char *)req_metod.c_str();
+	tmp[i++] = (char *)serv_protocol.c_str();
+	tmp[i++] = (char *)path_info.c_str();
+	tmp[i] = NULL;
 
-	delete(*envp);
+	free (*envp);
 	*envp = tmp;
 }
 
@@ -132,17 +129,19 @@ void Response::clearResponseObj()
 	_connection.clear();
 	_fileLoc.clear();
 	_sendingFinished = 0;
-	_range_begin = 0;
 	_bytesRead = 0;
 	_bytesSent = 0;
 	_totalBytesRead = 0;
 }
 
-std::string	Response::getHeader() { return(_header); }
-std::string	Response::getBody() { return(_body); }
-std::string	Response::getContentType() { return(_contentType); }
-std::string	Response::getStatusCode() { return(_statusCode); }
-std::string	Response::getReasonPhrase() { return(_reasonPhrase); }
-std::string	Response::getFileLoc() { return(_fileLoc); }
-void		Response::setFileLoc(std::string loc) { _fileLoc = loc; };
-void		Response::setContentType(std::string type) { _contentType = type; };
+std::string		Response::getHeader() { return(_header); }
+std::string		Response::getBody() { return(_body); }
+std::string		Response::getContentType() { return(_contentType); }
+std::string		Response::getStatusCode() { return(_statusCode); }
+std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
+std::string		Response::getFileLoc() { return(_fileLoc); }
+std::ifstream &	Response::getInput() { return(_input); }
+
+void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
+void			Response::setContentType(std::string type) { _contentType = type; };
+void			Response::setInput(std::ifstream &input) { _input = input; };

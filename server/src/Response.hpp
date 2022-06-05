@@ -26,11 +26,12 @@ class Response
 
 		// std::string								_date;
 
-		// other
-		std::string								_fileLoc;
-		int										_sendingFinished;
+		// work with file
 		std::ifstream							_input; //поток файла из которого читает в данный момент
-		size_t									_range_begin;
+		std::string								_fileLoc;
+
+
+		int										_sendingFinished;
 
 		// for boby sending procces 
 		long									_bytesRead;
@@ -39,11 +40,11 @@ class Response
 
 
 		char 			buffer[RES_BUF_SIZE];
-	public:
+		public:
 		int										_hederHasSent; //сделать геттер и сеттер
 
 		Response() : _sendingFinished(0), _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
-					_hederHasSent(0), _range_begin(0) {};
+					_hederHasSent(0) {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
@@ -59,12 +60,17 @@ class Response
 		std::string		getStatusCode();
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
+		std::ifstream &	getInput();
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
+		void			setInput(std::ifstream &_input);
 
 		//for makePostResponse:
 		void addCgiVar(char ***envp, Request req);
+		/*	adds to exported environment variables new three
+			which are CGI environment variables to pass them all
+			to CGI new stream */
 };
 
 #endif

@@ -103,7 +103,7 @@ class Server {
 		void	create();
 		void	run( void );
 
-		//for errors
+		//for errors ???
 		void	parseLocation();
 		void	setEnvp(char **envp);
 

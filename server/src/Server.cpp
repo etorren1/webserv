@@ -173,7 +173,7 @@ void Server::clientRequest( void ) {
             else if (fds[id].revents & POLLOUT) {
                 // std::cout << "POLLOUT" << "\n";
                 if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
-                    client[socket]->makeResponse();
+                    client[socket]->makeResponse(envp);
             }
             fds[id].revents = 0;
         }

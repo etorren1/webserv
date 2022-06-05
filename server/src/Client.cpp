@@ -1,6 +1,8 @@
 #include "Client.hpp"
 
-#define PATH_INFO "./cgi/cgi_tester"
+#define PATH_INFO "cgi_tester"
+#define PIPE_IN 1	//we write
+#define PIPE_OUT 0	//we read
 
 void	Client::checkConnection( const std::string & mess ) {
 	if (mess.find_last_of("\n") != mess.size() - 1)
@@ -58,26 +60,43 @@ void	Client::makeGetResponse()
 	// 	res.clearResponseObj(); //ломает передачу данных
 }
 
-void Client::makePostResponse()
+void Client::makePostResponse(char **envp)
 {
-	int ex;
-	char **envp;
+	pid_t	pid;
+	int		pipefd[2];
+	int		ex;
+	int		status;
 
 	res.addCgiVar(&envp, req);
 
-	
-
-	ex =  execve(PATH_INFO, NULL, envp);
+	res.getInput().open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+	if(!res.getInput().is_open())
+		throw(codeException(404));
+	if (pipe(pipefd))
+		throw(codeException(500));
+	if ((pid = fork()) < 0)
+		throw(codeException(500));
+	if (pid == 0) //child - prosses for CGI programm
+	{
+		close(pipefd[PIPE_IN]); //Close unused pipe write end
+		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
+			throw(codeException(500));
+		exit(ex);
+	}
+	else //parent - current programm prosses
+	{
+		close(pipefd[PIPE_OUT]); //Close unused pipe read end
+		waitpid(pid, &status, 0);
+	}
 }
 
-void	Client::makeResponse()
+void	Client::makeResponse(char **envp)
 {
 		if (req.getMethod() == "GET")
 			makeGetResponse();
 		if (req.getMethod() == "POST")
-			makePostResponse();
+			makePostResponse(envp);
 }
-
 
 int	Client::generateErrorPage( const int error ) {
     std::string mess = "none";
