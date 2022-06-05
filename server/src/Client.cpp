@@ -165,15 +165,10 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation() {
-    // std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
-	if (req.getMIMEType() == "none") {
-		// std::cout << "IS_DIR\n";
+	if (req.getMIMEType() == "none")
         status |= IS_DIR;
-	}
-    else {
-		// std::cout << "IS_FILE\n";
+    else
 		status |= IS_FILE;
-	}
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		return generateErrorPage(404);
@@ -183,17 +178,8 @@ int Client::parseLocation() {
 	std::string method = "none";
 	std::string tmp;
 	for (size_t i = 0; i != loc->get_accepted_methods().size(); i++) {
-			std::cout << "req.getMethod() - " << req.getMethod() << "\n";
-			std::cout << "loc->get_accepted_methods()[i] - " << loc->get_accepted_methods()[i] << "\n";
-		// if (loc->get_accepted_methods()[i].back() == ',') {
-		// 	tmp = loc->get_accepted_methods()[i].substr(0, loc->get_accepted_methods()[i].find(','));
-		// 	// std::cout << "tmp - " << tmp << "\n";
-		// 	loc->get_accepted_methods()[i].assign(tmp);
-		// }
-		// std::cout << "loc->get_accepted_methods()[i] - " << loc->get_accepted_methods()[i] << "\n";
 		if (req.getMethod() == loc->get_accepted_methods()[i]) {
 			method = loc->get_accepted_methods()[i];
-			std::cout << "method - " << method << "\n";
 			break;
 		}
 	}
@@ -219,7 +205,6 @@ int Client::parseLocation() {
 	if (loc->get_client_max_body_size() < req.getReqSize()) {
 		statusCode = 413;
 		throw codeException(413);
-		// return statusCode;
 	}
 	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
 		root = root.substr(0, pos);
@@ -229,8 +214,6 @@ int Client::parseLocation() {
 	if (location[0] == '/')
 		location = location.substr(1);
 	if (status & IS_DIR) {
-		// if (existDir(location.c_str())) {
-            // int ret = open(location.c_str(), O_RDONLY);
 			if (location[location.size()-1] != '/') {
 				statusCode = 301;
 				location.push_back('/');
@@ -258,9 +241,7 @@ int Client::parseLocation() {
     }
 	if (access(location.c_str(), 4) == -1)
 		throw codeException(403);
-		// return generateErrorPage(403);
 	if (statusCode != 301)
 		statusCode = 200;
-	// std::cout << RED << "final loc: " << location << RESET << "\n";
 	return (0);
 }
