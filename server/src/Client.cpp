@@ -63,29 +63,35 @@ void	Client::makeGetResponse()
 void Client::makePostResponse(char **envp)
 {
 	pid_t	pid;
-	int		pipefd[2];
+	int		pipe1[2];
+	int		pipe2[2];
 	int		ex;
 	int		status;
+	std::stringstream reqBody;
+
 
 	res.addCgiVar(&envp, req);
 
 	res.getInput().open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+
 	if(!res.getInput().is_open())
 		throw(codeException(404));
-	if (pipe(pipefd))
+	if (pipe(pipe1) && pipe(pipe2))
 		throw(codeException(500));
 	if ((pid = fork()) < 0)
 		throw(codeException(500));
 	if (pid == 0) //child - prosses for CGI programm
 	{
-		close(pipefd[PIPE_IN]); //Close unused pipe write end
+		close(pipe1[PIPE_IN]); //Close unused pipe write end
+		dup2(pipe1[PIPE_OUT], 0);
 		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
 			throw(codeException(500));
 		exit(ex);
 	}
 	else //parent - current programm prosses
 	{
-		close(pipefd[PIPE_OUT]); //Close unused pipe read end
+		close(pipe1[PIPE_OUT]); //Close unused pipe read end
+
 		waitpid(pid, &status, 0);
 	}
 }
