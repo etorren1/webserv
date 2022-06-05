@@ -16,6 +16,11 @@ class Location_block : public Block {
 
         std::string get_location( void ) const { return location; }
 
+        void    show_all() {
+            std::cout << "location = " << location << "\n";
+            Block::show_all();
+        }
+
         Location_block( Block & other ) {
             error_log = other.get_error_log();
             error_page = other.get_error_page();
