@@ -28,6 +28,7 @@ class Client
 		std::string	message;
 
 		std::map<int, std::string>	resCode;
+		int							statusCode;
 		std::string					location;
 
 

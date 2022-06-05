@@ -21,6 +21,7 @@ private:
 	std::string								_MIMEType;
 	std::string								_host;
 	std::vector<std::string>				_dirs;
+	int										_reqSize;
 
 	//data for response
 	std::string								_responseContentType;
@@ -49,8 +50,10 @@ public:
 	std::string								getContentType() const;
 	std::string								getHost() const;
 	std::vector<std::string>				getDirs() const;
+	int										getReqSize() const;
 
 	void									setHost(std::string);
+	void									setReqSize();
 };
 
 

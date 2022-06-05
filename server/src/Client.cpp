@@ -22,24 +22,33 @@ void		Client::makeResponse() {
 
 	res.setFileLoc(location);
 	res.setContentType(req.getContentType());
-
+	// autoindex("site/");
 	int rd = 0;
 	try
 	{
 		if (res._hederHasSent == 0)
 		{
-			res.make_response_header(req);
+			res.make_response_header(req, statusCode, resCode[statusCode]);
 			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
 			res._hederHasSent = 1;
+			if (result != res.getHeader().length()) {
+				std::cout << RED << "send.result: " << result << " != " << "header.hength: " << res.getHeader() << "\n";
+				codeException(1024);
+			}
+			// else
+				// std::cout << "All header sended!\n";
+			// res.show_all();
 		}
 		if (res._hederHasSent == 1)
 			rd = res.make_response_body(req, socket);
 		if (rd) {
 			req.cleaner();
 			res._hederHasSent = 0;
-			// res.clearResponseObj();
+			res.cleaner();
+			statusCode = 0;
 			status &= ~REQ_DONE;
 			status |= RESP_DONE;
+			// std::cout << "All body sended!\n";
 		}
 	}
 	catch (codeException &e)
@@ -71,6 +80,7 @@ int	Client::generateErrorPage( const int error ) {
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
+	// statusCode = error;
 	req.cleaner();
 	return res;
 }
@@ -111,6 +121,7 @@ Client::Client( size_t nwsock ) {
 	location = "";
 	socket = nwsock;
 	status = 0;
+	statusCode = 0;
 	srv = NULL;
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
     // отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
@@ -121,7 +132,13 @@ Client::Client( size_t nwsock ) {
     this->resCode.insert(std::make_pair(202, "Accepted"));
     this->resCode.insert(std::make_pair(203, "Non-Authoritative Information"));
     this->resCode.insert(std::make_pair(204, "No Content"));
+    this->resCode.insert(std::make_pair(300, "Multiple Choices"));
+    this->resCode.insert(std::make_pair(301, "Moved Permanently"));
+    this->resCode.insert(std::make_pair(302, "Found"));
+    this->resCode.insert(std::make_pair(303, "See Other"));
     this->resCode.insert(std::make_pair(304, "Not Modified"));
+    this->resCode.insert(std::make_pair(305, "Use Proxy"));
+    this->resCode.insert(std::make_pair(307, "Temporary Redirect"));
     this->resCode.insert(std::make_pair(400, "Bad Request"));
     this->resCode.insert(std::make_pair(401, "Unauthorized"));
     this->resCode.insert(std::make_pair(402, "Payment Required"));
@@ -132,6 +149,12 @@ Client::Client( size_t nwsock ) {
     this->resCode.insert(std::make_pair(407, "Proxy Authentication Required"));
     this->resCode.insert(std::make_pair(408, "Request Timeout"));
     this->resCode.insert(std::make_pair(409, "Conflict"));
+    this->resCode.insert(std::make_pair(410, "Gone"));
+    this->resCode.insert(std::make_pair(411, "Length Required"));
+    this->resCode.insert(std::make_pair(412, "Precondition Failed"));
+    this->resCode.insert(std::make_pair(413, "Request Entity Too Large"));
+    this->resCode.insert(std::make_pair(414, "Request-URI Too Long"));
+    this->resCode.insert(std::make_pair(415, "Unsupported Media Type"));
     this->resCode.insert(std::make_pair(500, "Internal Server Error"));
     this->resCode.insert(std::make_pair(501, "Not Implemented"));
     this->resCode.insert(std::make_pair(502, "Bad Gateway"));
@@ -157,6 +180,47 @@ int Client::parseLocation() {
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
+	std::string method = "none";
+	std::string tmp;
+	for (size_t i = 0; i != loc->get_accepted_methods().size(); i++) {
+			std::cout << "req.getMethod() - " << req.getMethod() << "\n";
+			std::cout << "loc->get_accepted_methods()[i] - " << loc->get_accepted_methods()[i] << "\n";
+		// if (loc->get_accepted_methods()[i].back() == ',') {
+		// 	tmp = loc->get_accepted_methods()[i].substr(0, loc->get_accepted_methods()[i].find(','));
+		// 	// std::cout << "tmp - " << tmp << "\n";
+		// 	loc->get_accepted_methods()[i].assign(tmp);
+		// }
+		// std::cout << "loc->get_accepted_methods()[i] - " << loc->get_accepted_methods()[i] << "\n";
+		if (req.getMethod() == loc->get_accepted_methods()[i]) {
+			method = loc->get_accepted_methods()[i];
+			std::cout << "method - " << method << "\n";
+			break;
+		}
+	}
+	if (method == "none") {
+		statusCode = 405;
+		std::cout << "statusCode - " << statusCode << "\n";
+		throw codeException(405);
+	}
+
+// 10.4.14 413 Request Entity Too Large
+//    The server is refusing to process a request because the request
+//    entity is larger than the server is willing or able to process. The
+//    server MAY close the connection to prevent the client from continuing
+//    the request.
+//    If the condition is temporary, the server SHOULD include a Retry-
+//    After header field to indicate that it is temporary and after what
+//    time the client MAY try again.
+// client_max_body_size Задаёт максимально допустимый размер тела запроса клиента. 
+// Если размер больше заданного, то клиенту возвращается ошибка 413
+// (Request Entity Too Large). Следует иметь в виду, что браузеры не 
+// умеют корректно показывать эту ошибку. Установка параметра размер 
+// в 0 отключает проверку размера тела запроса клиента.
+	if (loc->get_client_max_body_size() < req.getReqSize()) {
+		statusCode = 413;
+		throw codeException(413);
+		// return statusCode;
+	}
 	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
 		root = root.substr(0, pos);
 	location = root + locn + req.getReqURI().substr(locn.size());
@@ -165,8 +229,12 @@ int Client::parseLocation() {
 	if (location[0] == '/')
 		location = location.substr(1);
 	if (status & IS_DIR) {
-			if (location[location.size()-1] != '/')
+		// if (existDir(location.c_str())) {
+            // int ret = open(location.c_str(), O_RDONLY);
+			if (location[location.size()-1] != '/') {
+				statusCode = 301;
 				location.push_back('/');
+			}
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
 			while (++i < indexes.size()) {
@@ -190,5 +258,9 @@ int Client::parseLocation() {
     }
 	if (access(location.c_str(), 4) == -1)
 		throw codeException(403);
+		// return generateErrorPage(403);
+	if (statusCode != 301)
+		statusCode = 200;
+	// std::cout << RED << "final loc: " << location << RESET << "\n";
 	return (0);
 }

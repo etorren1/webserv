@@ -2,6 +2,7 @@
 
 
 Request::Request() {
+    this->_reqSize = 0;
     this->_typesMIME.insert(std::make_pair("json", "application/json"));
     this->_typesMIME.insert(std::make_pair("javascript", "application/javascript"));
     this->_typesMIME.insert(std::make_pair("pdf", "application/pdf"));
@@ -90,6 +91,7 @@ size_t Request::parseStrBody(std::vector<std::string> vec) {
             }
         }
     }
+    setReqSize();
     return pos;
 }
 
@@ -214,7 +216,9 @@ std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
+int Request::getReqSize() const { return _reqSize; }
 
+void Request::setReqSize() { _reqSize = _body.size(); }
 void Request::setHost(std::string host) { _host = host; }
 void Request::setMIMEType(std::string type) { 
     size_t pos = type.find(".");
