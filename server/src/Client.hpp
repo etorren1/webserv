@@ -23,9 +23,9 @@ class Client
 		Response					res;
 		Server_block				*srv;
 
-		bool		breakconnect;
-		size_t		socket;
-		std::string	message;
+		bool						breakconnect;
+		size_t						socket;
+		std::string					message;
 
 		std::map<int, std::string>	resCode;
 		std::string					location;
@@ -40,6 +40,7 @@ class Client
 		int			parseLocation( void );
 
 		//for respomse:
+		void		initResponse();
 		void		makeResponse( char **envp );
 		void		makeGetResponse( void );
 		void		makePostResponse( char **envp );

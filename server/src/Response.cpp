@@ -1,6 +1,6 @@
 #include "Response.hpp"
 
-std::string Response::make_general_header (Request req, std::string response_body)
+std::string Response::make_general_header (Request req)
 {
 	// std::string Server = "webserv";
 	// _date = getTime();
@@ -27,11 +27,11 @@ void Response::make_response_header(Request req) // https://datatracker.ietf.org
 	_reasonPhrase = "OK";
 
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
-	generalHeader = make_general_header(req, _body);
+	generalHeader = make_general_header(req);
 
 	_header = statusLine + generalHeader;
 
-	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
+	
 
 	// std::cout << RED << _header << RESET;
 }
@@ -41,13 +41,13 @@ int Response::make_response_body(Request req, const size_t socket)//2
 	// int 			result;
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(!_input.is_open())
+	if(!_file.is_open())
 		throw(codeException(404));
 
 	// size_t count = 0;
 
-		_input.read (buffer, RES_BUF_SIZE);
-		_bytesRead = _input.gcount();
+		_file.read (buffer, RES_BUF_SIZE);
+		_bytesRead = _file.gcount();
 		// if (_bytesRead < RES_BUF_SIZE) // ломает отправку файла
 		// 	throw codeException(500);
 
@@ -73,15 +73,53 @@ int Response::make_response_body(Request req, const size_t socket)//2
 		{
 			_totalBytesRead -= (_bytesRead - _bytesSent);
 			// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
-				_input.seekg(_totalBytesRead);
+				_file.seekg(_totalBytesRead);
 		}
 		// count += _bytesSent;
 		// std::cout << "sent:" << _bytesSent << "\nread: " << _bytesRead << "\ntotal read:" << _totalBytesRead\
 		// << "\ntotal send:" << count << "\n";
-	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
+	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-		_input.close();
-		_sendingFinished = 1;
+		_file.close();
+		delete[] buffer;
+		return (1);
+	}
+
+	delete[] buffer;
+	return (0);
+}
+
+template <class T>
+int Response::sendResponse(T input, const size_t socket)
+{
+	char 			*buffer = new char [RES_BUF_SIZE];
+
+	if(_streamType == STREAM_IS_FILE && !input.is_open())
+		throw(codeException(404));
+	
+	input.read (buffer, RES_BUF_SIZE);
+		_bytesRead = input.gcount();
+	
+	_totalBytesRead += _bytesRead;
+
+	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	// if (_bytesSent == -1)
+	// {
+	// 	// throw (codeException(500));
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+	// 	std::cout << strerror(errno);
+	// 	// std::cout << errno;
+	// 	throw (123);
+	// }
+	if (_bytesSent < _bytesRead)
+	{
+		_totalBytesRead -= (_bytesRead - _bytesSent);
+		input.seekg(_totalBytesRead);
+	}
+
+	if (input.eof())								//закрываем файл только после того как оправили все содержание файла
+	{
+		input.close();
 		delete[] buffer;
 		return (1);
 	}
@@ -122,26 +160,29 @@ void Response::addCgiVar(char ***envp, Request req)
 void Response::clearResponseObj()
 {
 	_header.clear();
-	_body.clear();
 	_contentType.clear();
 	_statusCode.clear();
 	_reasonPhrase.clear();
 	_connection.clear();
 	_fileLoc.clear();
-	_sendingFinished = 0;
 	_bytesRead = 0;
 	_bytesSent = 0;
 	_totalBytesRead = 0;
+	_streamType = 0;
+}
+
+void Response::openFile()
+{
+	_file.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 }
 
 std::string		Response::getHeader() { return(_header); }
-std::string		Response::getBody() { return(_body); }
 std::string		Response::getContentType() { return(_contentType); }
 std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
-std::ifstream &	Response::getInput() { return(_input); }
+std::ifstream &	Response::getInput() { return(_file); }
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setInput(std::ifstream &input) { _input = input; };
+// void			Response::setInput(std::ifstream &input) { _file = input; };

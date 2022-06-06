@@ -168,6 +168,7 @@ void Server::clientRequest( void ) {
                     // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
                     // std::cout << client[socket]->getMessage();
                     client[socket]->handleRequest();
+					client[socket]->initResponse();
                 }
             }
             else if (fds[id].revents & POLLOUT) {

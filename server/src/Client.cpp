@@ -22,7 +22,6 @@ void	Client::handleRequest( void ) {
 
 void	Client::makeGetResponse()
 {
-	std::stringstream response;
 	size_t result;
 	
 	res.setFileLoc(location);
@@ -58,6 +57,7 @@ void	Client::makeGetResponse()
 	}
 	// if (rd)
 	// 	res.clearResponseObj(); //ломает передачу данных
+	res.sendResponse();
 }
 
 void Client::makePostResponse(char **envp)
@@ -94,6 +94,15 @@ void Client::makePostResponse(char **envp)
 
 		waitpid(pid, &status, 0);
 	}
+}
+
+void	Client::initResponse ()
+{
+	res.setFileLoc(location);
+	res.setContentType(req.getContentType());
+
+	res.openFile();
+	
 }
 
 void	Client::makeResponse(char **envp)
