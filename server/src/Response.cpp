@@ -35,7 +35,7 @@ void Response::make_response_header(Request req, int code, std::string status) /
 
 	_header = statusLine + generalHeader;
 
-	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
+	_file.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 
 	// std::cout << RED << _header << RESET;
 	
@@ -46,13 +46,16 @@ int Response::make_response_body(Request req, const size_t socket)//2
 	// int 			result;
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(!_input.is_open())
-		throw(codeException(404));
+	// if(!_file.is_open())
+	// 	throw(codeException(404));
 
 	// size_t count = 0;
-
-		_input.read (buffer, RES_BUF_SIZE);
-		_bytesRead = _input.gcount();
+	_stream << "String str\r\n";
+	_stream.read(buffer, RES_BUF_SIZE);
+	std::cout << buffer;
+	_file.read(buffer, RES_BUF_SIZE);
+		// _file.read (buffer, RES_BUF_SIZE);
+		_bytesRead = _file.gcount();
 		// if (_bytesRead < RES_BUF_SIZE) // ломает отправку файла
 		// 	throw codeException(500);
 
@@ -78,14 +81,14 @@ int Response::make_response_body(Request req, const size_t socket)//2
 		{
 			_totalBytesRead -= (_bytesRead - _bytesSent);
 			// if(_totalBytesRead && _totalBytesRead < file_size && _totalBytesRead > 0) //seekg sets the position of the next character to be extracted from the input stream.
-				_input.seekg(_totalBytesRead);
+				_file.seekg(_totalBytesRead);
 		}
 		// count += _bytesSent;
 		// std::cout << "sent:" << _bytesSent << "\nread: " << _bytesRead << "\ntotal read:" << _totalBytesRead\
 		// << "\ntotal send:" << count << "\n";
-	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
+	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-		_input.close();
+		_file.close();
 		_sendingFinished = 1;
 		delete[] buffer;
 		return (1);
