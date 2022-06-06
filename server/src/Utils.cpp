@@ -1,12 +1,13 @@
 #include "Server.hpp"
 
-std::vector<std::string> split(std::string str, std::string delimiter)
+std::vector<std::string> split(std::string str, std::string delimiter, std::string trimer)
 {
     size_t pos = 0;
     std::string token;
     std::vector<std::string> res;
     while ((pos = str.find(delimiter)) != std::string::npos) {
         token = str.substr(0, pos);
+        token = trim(token, trimer);
         res.push_back(token);
         str.erase(0, pos + delimiter.length());
     }
@@ -17,6 +18,8 @@ std::vector<std::string> split(std::string str, std::string delimiter)
 
 std::string trim(std::string str, std::string cut)
 {
+    if (!cut.size())
+        return str;
     size_t beg = str.find_first_not_of(cut);
     size_t end = str.find_last_not_of(cut);
     return str.substr(beg, end - beg + 1);

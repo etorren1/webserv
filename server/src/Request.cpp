@@ -18,6 +18,7 @@ Request::Request() {
     this->_typesMIME.insert(std::make_pair("pjpeg", "image/pjpeg"));
     this->_typesMIME.insert(std::make_pair("png", "image/png"));
     this->_typesMIME.insert(std::make_pair("tiff", "image/tiff"));
+    this->_typesMIME.insert(std::make_pair("svg", "image/svg+xml"));
     this->_typesMIME.insert(std::make_pair("ico", "image/vnd.microsoft.icon")); //"image/x-icon"
     this->_typesMIME.insert(std::make_pair("webp", "image/webp"));
 
@@ -215,13 +216,17 @@ std::string Request::getContentType() const { return this->_responseContentType;
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 
-// bool Request::isFile() {
-//     if (_reqURI[_reqURI.length() - 1] == '/') {
-//         _file = 0;
-//         return false;
-//     }
-//     _file = 1;
-//     return true;
-// }
-
 void Request::setHost(std::string host) { _host = host; }
+void Request::setMIMEType(std::string type) { 
+    size_t pos = type.find(".");
+    if (pos != std::string::npos) {
+        try {
+            _MIMEType = type.substr(pos + 1);
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+    } else {
+        _MIMEType = "none";
+    }
+}

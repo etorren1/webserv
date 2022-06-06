@@ -3,7 +3,8 @@ NAME = webserv
 SRC = $(wildcard server/src/*.cpp)\
 	  $(wildcard server/src/config/*.cpp)
 
-HEADER = 
+HEADER = $(wildcard server/src/*.hpp)\
+	  	 $(wildcard server/src/config/*.hpp)
 
 # FLAGS = -Wall -Werror -Wextra 
 FLAGS = -std=c++98

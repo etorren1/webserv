@@ -23,41 +23,23 @@ void	Client::handleRequest( void ) {
 void	Client::makeGetResponse()
 {
 	size_t result;
-	
-	res.setFileLoc(location);
-	res.setContentType(req.getContentType());
-
-	// res.setFileLoc("./site/video.mp4");
-	// res.setContentType("video/mp4");
 
 	int rd = 0;
-	try
-	{
-		if (res._hederHasSent == 0)
-		{
-			res.make_response_header(req);
-			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
-			res._hederHasSent = 1;
-		}
-		if (res._hederHasSent == 1)
-			rd = res.make_response_body(req, socket);
-		if (rd) {
-			req.cleaner();
-			res._hederHasSent = 0;
-			// res.clearResponseObj();
-			status &= ~REQ_DONE;
-			status |= RESP_DONE;
-		}
+
+	if (res._hederHasSent == 0) // header
+		// res._hederHasSent = res.sendResponse(&res._stream, socket);
+		res._hederHasSent = res.sendResponse_stream(socket);
+	if (res._hederHasSent == 1) // body
+		// rd = res.sendResponse(&res._file, socket);
+		rd = res.sendResponse_file(socket);
+	if (rd) { // RESPONSE ALL SENDED
+		req.cleaner();
+		res._hederHasSent = 0;
+		res.cleaner();
+		statusCode = 0;
+		status = 0;
+		std::cout << "All body sended!\n";
 	}
-	catch (codeException &e)
-	{
-		std::cout << "exception error make responce, code: " << e.getErrorCode() << "\n";
-		generateErrorPage(e.getErrorCode());
-		return;
-	}
-	// if (rd)
-	// 	res.clearResponseObj(); //ломает передачу данных
-	res.sendResponse();
 }
 
 void Client::makePostResponse(char **envp)
@@ -72,9 +54,9 @@ void Client::makePostResponse(char **envp)
 
 	res.addCgiVar(&envp, req);
 
-	res.getInput().open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+	res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
 
-	if(!res.getInput().is_open())
+	if(!res._file.is_open())
 		throw(codeException(404));
 	if (pipe(pipe1) && pipe(pipe2))
 		throw(codeException(500));
@@ -98,19 +80,38 @@ void Client::makePostResponse(char **envp)
 
 void	Client::initResponse ()
 {
-	res.setFileLoc(location);
-	res.setContentType(req.getContentType());
-
-	res.openFile();
-	
+	if (status & ERROR)
+		generateErrorPage(statusCode);
+	else if (status & AUTOIDX)
+		autoindex(location);
+	else
+	{
+		res.setFileLoc(location);
+		res.setContentType(req.getContentType());
+		res.openFile();
+		res.make_response_header(req, statusCode, resCode[statusCode]);
+	}
 }
 
 void	Client::makeResponse(char **envp)
 {
-		if (req.getMethod() == "GET")
-			makeGetResponse();
-		if (req.getMethod() == "POST")
-			makePostResponse(envp);
+		try
+		{
+			if (status & ERROR) {}
+
+			else if (status & AUTOIDX) {}
+				
+			else if (req.getMethod() == "GET")
+				makeGetResponse();
+			else if (req.getMethod() == "POST")
+				makePostResponse(envp);
+		}
+		catch (codeException &e)
+		{
+			status |= ERROR;
+			statusCode = e.getErrorCode();
+			initResponse();
+		}
 }
 
 int	Client::generateErrorPage( const int error ) {
@@ -131,6 +132,7 @@ int	Client::generateErrorPage( const int error ) {
                          + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
     std::string response = header + responseBody;
     size_t res = send(socket, response.c_str(), response.length(), 0);
+	// statusCode = error;
 	req.cleaner();
 	return res;
 }
@@ -171,6 +173,7 @@ Client::Client( size_t nwsock ) {
 	location = "";
 	socket = nwsock;
 	status = 0;
+	statusCode = 0;
 	srv = NULL;
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер 
     // отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
@@ -181,7 +184,13 @@ Client::Client( size_t nwsock ) {
     this->resCode.insert(std::make_pair(202, "Accepted"));
     this->resCode.insert(std::make_pair(203, "Non-Authoritative Information"));
     this->resCode.insert(std::make_pair(204, "No Content"));
+    this->resCode.insert(std::make_pair(300, "Multiple Choices"));
+    this->resCode.insert(std::make_pair(301, "Moved Permanently"));
+    this->resCode.insert(std::make_pair(302, "Found"));
+    this->resCode.insert(std::make_pair(303, "See Other"));
     this->resCode.insert(std::make_pair(304, "Not Modified"));
+    this->resCode.insert(std::make_pair(305, "Use Proxy"));
+    this->resCode.insert(std::make_pair(307, "Temporary Redirect"));
     this->resCode.insert(std::make_pair(400, "Bad Request"));
     this->resCode.insert(std::make_pair(401, "Unauthorized"));
     this->resCode.insert(std::make_pair(402, "Payment Required"));
@@ -202,14 +211,12 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation() {
-    // std::cout << YELLOW << "req.getMIMEType() - " << req.getMIMEType() << "\n" << RESET;
-    // if (req.getMIMEType().empty() || req.getMIMEType() == "none" || req.isFile() == false)
 	if (req.getMIMEType() == "none") {
-		std::cout << "IS_DIR\n";
+		// std::cout << "IS_DIR\n";
         status |= IS_DIR;
 	}
     else {
-		std::cout << "IS_FILE\n";
+		// std::cout << "IS_FILE\n";
 		status |= IS_FILE;
 	}
 	Location_block *loc = getLocationBlock(req.getDirs());
@@ -225,92 +232,44 @@ int Client::parseLocation() {
 		location.erase(pos, 1);
 	if (location[0] == '/')
 		location = location.substr(1);
-	// std::string root = loc->get_root();
-	// // std::cout << GREEN << "this is root - " << root << "\n" << RESET;
-    // std::vector<std::string> vec = req.getDirs();
-    // std::vector<std::string> indexPages = loc->get_index();
-	// std::string defPage, rqst;
-	// // std::cout << GREEN << "\n	loc->get_path() - " << loc->get_path() << "\n" << RESET;
-    // std::string request = req.getDirNamesWithoutRoot(loc->get_path());
-	// // std::cout << GREEN << "this is request - " << request << "\n" << RESET;
-	// if (request[0] == '/')
-	// 	rqst = request.substr(1);
-	// else rqst = request;
-    // location = root + rqst;
-	// location = "/home/etorren/webserv" + location;
-	// location += "yellow.html";
-	std::cout << GREEN << "this is location - " << location << "\n" << RESET;
+	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
-		// if (existDir(location.c_str())) {
-            // int ret = open(location.c_str(), O_RDONLY);
-			if (location[location.size()-1] != '/')
+			if (location.size() && location[location.size()-1] != '/') {
+				statusCode = 301;
 				location.push_back('/');
+			}
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
-			while (++i < indexes.size()) {
-				std::string tmp = location + indexes[i];
-				if (access(tmp.c_str(), 0) != -1) {
-					location = tmp;
-					break;
+			if (!loc->get_autoindex()) {
+				while (++i < indexes.size()) {
+					std::string tmp = location + indexes[i];
+					if (access(tmp.c_str(), 0) != -1) {
+						location = tmp;
+						req.setMIMEType(indexes[i]);
+						break;
+					}
 				}
 			}
-			if (i == indexes.size())
-				return generateErrorPage(404);
-			// if (access(location.c_str(), 4) != -1) {
-        		// std::cout << "if path - dir\n";
-			    // std::cout << "location before .back(/) " << location << "\n";
-            	// // std::cout << "location after .back(/) " << location << "\n";
-				// try	{
-				// 	std::vector<std::string>::iterator it = indexPages.begin();
-				// 	for (; it < indexPages.end(); it++) {
-				// 		std::string path = location + *it;
-				// 		FILE *file;
-        		//         file = fopen(path.c_str(), "r");
-        		//         // std::cout << RED << "path -" << path << " \n" << RESET;
-        		//         if (file != NULL) {
-				// 			defPage = *it;
-        		//             // std::cout << "defPage " << defPage << " found\n";
-        		//         }
-				// 	}
-				// }
-				// catch(const std::exception& e)	{
-				// 	std::cerr << e.what() << '\n';
-				// 	return generateErrorPage(404);
-				// }
-			// } else {
-            //     std::cout << "Permission denied\n";
-            //     return generateErrorPage(403);
-            // }
-            // location += defPage;
-            // // std::cout << "location after += defPage " << location << "\n";
-  			// FILE *file;
-            // file = fopen(location.c_str(), "r");
-            // if (file != NULL) {
-            //     std::cout << "File " << location << " found\n";
-            // } else {
-            //     return generateErrorPage(404);
-            // }
-		// } else {
-        //     // std::cout << "Dir " << location << " doesn't exist\n";
-        //     return generateErrorPage(404);
-        // }
+			else {
+				if (access(location.c_str(), 0) == -1) {
+					std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+					throw codeException(404);
+				}
+				status |= AUTOIDX;
+			}
+			if (i == indexes.size()) {
+				std::cout << "i == indexes.size()\n";
+				throw codeException(404);
+			}
 	} else if (status & IS_FILE) {
-		if (access(location.c_str(), 0) == -1)
-			return generateErrorPage(404);
-    //     // std::cout << "if " << location << " is file\n";
-    //     FILE *file;
-    //     // std::cout << "location = " << location << "\n";
-    //     file = fopen(location.c_str(), "r");
-    //     // std::cout << "if location can't open = " << location << "\n";
-    //     if (file != NULL) {
-    //         std::cout << "File " << location << " found\n";
-    //     } else {
-    //         // std::cout << "file == NULL\n";
-    //         return generateErrorPage(404);
-    //     }
+		if (access(location.c_str(), 0) == -1) {
+			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
+			throw codeException(404);
+		}
     }
 	if (access(location.c_str(), 4) == -1)
-		return generateErrorPage(403);
-	// std::cout << RED << "final loc: " << location << RESET << "\n";
+		throw codeException(403);
+	if (statusCode != 301)
+		statusCode = 200;
 	return (0);
 }

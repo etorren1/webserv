@@ -16,7 +16,7 @@ class Server_block : virtual public Block {
         std::map<std::string, Location_block * > lctn;
     
         void    set_listen( const std::string & s ) { listen = s; }
-        void    set_server_name( const std::string & s ) { server_name = split(s, " "); }
+        void    set_server_name( const std::string & s ) { server_name = split(s, " ", " \t"); }
 
         std::string    get_listen() { return listen; }
         std::vector<std::string> get_server_name() { return server_name; }

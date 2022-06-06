@@ -5,6 +5,7 @@ a.out
 /.vscode/
 /YoupiBanane/
 /logs/
+/site/gds/
 nginx.conf
 main.cpp
 test.cpp

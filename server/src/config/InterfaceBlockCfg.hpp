@@ -24,8 +24,8 @@ class Block
         void set_autoindex( bool t ) { autoindex = t; }
         void set_client_max_body_size( const size_t size ) { client_max_body_size = size; }
         void set_root( const std::string & s ) { root = s; }
-        void set_index( const std::string & s ) { index = split(s, " "); }
-        void set_accepted_methods( const std::string & s ) { accepted_methods = split(s, " "); }
+        void set_index( const std::string & s ) { index = split(s, " ", " \t"); }
+        void set_accepted_methods( const std::string & s ) { accepted_methods = split(s, " ", " \t"); }
 
         std::string get_error_log() const { return error_log; }
         std::string get_error_page() const { return error_page; }
@@ -75,7 +75,7 @@ class Block
             client_max_body_size = 1024;
             error_log = "logs/error.log";
             access_log = "logs/access.log";
-            root = "site/";
+            root = "/";
             sendfile = false;
             autoindex = false;
         }
