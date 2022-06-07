@@ -10,8 +10,8 @@
 #include <cstring>
 
 #define RES_BUF_SIZE 2048
-#define STREAM_IS_FILE 0
-#define STREAM_IS_STR 1
+// #define STREAM_IS_FILE 0
+// #define STREAM_IS_STR 1
 
 class Response
 {
@@ -31,7 +31,7 @@ class Response
 		std::string								_fileLoc;
 
 		//flags
-		int										_streamType;
+		// int										_streamType;
 
 		// for boby sending procces 
 		long									_bytesRead;
@@ -48,12 +48,13 @@ class Response
 		int										_hederHasSent; //сделать геттер и сеттер
 
 		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
-					_hederHasSent(0), _streamType(0) {};
+					_hederHasSent(0) {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
 		void			make_response_header(Request req, int code, std::string status);
 		std::string		make_general_header (Request req, int statusCode);
+		void			make_response_error( const int error, std::string & mess );
 		// template <class T>
 		// int				sendResponse(T * input, const size_t socket);
 		int sendResponse_file(const size_t socket);

@@ -47,16 +47,13 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
     }
 }
 
-int     Server::checkBodySize( const size_t socket, const std::string & text ) {
+void     Server::checkBodySize( const size_t socket, const std::string & text ) {
     size_t bodySize = 0;
     size_t pos = text.find("\r\n\r\n");
     if (pos != std::string::npos)
         bodySize = text.size() - pos - 4;
-    if (bodySize > client[socket]->getMaxBodySize() ) {
-        client[socket]->generateErrorPage(400);
-        return (1);
-    }
-    return (0);
+    if (bodySize > client[socket]->getMaxBodySize())
+        throw codeException(400);
 }
 
 Server_block * Server::getServerBlock( std::string host ) const {

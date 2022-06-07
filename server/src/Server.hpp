@@ -59,7 +59,7 @@ class Server {
 		int			createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv );
 		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
-		int			checkBodySize( const size_t socket, const std::string & text );
+		void		checkBodySize( const size_t socket, const std::string & text );
 		int		    readHeader( const size_t socket, std::string & text );
 		Server_block * getServerBlock( std::string host ) const;
 

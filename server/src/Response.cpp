@@ -34,9 +34,8 @@ void Response::make_response_header(Request req, int code, std::string status) /
 	generalHeader = make_general_header(req, code);
 
 	_header = statusLine + generalHeader;
-
+	_stream << _header;
 	
-
 	// std::cout << RED << _header << RESET;
 }
 
@@ -44,7 +43,7 @@ int Response::sendResponse_file(const size_t socket)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(_streamType == STREAM_IS_FILE && !_file.is_open())
+	if(!_file.is_open())
 		throw(codeException(404));
 	
 	_file.read (buffer, RES_BUF_SIZE);
@@ -53,28 +52,26 @@ int Response::sendResponse_file(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	// if (_bytesSent == -1)
-	// {
-	// 	// throw (codeException(500));
-	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
-	// 	std::cout << strerror(errno);
-	// 	// std::cout << errno;
-	// 	throw (123);
-	// }
+	if (_bytesSent == -1)
+	{
+		// throw (codeException(500));
+		std::cerr << "wrote = " << _bytesSent << std::endl;
+		std::cout << strerror(errno);
+		// std::cout << errno;
+		throw (123);
+	}
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
 		_file.seekg(_totalBytesRead);
 	}
-
+	delete[] buffer;
 	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 		_file.close();
-		delete[] buffer;
+		
 		return (1);
 	}
-
-	delete[] buffer;
 	return (0);
 }
 
@@ -82,37 +79,32 @@ int Response::sendResponse_stream(const size_t socket)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(_streamType == STREAM_IS_FILE && !_file.is_open())
-		throw(codeException(404));
-	
-	_stream.read (buffer, RES_BUF_SIZE);
-		_bytesRead = _stream.gcount();
+	_stream.read(buffer, RES_BUF_SIZE);
+	_bytesRead = _stream.gcount();
 	
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	// if (_bytesSent == -1)
-	// {
-	// 	// throw (codeException(500));
-	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
-	// 	std::cout << strerror(errno);
-	// 	// std::cout << errno;
-	// 	throw (123);
-	// }
+	if (_bytesSent == -1)
+	{
+		// throw (codeException(500));
+		std::cerr << "wrote = " << _bytesSent << std::endl;
+		std::cout << strerror(errno);
+		// std::cout << errno;
+		throw (123);
+	}
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
 		_stream.seekg(_totalBytesRead);
 	}
-
+	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-		// _stream.close();
-		delete[] buffer;
+		_stream.clear();
+	
 		return (1);
 	}
-
-	delete[] buffer;
 	return (0);
 }
 
@@ -158,7 +150,6 @@ void Response::cleaner()
 	_bytesRead = 0;
 	_bytesSent = 0;
 	_totalBytesRead = 0;
-	_streamType = 0;
 }
 
 void Response::openFile()
