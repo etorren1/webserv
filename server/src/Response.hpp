@@ -52,7 +52,7 @@ class Response
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
-		void			make_response_header(Request req, int code, std::string status);
+		void			make_response_header(Request req, int code, std::string status, long size = 0);
 		std::string		make_general_header (Request req, int statusCode);
 		void			make_response_error( const int error, std::string & mess );
 		// template <class T>
@@ -68,12 +68,12 @@ class Response
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
 		// std::ifstream 	getFileStream();
-		// std::stringstream 	getStrStream();
+		std::stringstream 	getStrStream();
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
 		// void			setInput(std::ifstream &_file);
-
+		// void			setStrStream(std::stringstream stream);
 
 		//trash
 		void	show_all() {
