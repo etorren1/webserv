@@ -214,6 +214,18 @@ void    Server::cfg_client_max_body_size( std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_return( std::string & text, T * block ) {
+    std::string raw = get_raw_param("return", text);
+    if (raw.size()) {
+        int code = atoi(raw.c_str());
+        if (code < 300 || code > 309)
+            errorShutdown(255, http->get_error_log(), "error: configuration file: invalid value: return.");
+        std::string nwloc = trim(raw.substr(3), " \t");
+        block->set_redirect(code, nwloc);
+    }
+}
+
+template <class T>
 void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_error_log(text, block);
     cfg_access_log(text, block);
@@ -221,6 +233,7 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_autoindex(text, block);
     cfg_index(text, block);
     cfg_root(text, block);
+    cfg_return(text, block);
     cfg_accepted_methods(text, block);
     cfg_client_max_body_size(text, block);
 }
@@ -266,7 +279,7 @@ void    Server::config( const int & fd ) {
     //         (*jt).second->show_all();
     //     }
     // }
-
+    // exit(1);
     close (fd);
     fcntl(fileno(stdin), F_SETFL, O_NONBLOCK);
 }

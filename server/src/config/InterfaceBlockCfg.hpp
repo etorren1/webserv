@@ -16,6 +16,7 @@ class Block
         bool            sendfile;
         bool            autoindex;
         size_t          client_max_body_size;
+        std::pair<int, std::string> redirect;
 
         void set_error_log( const std::string & s ) { error_log = s; }
         void set_error_page( const std::string & s ) { error_page = s; }
@@ -26,6 +27,7 @@ class Block
         void set_root( const std::string & s ) { root = s; }
         void set_index( const std::string & s ) { index = split(s, " ", " \t"); }
         void set_accepted_methods( const std::string & s ) { accepted_methods = split(s, " ", " \t"); }
+        void set_redirect( const int code, const std::string & location ) { redirect = std::make_pair(code, location); }
 
         std::string get_error_log() const { return error_log; }
         std::string get_error_page() const { return error_page; }
@@ -36,6 +38,7 @@ class Block
         std::string get_root() const { return root; }
         std::vector<std::string> get_index() const { return index; }
         std::vector<std::string> get_accepted_methods() const { return accepted_methods; }
+        std::pair<int, std::string> get_redirect() const { return redirect; }
 
         bool    is_index( const std::string & type ) {
             for (size_t i = 0; i < index.size(); i++) {
@@ -63,6 +66,7 @@ class Block
             std::cout << "sendfile = " << sendfile << "\n";
             std::cout << "autoindex = " << autoindex << "\n";
             std::cout << "client_max_body_size = " << client_max_body_size << "\n";
+            std::cout << "redirect = " << redirect.first << " " << redirect.second << "\n";
             std::cout << "index = ";
             for (size_t i = 0; i < index.size(); i++) { std::cout << index[i] << " "; }
             std::cout << "\n";
@@ -76,6 +80,7 @@ class Block
             error_log = "logs/error.log";
             access_log = "logs/access.log";
             root = "/";
+            redirect = std::make_pair(0, "");
             sendfile = false;
             autoindex = false;
         }
