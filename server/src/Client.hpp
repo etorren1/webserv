@@ -48,6 +48,7 @@ class Client
 		void		makeGetResponse( void );
 		void		makePostResponse( char **envp );
 		void		makeDeleteResponse( void );
+		void		makeRedirectPesponse( );
 
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );

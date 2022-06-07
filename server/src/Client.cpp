@@ -225,6 +225,8 @@ int Client::parseLocation() {
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		return generateErrorPage(404);
+	if (loc->get_return().first)
+		makeRedirectPesponse( );
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
@@ -242,20 +244,6 @@ int Client::parseLocation() {
 		std::cout << "statusCode - " << statusCode << "\n";
 		throw codeException(405);
 	}
-
-// 10.4.14 413 Request Entity Too Large
-//    The server is refusing to process a request because the request
-//    entity is larger than the server is willing or able to process. The
-//    server MAY close the connection to prevent the client from continuing
-//    the request.
-//    If the condition is temporary, the server SHOULD include a Retry-
-//    After header field to indicate that it is temporary and after what
-//    time the client MAY try again.
-// client_max_body_size Задаёт максимально допустимый размер тела запроса клиента. 
-// Если размер больше заданного, то клиенту возвращается ошибка 413
-// (Request Entity Too Large). Следует иметь в виду, что браузеры не 
-// умеют корректно показывать эту ошибку. Установка параметра размер 
-// в 0 отключает проверку размера тела запроса клиента.
 	if (loc->get_client_max_body_size() < req.getReqSize()) {
 		statusCode = 413;
 		throw codeException(413);
@@ -307,4 +295,8 @@ int Client::parseLocation() {
 	if (statusCode != 301)
 		statusCode = 200;
 	return (0);
+}
+
+void Client::makeRedirectPesponse( ) {
+
 }
