@@ -19,6 +19,7 @@ Request::Request() {
     this->_typesMIME.insert(std::make_pair("pjpeg", "image/pjpeg"));
     this->_typesMIME.insert(std::make_pair("png", "image/png"));
     this->_typesMIME.insert(std::make_pair("tiff", "image/tiff"));
+    this->_typesMIME.insert(std::make_pair("svg", "image/svg+xml"));
     this->_typesMIME.insert(std::make_pair("ico", "image/vnd.microsoft.icon")); //"image/x-icon"
     this->_typesMIME.insert(std::make_pair("webp", "image/webp"));
 

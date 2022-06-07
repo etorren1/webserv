@@ -29,7 +29,8 @@ class Response
 		// other
 		std::string								_fileLoc;
 		int										_sendingFinished;
-		std::ifstream							_input; //поток файла из которого читает в данный момент
+		std::ifstream							_file; //поток файла из которого читает в данный момент
+		std::stringstream						_stream;
 		size_t									_range_begin;
 
 		// for boby sending procces 
