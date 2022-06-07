@@ -16,6 +16,7 @@
 #define IS_DIR		0b00000100
 #define IS_FILE		0b00001000
 #define AUTOIDX		0b00010000
+#define ERROR		0b00100000
 
 class Client
 {
@@ -24,9 +25,9 @@ class Client
 		Response					res;
 		Server_block				*srv;
 
-		bool		breakconnect;
-		size_t		socket;
-		std::string	message;
+		bool						breakconnect;
+		size_t						socket;
+		std::string					message;
 
 		std::map<int, std::string>	resCode;
 		int							statusCode;
@@ -42,9 +43,10 @@ class Client
 		int			parseLocation( void );
 
 		//for respomse:
-		void		makeResponse( void );
+		void		initResponse();
+		void		makeResponse( char **envp );
 		void		makeGetResponse( void );
-		void		makePostResponse( void );
+		void		makePostResponse( char **envp );
 		void		makeDeleteResponse( void );
 
 		void		setMessage( const std::string & mess );
@@ -59,7 +61,7 @@ class Client
 		std::string getMessage( void ) const;
 		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
 
-		void    	autoindex( const std::string & path );
+		void		autoindex( const std::string & path );
 
 
 		Client( size_t nwsock );

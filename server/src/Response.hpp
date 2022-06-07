@@ -10,12 +10,13 @@
 #include <cstring>
 
 #define RES_BUF_SIZE 2048
+#define STREAM_IS_FILE 0
+#define STREAM_IS_STR 1
 
 class Response
 {
 	private:
 		std::string								_header;
-		std::string								_body;
 
 		// for header:
 		std::string								_contentType;
@@ -26,57 +27,62 @@ class Response
 
 		// std::string								_date;
 
-		// other
+		// work with file
 		std::string								_fileLoc;
-		int										_sendingFinished;
-		std::ifstream							_file; //поток файла из которого читает в данный момент
-		std::stringstream						_stream;
-		size_t									_range_begin;
+
+		//flags
+		int										_streamType;
 
 		// for boby sending procces 
 		long									_bytesRead;
 		long									_bytesSent;
 		long									_totalBytesRead;
-
-
 		char 			buffer[RES_BUF_SIZE];
+
+
 	public:
+		std::ifstream							_file; //поток файла из которого читает в данный момент
+		std::stringstream						_stream;
+
+
 		int										_hederHasSent; //сделать геттер и сеттер
 
-		Response() : _sendingFinished(0), _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
-					_hederHasSent(0), _range_begin(0) {};
+		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
+					_hederHasSent(0), _streamType(0) {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
 		void			make_response_header(Request req, int code, std::string status);
-		std::string		make_general_header (Request req, std::string response_body, int statusCode);
-		std::string		find_requested_file_path(Request req);
-		std::string		parse_uri(std::string uri);
+		std::string		make_general_header (Request req, int statusCode);
+		// template <class T>
+		// int				sendResponse(T * input, const size_t socket);
+		int sendResponse_file(const size_t socket);
+		int sendResponse_stream(const size_t socket);
+
 		void			cleaner();
 
 		std::string		getHeader();
-		std::string		getBody();
 		std::string		getContentType();
 		std::string		getStatusCode();
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
+		// std::ifstream 	getFileStream();
+		// std::stringstream 	getStrStream();
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
+		// void			setInput(std::ifstream &_file);
 
 
 		//trash
 		void	show_all() {
 			std::cout << "_header: " << _header << "\n";
-			std::cout << "_body: " << _body << "\n";
 			std::cout << "_contentType: " << _contentType << "\n";
 			std::cout << "_contentLength: " << _contentLength << "\n";
 			std::cout << "_statusCode: " << _statusCode << "\n";
 			std::cout << "_reasonPhrase: " << _reasonPhrase << "\n";
 			std::cout << "_connection: " << _connection << "\n";
 			std::cout << "_fileLoc: " << _fileLoc << "\n";
-			std::cout << "_sendingFinished: " << _sendingFinished << "\n";
-			std::cout << "_range_begin: " << _range_begin << "\n";
 			std::cout << "_bytesRead: " << _bytesRead << "\n";
 			std::cout << "_bytesSent: " << _bytesSent << "\n";
 			std::cout << "_totalBytesRead: " << _totalBytesRead << "\n";
@@ -84,6 +90,10 @@ class Response
 		
 		//for makePostResponse:
 		void addCgiVar(char ***envp, Request req);
+		/*	adds to exported environment variables new three
+			which are CGI environment variables to pass them all
+			to CGI new stream */
+		void openFile();
 };
 
 #endif

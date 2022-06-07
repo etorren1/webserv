@@ -1,6 +1,8 @@
 #include "Client.hpp"
 
-#define PATH_INFO "./cgi/cgi_tester"
+#define PATH_INFO "cgi_tester"
+#define PIPE_IN 1	//we write
+#define PIPE_OUT 0	//we read
 
 void	Client::checkConnection( const std::string & mess ) {
 	if (mess.find_last_of("\n") != mess.size() - 1)
@@ -20,75 +22,97 @@ void	Client::handleRequest( void ) {
 
 void	Client::makeGetResponse()
 {
-	std::stringstream response;
 	size_t result;
-	
-	res.setFileLoc(location);
-	res.setContentType(req.getContentType());
 
-	if (status & AUTOIDX)
-		autoindex(location);
-	else {
+	int rd = 0;
 
-		int rd = 0;
-		try
-		{
-			if (res._hederHasSent == 0)
-			{
-				res.make_response_header(req, statusCode, resCode[statusCode]);
-				result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
-				res._hederHasSent = 1;
-				if (result != res.getHeader().length()) {
-					std::cout << RED << "send.result: " << result << " != " << "header.hength: " << res.getHeader() << "\n";
-					codeException(1024);
-				}
-				else
-					std::cout << "All header sended!\n";
-				// res.show_all();
-			}
-			if (res._hederHasSent == 1)
-				rd = res.make_response_body(req, socket);
-			if (rd) {
-				req.cleaner();
-				res._hederHasSent = 0;
-				res.cleaner();
-				statusCode = 0;
-				status &= ~REQ_DONE;
-				status |= RESP_DONE;
-				std::cout << "All body sended!\n";
-			}
-		}
-		catch (codeException &e)
-		{
-			std::cout << "exception error make responce, code: " << e.getErrorCode() << "\n";
-			generateErrorPage(e.getErrorCode());
-			return;
-		}
-		// if (rd)
-		// 	res.clearResponseObj(); //ломает передачу данных
+	if (res._hederHasSent == 0) // header
+		// res._hederHasSent = res.sendResponse(&res._stream, socket);
+		res._hederHasSent = res.sendResponse_stream(socket);
+	if (res._hederHasSent == 1) // body
+		// rd = res.sendResponse(&res._file, socket);
+		rd = res.sendResponse_file(socket);
+	if (rd) { // RESPONSE ALL SENDED
+		req.cleaner();
+		res._hederHasSent = 0;
+		res.cleaner();
+		statusCode = 0;
+		status = 0;
+		std::cout << "All body sended!\n";
 	}
 }
 
-void Client::makePostResponse()
+void Client::makePostResponse(char **envp)
 {
-	int ex;
-	char **envp;
+	pid_t	pid;
+	int		pipe1[2];
+	int		pipe2[2];
+	int		ex;
+	int		status;
+	std::stringstream reqBody;
+
 
 	res.addCgiVar(&envp, req);
 
-	
+	res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
 
-	ex =  execve(PATH_INFO, NULL, envp);
+	if(!res._file.is_open())
+		throw(codeException(404));
+	if (pipe(pipe1) && pipe(pipe2))
+		throw(codeException(500));
+	if ((pid = fork()) < 0)
+		throw(codeException(500));
+	if (pid == 0) //child - prosses for CGI programm
+	{
+		close(pipe1[PIPE_IN]); //Close unused pipe write end
+		dup2(pipe1[PIPE_OUT], 0);
+		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
+			throw(codeException(500));
+		exit(ex);
+	}
+	else //parent - current programm prosses
+	{
+		close(pipe1[PIPE_OUT]); //Close unused pipe read end
+
+		waitpid(pid, &status, 0);
+	}
 }
 
-void	Client::makeResponse()
+void	Client::initResponse ()
 {
-		if (req.getMethod() == "GET")
-			makeGetResponse();
-		if (req.getMethod() == "POST")
-			makePostResponse();
+	if (status & ERROR)
+		generateErrorPage(statusCode);
+	else if (status & AUTOIDX)
+		autoindex(location);
+	else
+	{
+		res.setFileLoc(location);
+		res.setContentType(req.getContentType());
+		res.openFile();
+		res.make_response_header(req, statusCode, resCode[statusCode]);
+	}
 }
 
+void	Client::makeResponse(char **envp)
+{
+		try
+		{
+			if (status & ERROR) {}
+
+			else if (status & AUTOIDX) {}
+				
+			else if (req.getMethod() == "GET")
+				makeGetResponse();
+			else if (req.getMethod() == "POST")
+				makePostResponse(envp);
+		}
+		catch (codeException &e)
+		{
+			status |= ERROR;
+			statusCode = e.getErrorCode();
+			initResponse();
+		}
+}
 
 int	Client::generateErrorPage( const int error ) {
     std::string mess = "none";
