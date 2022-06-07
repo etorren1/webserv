@@ -49,6 +49,7 @@ class Server {
 		int							status;
 
 		std::string					location;
+		char						**envp;
 		
 		void 		connectClients( const int & fd );
 		void 		clientRequest( void );
@@ -104,6 +105,7 @@ class Server {
 
 		//for errors
 		void	parseLocation();
+		void	setEnvp(char **envp);
 
 };
 

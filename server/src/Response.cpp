@@ -95,6 +95,38 @@ int Response::make_response_body(Request req, const size_t socket)//2
 	return (0);
 }
 
+
+void Response::addCgiVar(char ***envp, Request req)
+{
+	std::cout << "HERE\n";
+	char **tmp;
+	size_t numOfLines = 0;
+	size_t i = 0;
+
+	std::string req_metod = ("REQUEST_METHOD=" + req.getMethod());				// REQUEST_METHOD=Post
+	std::string serv_protocol = ("SERVER_PROTOCOL=" + req.getProtocolVer());	//SERVER_PROTOCOL=HTTP/1.1
+	std::string path_info = ("PATH_INFO=");
+
+	for (int i = 0; *envp[i] != NULL; ++i)
+		numOfLines++;
+
+	tmp = (char **)malloc(sizeof(char *) * numOfLines + 4); // 3 for new vars and additional 1 for NULL ptr
+
+	for (int i = 0; i < numOfLines; ++i)
+	while (i < numOfLines)
+	{
+		(*envp)[i] = tmp[i];
+		i++;
+	}
+	(*envp)[i++] = (char *)req_metod.c_str();
+	(*envp)[i++] = (char *)serv_protocol.c_str();
+	(*envp)[i++] = (char *)path_info.c_str();
+	(*envp)[i] = NULL;
+
+	delete(*envp);
+	*envp = tmp;
+}
+
 void Response::cleaner()
 {
 	_header.clear();
@@ -110,7 +142,6 @@ void Response::cleaner()
 	_bytesRead = 0;
 	_bytesSent = 0;
 	_totalBytesRead = 0;
-	count = 0;
 }
 
 std::string	Response::getHeader() { return(_header); }

@@ -1,12 +1,14 @@
 #include "Client.hpp"
 
-void		Client::checkConnection( const std::string & mess ) {
+#define PATH_INFO "./cgi/cgi_tester"
+
+void	Client::checkConnection( const std::string & mess ) {
 	if (mess.find_last_of("\n") != mess.size() - 1)
 		breakconnect = true;
 	breakconnect = false;
 }
 
-void		Client::handleRequest( void ) {
+void	Client::handleRequest( void ) {
 	req.parseText(message);
 	message.clear();
 	location.clear();
@@ -16,49 +18,75 @@ void		Client::handleRequest( void ) {
 		status |= REQ_DONE;
 }
 
-void		Client::makeResponse() {
+void	Client::makeGetResponse()
+{
 	std::stringstream response;
 	size_t result;
-
+	
 	res.setFileLoc(location);
 	res.setContentType(req.getContentType());
-	// autoindex("site/");
-	int rd = 0;
-	try
-	{
-		if (res._hederHasSent == 0)
+
+	if (status & AUTOIDX)
+		autoindex(location);
+	else {
+
+		int rd = 0;
+		try
 		{
-			res.make_response_header(req, statusCode, resCode[statusCode]);
-			result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
-			res._hederHasSent = 1;
-			if (result != res.getHeader().length()) {
-				std::cout << RED << "send.result: " << result << " != " << "header.hength: " << res.getHeader() << "\n";
-				codeException(1024);
+			if (res._hederHasSent == 0)
+			{
+				res.make_response_header(req, statusCode, resCode[statusCode]);
+				result = send(socket, res.getHeader().c_str(), res.getHeader().length(), 0);	// Отправляем ответ клиенту с помощью функции send
+				res._hederHasSent = 1;
+				if (result != res.getHeader().length()) {
+					std::cout << RED << "send.result: " << result << " != " << "header.hength: " << res.getHeader() << "\n";
+					codeException(1024);
+				}
+				else
+					std::cout << "All header sended!\n";
+				// res.show_all();
 			}
-			// else
-				// std::cout << "All header sended!\n";
-			// res.show_all();
+			if (res._hederHasSent == 1)
+				rd = res.make_response_body(req, socket);
+			if (rd) {
+				req.cleaner();
+				res._hederHasSent = 0;
+				res.cleaner();
+				statusCode = 0;
+				status &= ~REQ_DONE;
+				status |= RESP_DONE;
+				std::cout << "All body sended!\n";
+			}
 		}
-		if (res._hederHasSent == 1)
-			rd = res.make_response_body(req, socket);
-		if (rd) {
-			req.cleaner();
-			res._hederHasSent = 0;
-			res.cleaner();
-			statusCode = 0;
-			status &= ~REQ_DONE;
-			status |= RESP_DONE;
-			// std::cout << "All body sended!\n";
+		catch (codeException &e)
+		{
+			std::cout << "exception error make responce, code: " << e.getErrorCode() << "\n";
+			generateErrorPage(e.getErrorCode());
+			return;
 		}
+		// if (rd)
+		// 	res.clearResponseObj(); //ломает передачу данных
 	}
-	catch (codeException &e)
-	{
-		std::cout << "exception error make responce, code: " << e.getErrorCode() << "\n";
-		generateErrorPage(e.getErrorCode());
-		return;
-	}
-	// if (rd)
-	// 	res.clearResponseObj(); //ломает передачу данных
+}
+
+void Client::makePostResponse()
+{
+	int ex;
+	char **envp;
+
+	res.addCgiVar(&envp, req);
+
+	
+
+	ex =  execve(PATH_INFO, NULL, envp);
+}
+
+void	Client::makeResponse()
+{
+		if (req.getMethod() == "GET")
+			makeGetResponse();
+		if (req.getMethod() == "POST")
+			makePostResponse();
 }
 
 
@@ -165,9 +193,10 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation() {
-	if (req.getMIMEType() == "none")
+	if (req.getMIMEType() == "none") {
+		// std::cout << "IS_DIR\n";
         status |= IS_DIR;
-    else
+	} else
 		status |= IS_FILE;
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
@@ -177,6 +206,7 @@ int Client::parseLocation() {
 	std::string	locn = loc->get_location();
 	std::string method = "none";
 	std::string tmp;
+	std::cout << RED << locn << RESET << "\n";
 	for (size_t i = 0; i != loc->get_accepted_methods().size(); i++) {
 		if (req.getMethod() == loc->get_accepted_methods()[i]) {
 			method = loc->get_accepted_methods()[i];
@@ -208,34 +238,43 @@ int Client::parseLocation() {
 	}
 	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
 		root = root.substr(0, pos);
+		std::cout << YELLOW << root << RESET << "\n";
 	location = root + locn + req.getReqURI().substr(locn.size());
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location[0] == '/')
 		location = location.substr(1);
+	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
-			if (location[location.size()-1] != '/') {
+			if (location.size() && location[location.size()-1] != '/') {
 				statusCode = 301;
 				location.push_back('/');
 			}
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
-			while (++i < indexes.size()) {
-				std::string tmp = location + indexes[i];
-				if (access(tmp.c_str(), 0) != -1) {
-					location = tmp;
-					// std::cout<< GREEN << "indexes - " << indexes[i] << "\n" << RESET;
-					req.setMIMEType(indexes[i]);
-					// std::cout<< GREEN << "MIME type - " << req.getMIMEType() << "\n" << RESET;
-					// std::cout<< GREEN << "location - " << location << "\n" << RESET;
-					break;
+			if (!loc->get_autoindex()) {
+				while (++i < indexes.size()) {
+					std::string tmp = location + indexes[i];
+					if (access(tmp.c_str(), 0) != -1) {
+						location = tmp;
+						req.setMIMEType(indexes[i]);
+						break;
+					}
 				}
+			}
+			else {
+				if (access(location.c_str(), 0) == -1) {
+					std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+					throw codeException(404);
+				}
+				status |= AUTOIDX;
 			}
 			if (i == indexes.size()) {
 				throw codeException(404);
 			}
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1) {
+			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
 			throw codeException(404);
 		}
     }

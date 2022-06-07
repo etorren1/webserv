@@ -277,6 +277,11 @@ void	Server::errorShutdown( int code, const std::string & path, const std::strin
     exit(code);
 }
 
+void	Server::setEnvp(char **envp)
+{
+	this->envp = envp;
+}
+
 Server::Server( std::string nw_cfg_path ) {
 
     status = WORKING;

@@ -11,10 +11,11 @@
 #include <fcntl.h>
 #include <map>
 
-#define REQ_DONE	0x01
-#define RESP_DONE	0x02
-#define IS_DIR		0x04
-#define IS_FILE		0x08
+#define REQ_DONE	0b00000001
+#define RESP_DONE	0b00000010
+#define IS_DIR		0b00000100
+#define IS_FILE		0b00001000
+#define AUTOIDX		0b00010000
 
 class Client
 {
@@ -38,8 +39,13 @@ class Client
 		int			generateErrorPage( const int error );
 		void 		checkConnection( const std::string & mess );
 		void		handleRequest( void );
-		void		makeResponse( void );
 		int			parseLocation( void );
+
+		//for respomse:
+		void		makeResponse( void );
+		void		makeGetResponse( void );
+		void		makePostResponse( void );
+		void		makeDeleteResponse( void );
 
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );
