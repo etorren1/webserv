@@ -73,8 +73,7 @@ class Response
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
 		// void			setInput(std::ifstream &_file);
-		void			setStrStream(std::stringstream stream);
-
+		// void			setStrStream(std::stringstream stream);
 
 		//trash
 		void	show_all() {

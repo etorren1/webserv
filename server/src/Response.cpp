@@ -167,9 +167,9 @@ std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
-std::stringstream 	Response::getStrStream() { return(_stream); } 
+std::stringstream &	Response::getStrStream() { return(_stream); } 
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
 // void			Response::setInput(std::ifstream &input) { _file = input; };
-void			Response::setStrStream(std::stringstream stream) { _stream = stream; };
+// void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

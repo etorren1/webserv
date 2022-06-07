@@ -92,13 +92,14 @@ void Client::makePostResponse(char **envp)
 	int		status;
 	std::stringstream reqBody;
 
-
 	res.addCgiVar(&envp, req);
 
-	res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+	reqBody << req.getBody();
 
-	if(!res._file.is_open())
-		throw(codeException(404));
+	// res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+	// if(!res._file.is_open())
+		// throw(codeException(404));
+
 	if (pipe(pipe1) && pipe(pipe2))
 		throw(codeException(500));
 	if ((pid = fork()) < 0)
@@ -106,7 +107,9 @@ void Client::makePostResponse(char **envp)
 	if (pid == 0) //child - prosses for CGI programm
 	{
 		close(pipe1[PIPE_IN]); //Close unused pipe write end
+		close(pipe2[PIPE_OUT]); //Close unused pipe read end
 		dup2(pipe1[PIPE_OUT], 0);
+		dup2(pipe2[PIPE_IN], 1);
 		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
 			throw(codeException(500));
 		exit(ex);
@@ -114,8 +117,11 @@ void Client::makePostResponse(char **envp)
 	else //parent - current programm prosses
 	{
 		close(pipe1[PIPE_OUT]); //Close unused pipe read end
-
+		close(pipe2[PIPE_IN]); //Close unused pipe write end
+		write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
 		waitpid(pid, &status, 0);
+		res.get
+		res.sendResponse_stream()
 	}
 }
 
