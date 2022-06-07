@@ -166,19 +166,17 @@ void Server::clientRequest( void ) {
                         disconnectClients(id);
                     else if (!client[socket]->getBreakconnect())
                     {
-                        std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-                        std::cout << client[socket]->getMessage();
+                        // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+                        // std::cout << client[socket]->getMessage();
                         client[socket]->handleRequest();
                     }
                 }  else if (fds[id].revents & POLLOUT) {
-                    // std::cout << "POLLOUT" << "\n";
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
                         client[socket]->makeResponse(envp);
                 }
             }
             catch(codeException& e) {
-                client[socket]->generateErrorPage(e.getErrorCode());;
-                std::cerr << e.what() << '\n';
+                client[socket]->handleError(e.getErrorCode());
             }
             fds[id].revents = 0;
         }
@@ -205,39 +203,32 @@ int     Server::readHeader( const size_t socket, std::string & text ) {
             pos += 6;
             std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
             Server_block * srv = getServerBlock(host);
-            if (srv == NULL) {
-                client[socket]->generateErrorPage(400);
-                return (0);
-            }
+            if (srv == NULL)
+                throw codeException(400);
             client[socket]->setServer(srv);
         }
-        else {
-            client[socket]->generateErrorPage(400);
-            return (0);
-        }
+        else 
+            throw codeException(400);
+        checkBodySize(socket, text);
     }
     return (bytesRead);
 }
 
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
-    long bytesRead = 0, bodyRead = 0;
+    long bytesRead = 0;
     int rd;
     std::string text;
 
     if (client[socket]->getMessage().size() > 0)
 		text = client[socket]->getMessage();
     else
-        if ((bytesRead = readHeader(socket, text)) <= 0)
-            return (0);
-    if (checkBodySize(socket, text))
-        return (0);
+        bytesRead = readHeader(socket, text);
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
-        if (checkBodySize(socket, text))
-            return (0);
+        checkBodySize(socket, text);
     }
     while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
         text.erase(text.find("\r"), 1);               // из комбинации CRLF

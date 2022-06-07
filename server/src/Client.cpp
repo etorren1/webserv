@@ -12,34 +12,75 @@ void	Client::checkConnection( const std::string & mess ) {
 
 void	Client::handleRequest( void ) {
 	req.parseText(message);
-	message.clear();
-	location.clear();
-	status &= ~IS_DIR;
-	status &= ~IS_FILE;
-	if (parseLocation() == 0)
-		status |= REQ_DONE;
+	parseLocation();
+	initResponse();
+}
+
+void	Client::handleError( const int code ) {
+	std::string mess = "none";
+	try {
+		mess = resCode.at(code);
+	} catch(const std::exception& e) {}
+	cleaner();
+	res.make_response_error(code, mess);
+	statusCode = code;
+	status |= ERROR;
+	status |= REQ_DONE;
+}
+
+void	Client::initResponse ()
+{
+	if (status & AUTOIDX)
+		autoindex(location);
+	else {
+		res.setFileLoc(location);
+		res.setContentType(req.getContentType());
+		res.openFile();
+		res.make_response_header(req, statusCode, resCode[statusCode]);
+	}
+	status |= REQ_DONE;
+}
+
+void	Client::makeResponse(char **envp) {
+		try
+		{
+			if (status & ERROR)
+				makeErrorResponse();
+			else if (status & AUTOIDX)
+				std::cout << "AUTOINDEX\n";
+			else if (req.getMethod() == "GET")
+				makeGetResponse();
+			else if (req.getMethod() == "POST")
+				makePostResponse(envp);
+		}
+		catch (codeException &e)
+		{
+			status |= ERROR;
+			statusCode = e.getErrorCode();
+			std::cout << RED << "Error " <<  statusCode << RESET << "\n";
+			initResponse();
+		}
+}
+
+void	Client::makeErrorResponse() {
+	if (res.sendResponse_stream(socket))
+		status |= RESP_DONE;
+	if (status & RESP_DONE)
+		cleaner();
 }
 
 void	Client::makeGetResponse()
 {
-	size_t result;
-
-	int rd = 0;
-
-	if (res._hederHasSent == 0) // header
-		// res._hederHasSent = res.sendResponse(&res._stream, socket);
-		res._hederHasSent = res.sendResponse_stream(socket);
-	if (res._hederHasSent == 1) // body
-		// rd = res.sendResponse(&res._file, socket);
-		rd = res.sendResponse_file(socket);
-	if (rd) { // RESPONSE ALL SENDED
-		req.cleaner();
-		res._hederHasSent = 0;
-		res.cleaner();
-		statusCode = 0;
-		status = 0;
-		std::cout << "All body sended!\n";
+	if (status & HEAD_SENT) {
+		if (res.sendResponse_file(socket))
+			status |= RESP_DONE;
 	}
+	else {
+		if (res.sendResponse_stream(socket))
+			status |= HEAD_SENT;
+	}
+	if (status & RESP_DONE)
+		cleaner();
 }
 
 void Client::makePostResponse(char **envp)
@@ -78,63 +119,14 @@ void Client::makePostResponse(char **envp)
 	}
 }
 
-void	Client::initResponse ()
-{
-	if (status & ERROR)
-		generateErrorPage(statusCode);
-	else if (status & AUTOIDX)
-		autoindex(location);
-	else
-	{
-		res.setFileLoc(location);
-		res.setContentType(req.getContentType());
-		res.openFile();
-		res.make_response_header(req, statusCode, resCode[statusCode]);
-	}
-}
-
-void	Client::makeResponse(char **envp)
-{
-		try
-		{
-			if (status & ERROR) {}
-
-			else if (status & AUTOIDX) {}
-				
-			else if (req.getMethod() == "GET")
-				makeGetResponse();
-			else if (req.getMethod() == "POST")
-				makePostResponse(envp);
-		}
-		catch (codeException &e)
-		{
-			status |= ERROR;
-			statusCode = e.getErrorCode();
-			initResponse();
-		}
-}
-
-int	Client::generateErrorPage( const int error ) {
-    std::string mess = "none";
-    const int &code = error;
-    std::map<int, std::string>::iterator it = resCode.begin();
-	try {
-		mess = resCode.at(code);
-	} catch(const std::exception& e) {}
-	
-    std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
-                                <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
-                                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
-                                <title>" + itos(code) + " " + mess + "</title></head><body  align=\"center\"><div class=\"container\"><h1>" \
-                                + itos(code) + " " + mess + "</h1><hr></hr> \
-                                <p>webserver</p></div></body></html>";
-    std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\n" + "Version: " + "HTTP/1.1" \
-                         + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
-    std::string response = header + responseBody;
-    size_t res = send(socket, response.c_str(), response.length(), 0);
-	// statusCode = error;
+void	Client::cleaner() {
+	message.clear();
+	location.clear();
 	req.cleaner();
-	return res;
+	res._hederHasSent = 0;
+	res.cleaner();
+	statusCode = 0;
+	status = 0;
 }
 
 void		Client::setMessage( const std::string & mess ) { message = mess; }
@@ -170,7 +162,8 @@ Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const 
 
 Client::Client( size_t nwsock ) {
 	breakconnect = false;
-	location = "";
+	location.clear();
+	message.clear();
 	socket = nwsock;
 	status = 0;
 	statusCode = 0;
@@ -224,8 +217,8 @@ int Client::parseLocation() {
 		status |= IS_FILE;
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
-		return generateErrorPage(404);
-	if (loc->get_return().first)
+		throw codeException(404);
+	if (loc->get_redirect().first)
 		makeRedirectPesponse( );
 	size_t pos;
 	std::string root = loc->get_root();

@@ -59,7 +59,7 @@ class Server {
 		int			createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv );
 		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
-		int			checkBodySize( const size_t socket, const std::string & text );
+		void		checkBodySize( const size_t socket, const std::string & text );
 		int		    readHeader( const size_t socket, std::string & text );
 		Server_block * getServerBlock( std::string host ) const;
 
@@ -78,6 +78,7 @@ class Server {
 			template <class T> void		cfg_access_log( std::string & text, T * block );
 			template <class T> void		cfg_sendfile( std::string & text, T * block );
 			template <class T> void		cfg_autoindex( std::string & text, T * block );
+			template <class T> void		cfg_return( std::string & text, T * block );
 			template <class T> void		cfg_client_max_body_size( std::string & text, T * block );
 			template <class T> void		cfg_location_block( std::string & text, T * block );
 			template <class T> void		cfg_server_block( std::string & text, T * block );

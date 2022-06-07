@@ -17,6 +17,7 @@
 #define IS_FILE		0b00001000
 #define AUTOIDX		0b00010000
 #define ERROR		0b00100000
+#define	HEAD_SENT	0b01000000
 
 class Client
 {
@@ -37,18 +38,21 @@ class Client
 	public:
 		int			status;
 
-		int			generateErrorPage( const int error );
 		void 		checkConnection( const std::string & mess );
 		void		handleRequest( void );
+		void		handleError( const int code );
 		int			parseLocation( void );
+		void		cleaner( void );
 
-		//for respomse:
+		//for response:
 		void		initResponse();
 		void		makeResponse( char **envp );
 		void		makeGetResponse( void );
 		void		makePostResponse( char **envp );
 		void		makeDeleteResponse( void );
 		void		makeRedirectPesponse( );
+		void		makeErrorResponse( void );
+		void		makeAutoidxResponse( void );
 
 		void		setMessage( const std::string & mess );
 		void		setServer( Server_block * s );
@@ -63,7 +67,6 @@ class Client
 		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
 
 		void		autoindex( const std::string & path );
-
 
 		Client( size_t nwsock );
 		~Client();

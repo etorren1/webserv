@@ -1,27 +1,22 @@
 #include "Response.hpp"
 #include "Client.hpp"
-
-// void    Response::autoindex() {
-//     DIR *dir;
-//     struct dirent *entry;
-
-//     dir = opendir("/");
-//     if (!dir) {
-//         perror("diropen");
-//         exit(1);
-//     };
-
-//     while ( (entry = readdir(dir)) != NULL) {
-//         printf("%d - %s [%d] %d\n",
-//             entry->d_ino, entry->d_name, entry->d_type, entry->d_reclen);
-//     };
-
-//     closedir(dir);
-// }
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stack>
+
+void	Response::make_response_error( const int error, std::string & mess ) {
+
+    std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
+                                <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
+                                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
+                                <title>" + itos(error) + " " + mess + "</title></head><body  align=\"center\"><div class=\"container\"><h1>" \
+                                + itos(error) + " " + mess + "</h1><hr></hr> \
+                                <p>webserver</p></div></body></html>";
+    std::string header = "HTTP/1.1 " + itos(error) + " " + mess + "\n" + "Version: " + "HTTP/1.1" \
+                         + "\n" + "Content-Type: " + "text/html" + "\n" + "Content-Length: " + itos(responseBody.length()) + "\n\n";
+    std::string response = header + responseBody;
+	_stream << response;
+}
 
 void    Client::autoindex( const std::string & path ) {
     DIR *dir;
@@ -31,7 +26,7 @@ void    Client::autoindex( const std::string & path ) {
     dir = opendir(path.c_str());
     if (!dir) {
         statusCode = 403;
-        generateErrorPage(403);
+        // generateErrorPage(403);
         return ;
     };
     std::stack<std::string> q;
