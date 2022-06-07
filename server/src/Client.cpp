@@ -161,7 +161,8 @@ Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const 
 
 Client::Client( size_t nwsock ) {
 	breakconnect = false;
-	location = "";
+	location.clear();
+	message.clear();
 	socket = nwsock;
 	status = 0;
 	statusCode = 0;

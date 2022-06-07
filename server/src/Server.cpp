@@ -177,7 +177,6 @@ void Server::clientRequest( void ) {
             }
             catch(codeException& e) {
                 client[socket]->handleError(e.getErrorCode());
-                std::cerr << e.what() << '\n';
             }
             fds[id].revents = 0;
         }
@@ -210,13 +209,14 @@ int     Server::readHeader( const size_t socket, std::string & text ) {
         }
         else 
             throw codeException(400);
+        checkBodySize(socket, text);
     }
     return (bytesRead);
 }
 
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
-    long bytesRead = 0, bodyRead = 0;
+    long bytesRead = 0;
     int rd;
     std::string text;
 
@@ -224,7 +224,6 @@ int     Server::readRequest( const size_t socket ) {
 		text = client[socket]->getMessage();
     else
         bytesRead = readHeader(socket, text);
-    checkBodySize(socket, text);
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
