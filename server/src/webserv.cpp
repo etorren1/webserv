@@ -3,13 +3,13 @@
 #include <signal.h>
 
 void     ft(int) {
-    std::cout << "ALERT\n";
+    // std::cout << RED << "ALERT! SIGPIPE" << RESET << "\n";
 }
 
 int     main(int argc, char **argv, char **envp)
 {
 
-    // signal(SIGPIPE, ft);
+    signal(SIGPIPE, ft);
 
     int fd;
     std::string path;

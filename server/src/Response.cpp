@@ -4,7 +4,7 @@ std::string Response::make_general_header (Request req, int statusCode)
 {
 	// std::string Server = "webserv";
 	// _date = getTime();
-	_contentLength = itos(getFileSize(_fileLoc.c_str()));
+
 	std::string location;
 	if (statusCode == 301)
 		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
@@ -22,18 +22,19 @@ std::string Response::make_general_header (Request req, int statusCode)
 			+ "\r\n");
 }
 
-void Response::make_response_header(Request req, int code, std::string status) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+void Response::make_response_header(Request req, int code, std::string status, long size) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
 	std::string statusLine;
 	std::string generalHeader;
 
 	_statusCode = itos(code);
 	_reasonPhrase = status;
-
-
+	if (!size)
+		_contentLength = itos(getFileSize(_fileLoc.c_str()));
+	else
+		_contentLength = size;
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
-	std::cout << "HETER\n";
 
 	_header = statusLine + generalHeader;
 	_stream << _header;
@@ -54,14 +55,13 @@ int Response::sendResponse_file(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	if (_bytesSent == -1)
-	{
-		// throw (codeException(500));
-		std::cerr << "wrote = " << _bytesSent << std::endl;
-		std::cout << strerror(errno);
+	// if (_bytesSent == -1)
+	// {
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// std::cout << strerror(errno);
 		// std::cout << errno;
-		throw (123);
-	}
+	// 	throw codeException(502);
+	// }
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -87,14 +87,13 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	if (_bytesSent == -1)
-	{
-		// throw (codeException(500));
-		std::cerr << "wrote = " << _bytesSent << std::endl;
-		std::cout << strerror(errno);
+	// if (_bytesSent == -1)
+	// {
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// std::cout << strerror(errno);
 		// std::cout << errno;
-		throw (123);
-	}
+	// 	throw codeException(502);
+	// }
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -170,3 +169,4 @@ std::string		Response::getFileLoc() { return(_fileLoc); }
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
 // void			Response::setInput(std::ifstream &input) { _file = input; };
+// void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

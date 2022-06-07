@@ -39,7 +39,6 @@ void	Client::initResponse ()
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
 	status |= REQ_DONE;
-	std::cout << "RESP DONE\n";
 }
 
 void	Client::makeResponse(char **envp) {
@@ -232,7 +231,7 @@ int Client::parseLocation() {
 	location = root + locn + req.getReqURI().substr(locn.size());
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
-	if (location[0] == '/')
+	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
 	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
@@ -262,7 +261,6 @@ int Client::parseLocation() {
 				throw codeException(404);
 			}
 			status |= AUTOIDX;
-			std::cout << "AUTOINDEX\n";
 		}
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1) {

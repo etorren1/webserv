@@ -18,12 +18,13 @@ void	Response::make_response_error( const int error, std::string & mess ) {
 	_stream << response;
 }
 
-void	Response::make_response_autoidx(Request req, std::string & path, int code, std::string & status){
+void	Response::make_response_autoidx(Request req, std::string path, int code, std::string & status){
     DIR *dir;
     struct dirent *entry;
 
-    std::cout << "OPEN DIR\n";
-
+    std::cout << path << "\n";
+    if (path.size() == 1)
+        path = "." + path;
     dir = opendir(path.c_str());
     if (!dir)
         codeException(403);
@@ -31,9 +32,6 @@ void	Response::make_response_autoidx(Request req, std::string & path, int code, 
     while ( (entry = readdir(dir)) != NULL)
             q.push(entry->d_name);
     closedir(dir);
-
-    std::cout << "MAKE BODY\n";
-
     std::string body = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\">" \
                                 "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">" \
                                 "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" \
@@ -44,7 +42,6 @@ void	Response::make_response_autoidx(Request req, std::string & path, int code, 
         q.pop();
     }
     body += "<hr></hr><p>webserver</p></div></body></html>";
-    make_response_header(req, code, status);
-    std::cout << "BODY DONE\n";
+    make_response_header(req, code, status, body.size());
     _stream << body;
 }
