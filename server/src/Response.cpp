@@ -30,8 +30,10 @@ void Response::make_response_header(Request req, int code, std::string status) /
 	_statusCode = itos(code);
 	_reasonPhrase = status;
 
+
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
+	std::cout << "HETER\n";
 
 	_header = statusLine + generalHeader;
 	_stream << _header;

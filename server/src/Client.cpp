@@ -31,7 +31,7 @@ void	Client::handleError( const int code ) {
 void	Client::initResponse ()
 {
 	if (status & AUTOIDX)
-		autoindex(location);
+		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -39,6 +39,7 @@ void	Client::initResponse ()
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
 	status |= REQ_DONE;
+	std::cout << "RESP DONE\n";
 }
 
 void	Client::makeResponse(char **envp) {
@@ -47,7 +48,7 @@ void	Client::makeResponse(char **envp) {
 			if (status & ERROR)
 				makeErrorResponse();
 			else if (status & AUTOIDX)
-				std::cout << "AUTOINDEX\n";
+				makeAutoidxResponse();
 			else if (req.getMethod() == "GET")
 				makeGetResponse();
 			else if (req.getMethod() == "POST")
@@ -60,6 +61,13 @@ void	Client::makeResponse(char **envp) {
 			std::cout << RED << "Error " <<  statusCode << RESET << "\n";
 			initResponse();
 		}
+}
+
+void	Client::makeAutoidxResponse() {
+	if (res.sendResponse_stream(socket))
+		status |= RESP_DONE;
+	if (status & RESP_DONE)
+		cleaner();
 }
 
 void	Client::makeErrorResponse() {
@@ -204,6 +212,7 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation() {
+	statusCode = 200;
 	if (req.getMIMEType() == "none") {
 		// std::cout << "IS_DIR\n";
         status |= IS_DIR;
@@ -227,33 +236,34 @@ int Client::parseLocation() {
 		location = location.substr(1);
 	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
-			if (location.size() && location[location.size()-1] != '/') {
-				statusCode = 301;
-				location.push_back('/');
-			}
-			std::vector<std::string>indexes = loc->get_index();
-			int i = -1;
-			if (!loc->get_autoindex()) {
-				while (++i < indexes.size()) {
-					std::string tmp = location + indexes[i];
-					if (access(tmp.c_str(), 0) != -1) {
-						location = tmp;
-						req.setMIMEType(indexes[i]);
-						break;
-					}
+		if (location.size() && location[location.size()-1] != '/') {
+			statusCode = 301;
+			location.push_back('/');
+		}
+		std::vector<std::string>indexes = loc->get_index();
+		int i = -1;
+		if (!loc->get_autoindex()) {
+			while (++i < indexes.size()) {
+				std::string tmp = location + indexes[i];
+				if (access(tmp.c_str(), 0) != -1) {
+					location = tmp;
+					req.setMIMEType(indexes[i]);
+					break;
 				}
-			}
-			else {
-				if (access(location.c_str(), 0) == -1) {
-					std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
-					throw codeException(404);
-				}
-				status |= AUTOIDX;
 			}
 			if (i == indexes.size()) {
 				std::cout << "i == indexes.size()\n";
 				throw codeException(404);
 			}
+		}
+		else {
+			if (access(location.c_str(), 0) == -1) {
+				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+				throw codeException(404);
+			}
+			status |= AUTOIDX;
+			std::cout << "AUTOINDEX\n";
+		}
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1) {
 			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
@@ -262,7 +272,5 @@ int Client::parseLocation() {
     }
 	if (access(location.c_str(), 4) == -1)
 		throw codeException(403);
-	if (statusCode != 301)
-		statusCode = 200;
 	return (0);
 }
