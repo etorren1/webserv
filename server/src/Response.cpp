@@ -4,7 +4,7 @@ std::string Response::make_general_header (Request req, int statusCode)
 {
 	// std::string Server = "webserv";
 	// _date = getTime();
-	_contentLength = itos(getFileSize(_fileLoc.c_str()));
+
 	std::string location;
 	if (statusCode == 301)
 		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
@@ -22,13 +22,17 @@ std::string Response::make_general_header (Request req, int statusCode)
 			+ "\r\n");
 }
 
-void Response::make_response_header(Request req, int code, std::string status) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+void Response::make_response_header(Request req, int code, std::string status, long size) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
 	std::string statusLine;
 	std::string generalHeader;
 
 	_statusCode = itos(code);
 	_reasonPhrase = status;
+	if (!size)
+		_contentLength = itos(getFileSize(_fileLoc.c_str()));
+	else
+		_contentLength = size;
 
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
@@ -163,8 +167,9 @@ std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
-// std::stringstream 	Response::getStrStream() { return(_stream); } 
+std::stringstream 	Response::getStrStream() { return(_stream); } 
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
 // void			Response::setInput(std::ifstream &input) { _file = input; };
+void			Response::setStrStream(std::stringstream stream) { _stream = stream; };
