@@ -21,6 +21,7 @@ void	Client::handleError( const int code ) {
 	try {
 		mess = resCode.at(code);
 	} catch(const std::exception& e) {}
+	cleaner();
 	res.make_response_error(code, mess);
 	statusCode = code;
 	status |= ERROR;
