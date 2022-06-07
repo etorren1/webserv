@@ -219,7 +219,7 @@ int Client::parseLocation() {
 	if (loc == NULL)
 		throw codeException(404);
 	if (loc->get_redirect().first)
-		makeRedirectPesponse( );
+		makeRedirectPesponse(loc->get_redirect().first, loc->get_redirect().second);
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
@@ -290,6 +290,6 @@ int Client::parseLocation() {
 	return (0);
 }
 
-void Client::makeRedirectPesponse( ) {
-
+void Client::makeRedirectPesponse(int code, std::string loc) {
+	
 }

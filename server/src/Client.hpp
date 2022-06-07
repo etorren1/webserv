@@ -36,37 +36,37 @@ class Client
 
 
 	public:
-		int			status;
+		int							status;
 
-		void 		checkConnection( const std::string & mess );
-		void		handleRequest( void );
-		void		handleError( const int code );
-		int			parseLocation( void );
-		void		cleaner( void );
+		void 						checkConnection( const std::string & mess );
+		void						handleRequest( void );
+		void						handleError( const int code );
+		int							parseLocation( void );
+		void						cleaner( void );
 
 		//for response:
-		void		initResponse();
-		void		makeResponse( char **envp );
-		void		makeGetResponse( void );
-		void		makePostResponse( char **envp );
-		void		makeDeleteResponse( void );
-		void		makeRedirectPesponse( );
-		void		makeErrorResponse( void );
-		void		makeAutoidxResponse( void );
+		void						initResponse();
+		void						makeResponse( char **envp );
+		void						makeGetResponse( void );
+		void						makePostResponse( char **envp );
+		void						makeDeleteResponse( void );
+		void						makeErrorResponse( void );
+		void						makeAutoidxResponse( void );
+		void						makeRedirectPesponse( int code, std::string loc );
 
-		void		setMessage( const std::string & mess );
-		void		setServer( Server_block * s );
+		void						setMessage( const std::string & mess );
+		void						setServer( Server_block * s );
 
-		bool 		getBreakconnect( void ) const;
-		std::string	getHost( void ) const;
-		size_t		getMaxBodySize( void ) const;
-		Response &	getResponse( void );
-		Request &	getRequest( void );
-		Server_block * getServer( void );
-		std::string getMessage( void ) const;
-		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
+		bool 						getBreakconnect( void ) const;
+		std::string					getHost( void ) const;
+		size_t						getMaxBodySize( void ) const;
+		Response &					getResponse( void );
+		Request &					getRequest( void );
+		Server_block * 				getServer( void );
+		std::string 				getMessage( void ) const;
+		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
 
-		void		autoindex( const std::string & path );
+		void						autoindex( const std::string & path );
 
 		Client( size_t nwsock );
 		~Client();
