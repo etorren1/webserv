@@ -55,6 +55,7 @@ class Response
 		void			make_response_header(Request req, int code, std::string status, long size = 0);
 		std::string		make_general_header (Request req, int statusCode);
 		void			make_response_error( const int error, std::string & mess );
+		void			make_response_autoidx(Request req, std::string location, int code, std::string & status);
 		// template <class T>
 		// int				sendResponse(T * input, const size_t socket);
 		int sendResponse_file(const size_t socket);
