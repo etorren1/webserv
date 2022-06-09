@@ -18,6 +18,7 @@
 #define AUTOIDX		0b00010000
 #define ERROR		0b00100000
 #define	HEAD_SENT	0b01000000
+#define REDIRECT	0b10000000
 
 class Client
 {
@@ -41,7 +42,7 @@ class Client
 		void 						checkConnection( const std::string & mess );
 		void						handleRequest( void );
 		void						handleError( const int code );
-		int							parseLocation( void );
+		int							parseLocation( std::string = "" );
 		void						cleaner( void );
 
 		//for response:
@@ -52,7 +53,7 @@ class Client
 		void						makeDeleteResponse( void );
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
-		void						makeRedirectPesponse( int code, std::string loc );
+		void						makeRedirect( int code, std::string loc );
 
 		void						setMessage( const std::string & mess );
 		void						setServer( Server_block * s );

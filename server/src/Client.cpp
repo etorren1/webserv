@@ -222,24 +222,35 @@ Client::Client( size_t nwsock ) {
 
 Client::~Client() {}
 
-int Client::parseLocation() {
+int Client::parseLocation(std::string str) {
 	statusCode = 200;
 	if (req.getMIMEType() == "none") {
-		// std::cout << "IS_DIR\n";
+		std::cout << "IS_DIR\n";
         status |= IS_DIR;
-	} else
+	} else {
+		std::cout << "IS_FILE\n";
 		status |= IS_FILE;
+	}
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		throw codeException(404);
-	if (loc->get_redirect().first)
-		makeRedirectPesponse(loc->get_redirect().first, loc->get_redirect().second);
+	if (loc->get_redirect().first && !(status & REDIRECT)) {
+		makeRedirect(loc->get_redirect().first, loc->get_redirect().second);
+		// std::cout << "loc->get_redirect().first - " << loc->get_redirect().first << ", loc->get_redirect().second - " << loc->get_redirect().second << "\n";
+		// statusCode = loc->get_redirect().first;
+		// location = loc->get_redirect().second;
+		// std::cout << "location - " << location << ", status - " << statusCode << "\n";
+		return 0;
+	}
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
+	if (str.length()) {
+		locn = str;
+		req.setReqURI(str);
+	}
 	std::string method = "none";
 	std::string tmp;
-	std::cout << RED << locn << RESET << "\n";
 	for (size_t i = 0; i != loc->get_accepted_methods().size(); i++) {
 		if (req.getMethod() == loc->get_accepted_methods()[i]) {
 			method = loc->get_accepted_methods()[i];
@@ -248,7 +259,7 @@ int Client::parseLocation() {
 	}
 	if (method == "none") {
 		statusCode = 405;
-		std::cout << "statusCode - " << statusCode << "\n";
+		// std::cout << "statusCode - " << statusCode << "\n";
 		throw codeException(405);
 	}
 	if (loc->get_client_max_body_size() < req.getReqSize()) {
@@ -257,13 +268,16 @@ int Client::parseLocation() {
 	}
 	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
 		root = root.substr(0, pos);
-		std::cout << YELLOW << root << RESET << "\n";
+	// std::cout << YELLOW << "root - " << root << RESET << "\n";
+	// std::cout << "location - " << location << ", root - " << root << ", req.getReqURI - " << req.getReqURI() << "\n";
 	location = root + locn + req.getReqURI().substr(locn.size());
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
-	if (location.size() > 1 && location[0] == '/')
+	if (location.size() > 1 && location[0] == '/') {
 		location = location.substr(1);
-	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
+		// std::cout << RED << "this is location - " << location << " <-\n" << RESET;
+	}
+	// std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
 		if (location.size() && location[location.size()-1] != '/') {
 			statusCode = 301;
@@ -277,31 +291,44 @@ int Client::parseLocation() {
 				if (access(tmp.c_str(), 0) != -1) {
 					location = tmp;
 					req.setMIMEType(indexes[i]);
+					std::cout << req.getMIMEType() << " - i\n";
 					break;
 				}
 			}
 			if (i == indexes.size()) {
+				// std::cout << i << " - i\n";
 				throw codeException(404);
 			}
 		}
 		else {
 			if (access(location.c_str(), 0) == -1) {
-				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+				// std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
 				throw codeException(404);
 			}
+			// std::cout << location << " IS_DIR\n";
 			status |= AUTOIDX;
 		}
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1) {
-			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
+			// std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
 			throw codeException(404);
 		}
     }
-	if (access(location.c_str(), 4) == -1)
+	if (access(location.c_str(), 4) == -1) {
+		// std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
 		throw codeException(403);
+	}
 	return (0);
 }
 
-void Client::makeRedirectPesponse(int code, std::string loc) {
-
+void Client::makeRedirect(int code, std::string loc) {
+	status |= REDIRECT;
+	// std::cout << "code - " << code << ", loc - " << loc << "\n";
+	// location = loc;
+	statusCode = code;
+	req.setReqURI(loc);
+	req.splitDirectories();
+	parseLocation(loc);
+	// std::cout << "location after parseLocation - " << location << "\n";
+	// create new location
 }

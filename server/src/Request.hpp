@@ -40,7 +40,6 @@ public:
 	void									cleaner();
 	void									setMIMEType(std::string);
 
-	std::string								getDirNamesWithoutRoot(std::string);
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;
@@ -54,6 +53,7 @@ public:
 
 	void									setHost(std::string);
 	void									setReqSize();
+	void									setReqURI(std::string);
 };
 
 
