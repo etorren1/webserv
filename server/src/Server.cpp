@@ -168,7 +168,7 @@ void Server::clientRequest( void ) {
                     {
                         // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
                         // std::cout << client[socket]->getMessage();
-                        client[socket]->handleRequest();
+                        client[socket]->handleRequest(envp);
                     }
                 }  else if (fds[id].revents & POLLOUT) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)

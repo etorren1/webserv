@@ -78,6 +78,7 @@ class Server {
 			template <class T> void		cfg_access_log( std::string & text, T * block );
 			template <class T> void		cfg_sendfile( std::string & text, T * block );
 			template <class T> void		cfg_autoindex( std::string & text, T * block );
+			template <class T> void		cfg_return( std::string & text, T * block );
 			template <class T> void		cfg_client_max_body_size( std::string & text, T * block );
 			template <class T> void		cfg_location_block( std::string & text, T * block );
 			template <class T> void		cfg_server_block( std::string & text, T * block );

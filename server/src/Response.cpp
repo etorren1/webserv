@@ -33,7 +33,6 @@ void Response::make_response_header(Request req, int code, std::string status, l
 		_contentLength = itos(getFileSize(_fileLoc.c_str()));
 	else
 		_contentLength = size;
-
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
 
@@ -56,14 +55,13 @@ int Response::sendResponse_file(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	if (_bytesSent == -1)
-	{
-		// throw (codeException(500));
-		std::cerr << "wrote = " << _bytesSent << std::endl;
-		std::cout << strerror(errno);
+	// if (_bytesSent == -1)
+	// {
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// std::cout << strerror(errno);
 		// std::cout << errno;
-		throw (123);
-	}
+	// 	throw codeException(502);
+	// }
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -89,14 +87,13 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	if (_bytesSent == -1)
-	{
-		// throw (codeException(500));
-		std::cerr << "wrote = " << _bytesSent << std::endl;
-		std::cout << strerror(errno);
+	// if (_bytesSent == -1)
+	// {
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// std::cout << strerror(errno);
 		// std::cout << errno;
-		throw (123);
-	}
+	// 	throw codeException(502);
+	// }
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -171,5 +168,6 @@ std::stringstream &	Response::getStrStream() { return(_stream); }
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
+void			Response::setStatusCode(std::string code){ _statusCode = code; };;
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

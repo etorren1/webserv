@@ -39,13 +39,13 @@ class Client
 		int			status;
 
 		void 		checkConnection( const std::string & mess );
-		void		handleRequest( void );
+		void		handleRequest( char **envp );
 		void		handleError( const int code );
 		int			parseLocation( void );
 		void		cleaner( void );
 
 		//for response:
-		void		initResponse();
+		void		initResponse( char **envp );
 		void		makeResponse( char **envp );
 		void		makeGetResponse( void );
 		void		makePostResponse( char **envp );

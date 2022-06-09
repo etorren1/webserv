@@ -10,10 +10,10 @@ void	Client::checkConnection( const std::string & mess ) {
 	breakconnect = false;
 }
 
-void	Client::handleRequest( void ) {
+void	Client::handleRequest( char **envp ) {
 	req.parseText(message);
 	parseLocation();
-	initResponse();
+	initResponse(envp);
 }
 
 void	Client::handleError( const int code ) {
@@ -28,38 +28,50 @@ void	Client::handleError( const int code ) {
 	status |= REQ_DONE;
 }
 
-void	Client::initResponse ()
+void	Client::initResponse ( char **envp )
 {
 	if (status & AUTOIDX)
-		autoindex(location);
+		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
+	if (req.getMethod() == "POST")
+	{
+		res.getStrStream() << req.getBody();
+		res.addCgiVar(&envp, req);
+	}
 	status |= REQ_DONE;
 }
 
-void	Client::makeResponse(char **envp) {
+void	Client::makeResponse(char **envp) {  //envp не нужен уже
 		try
 		{
 			if (status & ERROR)
 				makeErrorResponse();
 			else if (status & AUTOIDX)
-				std::cout << "AUTOINDEX\n";
+				makeAutoidxResponse();
 			else if (req.getMethod() == "GET")
 				makeGetResponse();
 			else if (req.getMethod() == "POST")
-				makePostResponse(envp);
+				makePostResponse(envp);  //envp не нужен уже
 		}
 		catch (codeException &e)
 		{
 			status |= ERROR;
 			statusCode = e.getErrorCode();
 			std::cout << RED << "Error " <<  statusCode << RESET << "\n";
-			initResponse();
+			initResponse(envp);
 		}
+}
+
+void	Client::makeAutoidxResponse() {
+	if (res.sendResponse_stream(socket))
+		status |= RESP_DONE;
+	if (status & RESP_DONE)
+		cleaner();
 }
 
 void	Client::makeErrorResponse() {
@@ -85,25 +97,21 @@ void	Client::makeGetResponse()
 
 void Client::makePostResponse(char **envp)
 {
-	pid_t	pid;
-	int		pipe1[2];
-	int		pipe2[2];
-	int		ex;
-	int		status;
-	std::stringstream reqBody;
+	std::cout << "HERE" << "\n";
+	char				buff[2048];
+	pid_t				pid;
+	int					pipe1[2];
+	int					pipe2[2];
+	int					ex;
+	int					status;
 
-	res.addCgiVar(&envp, req);
-
-	reqBody << req.getBody();
-
-	// res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
-	// if(!res._file.is_open())
-		// throw(codeException(404));
+	res.setStatusCode("200");
 
 	if (pipe(pipe1) && pipe(pipe2))
 		throw(codeException(500));
 	if ((pid = fork()) < 0)
 		throw(codeException(500));
+
 	if (pid == 0) //child - prosses for CGI programm
 	{
 		close(pipe1[PIPE_IN]); //Close unused pipe write end
@@ -116,12 +124,22 @@ void Client::makePostResponse(char **envp)
 	}
 	else //parent - current programm prosses
 	{
+
 		close(pipe1[PIPE_OUT]); //Close unused pipe read end
 		close(pipe2[PIPE_IN]); //Close unused pipe write end
-		write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+		// while ()
+		// {
+			// res.getStrStream().read(buff, 100);
+			write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+		// }
+		//добавить проверку write
+		close(pipe1[PIPE_IN]);
 		waitpid(pid, &status, 0);
-		res.get
-		res.sendResponse_stream()
+		while (read(pipe2[PIPE_OUT], buff, 2048) > 0)
+			res.getStrStream() << buff;
+		res.getStrStream().read(buff, 2048);
+		std::cout << buff << "\n";
+		res.sendResponse_stream(socket);
 	}
 }
 
@@ -210,6 +228,7 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation() {
+	statusCode = 200;
 	if (req.getMIMEType() == "none") {
 		// std::cout << "IS_DIR\n";
         status |= IS_DIR;
@@ -229,37 +248,37 @@ int Client::parseLocation() {
 	location = root + locn + req.getReqURI().substr(locn.size());
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
-	if (location[0] == '/')
+	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
 	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
-			if (location.size() && location[location.size()-1] != '/') {
-				statusCode = 301;
-				location.push_back('/');
-			}
-			std::vector<std::string>indexes = loc->get_index();
-			int i = -1;
-			if (!loc->get_autoindex()) {
-				while (++i < indexes.size()) {
-					std::string tmp = location + indexes[i];
-					if (access(tmp.c_str(), 0) != -1) {
-						location = tmp;
-						req.setMIMEType(indexes[i]);
-						break;
-					}
+		if (location.size() && location[location.size()-1] != '/') {
+			statusCode = 301;
+			location.push_back('/');
+		}
+		std::vector<std::string>indexes = loc->get_index();
+		int i = -1;
+		if (!loc->get_autoindex()) {
+			while (++i < indexes.size()) {
+				std::string tmp = location + indexes[i];
+				if (access(tmp.c_str(), 0) != -1) {
+					location = tmp;
+					req.setMIMEType(indexes[i]);
+					break;
 				}
-			}
-			else {
-				if (access(location.c_str(), 0) == -1) {
-					std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
-					throw codeException(404);
-				}
-				status |= AUTOIDX;
 			}
 			if (i == indexes.size()) {
 				std::cout << "i == indexes.size()\n";
 				throw codeException(404);
 			}
+		}
+		else {
+			if (access(location.c_str(), 0) == -1) {
+				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+				throw codeException(404);
+			}
+			status |= AUTOIDX;
+		}
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1) {
 			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
@@ -268,7 +287,5 @@ int Client::parseLocation() {
     }
 	if (access(location.c_str(), 4) == -1)
 		throw codeException(403);
-	if (statusCode != 301)
-		statusCode = 200;
 	return (0);
 }
