@@ -166,8 +166,8 @@ void Server::clientRequest( void ) {
                         disconnectClients(id);
                     else if (!client[socket]->getBreakconnect())
                     {
-                        // std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-                        // std::cout << client[socket]->getMessage();
+                        std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+                        std::cout << client[socket]->getMessage();
                         client[socket]->handleRequest(envp);
                     }
                 }  else if (fds[id].revents & POLLOUT) {

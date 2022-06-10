@@ -6,17 +6,25 @@ std::string Response::make_general_header (Request req, int statusCode)
 	// _date = getTime();
 
 	std::string location;
-	if (statusCode == 301)
-		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
-	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
+	std::string contType = "Content-Type: " + _contentType + "\r\n";
+	std::string contentLength = "Content-Length: " + _contentLength + "\r\n";
 	std::string connection = "keep-alive"; //Connection: keep-alive
+
+	if (statusCode == 301)
+	{
+		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
+		// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
+		contType.clear();
+		contentLength.clear();
+	}
+
 
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
 			location +
-			"Content-Type: " + _contentType + "\r\n" +
-			"Content-Length: " + _contentLength + "\r\n" +
+			contType +
+			contentLength +
 			"Connection: " + connection + "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
@@ -123,20 +131,27 @@ void Response::addCgiVar(char ***envp, Request req)
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * numOfLines + 4); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4)); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)
 	{
 		tmp[i] = (*envp)[i];
 		i++;
 	}
-	tmp[i++] = (char *)req_metod.c_str();
-	tmp[i++] = (char *)serv_protocol.c_str();
-	tmp[i++] = (char *)path_info.c_str();
-	tmp[i] = NULL;
+	// tmp[numOfLines] = (char *)malloc(req_metod.length() + 1);
+	// tmp[numOfLines] = strdup(req_metod.c_str());
+	// tmp[numOfLines + 1] = (char *)malloc(serv_protocol.length() + 1);
+	// tmp[numOfLines + 2] = (char *)malloc(path_info.length() + 1);
 
-	free (*envp);
+	tmp[numOfLines] = strdup(req_metod.c_str());
+	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
+	tmp[numOfLines + 2] = strdup(path_info.c_str());
+	tmp[numOfLines + 3] = NULL;
+
 	*envp = tmp;
+
+	// for (int i = 0; (*envp)[i] != NULL; ++i)
+	// 	std::cout << (*envp)[i] << "\n";
 }
 
 void Response::cleaner()
