@@ -11,13 +11,13 @@
 #include <fcntl.h>
 #include <map>
 
-#define REQ_DONE	0b00000001
-#define RESP_DONE	0b00000010
-#define IS_DIR		0b00000100
-#define IS_FILE		0b00001000
-#define AUTOIDX		0b00010000
-#define ERROR		0b00100000
-#define	HEAD_SENT	0b01000000
+#define REQ_DONE		0b00000001
+#define RESP_DONE		0b00000010
+#define IS_DIR			0b00000100
+#define IS_FILE			0b00001000
+#define AUTOIDX			0b00010000
+#define ERROR			0b00100000
+#define	HEAD_SENT		0b01000000
 
 class Client
 {
@@ -34,9 +34,16 @@ class Client
 		int							statusCode;
 		std::string					location;
 
+		// for POST:
+		int					pipe1[2];
+		int					pipe2[2];
+		pid_t				pid;
+		int					ex;
+
 
 	public:
 		int			status;
+		bool		cgiWriteFlag;
 
 		void 		checkConnection( const std::string & mess );
 		void		handleRequest( char **envp );

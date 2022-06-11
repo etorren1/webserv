@@ -40,8 +40,33 @@ void	Client::initResponse ( char **envp )
 	}
 	if (req.getMethod() == "POST")
 	{
+		cgiWriteFlag= 0;
 		res.getStrStream() << req.getBody();
 		res.addCgiVar(&envp, req);
+
+		if (pipe(pipe1) && pipe(pipe2))
+			throw(codeException(500));
+
+		// if (cgi)
+		// {
+			if ((pid = fork()) < 0)
+				throw(codeException(500));
+			if (pid == 0) //child - prosses for CGI programm
+			{
+				close(pipe1[PIPE_IN]); //Close unused pipe write end
+				close(pipe2[PIPE_OUT]); //Close unused pipe read end
+				dup2(pipe1[PIPE_OUT], 0);
+				dup2(pipe2[PIPE_IN], 1);
+				if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
+					throw(codeException(500));
+				exit(ex);
+			}
+			else
+			{
+				close(pipe1[PIPE_OUT]); //Close unused pipe read end
+				close(pipe2[PIPE_IN]); //Close unused pipe write end
+			}
+		// }
 	}
 	status |= REQ_DONE;
 }
@@ -97,57 +122,46 @@ void	Client::makeGetResponse()
 
 void Client::makePostResponse(char **envp)
 {
-	std::cout << "HERE" << "\n";
-	char				buff[2048];
-	pid_t				pid;
-	int					pipe1[2];
-	int					pipe2[2];
-	int					ex;
-	int					status;
+	// char				buff[2048];
+	// int					wrtRet;
 
-	res.setStatusCode("200");
+	// // res.setStatusCode("200");
 
-	if (pipe(pipe1) && pipe(pipe2))
-		throw(codeException(500));
-	if ((pid = fork()) < 0)
-		throw(codeException(500));
+	// if (cgiWriteFlag = false) // флаг cgi записан == false 
+	// 	write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+	// if write < req.getBody().length()
+	// //	закрыть stdin в cgi процессе и флаг cgi записан = true
+	
+	// //если флаг cgi записан == true {
+	// 	//читаем из cgi  порцию даты
+	// //}
+	// 	//прочитанный кусок из cgi пишем клиенту в сокет
+	// 	while (read(pipe2[PIPE_OUT], buff, 2048) > 0)
+	// 		res.getStrStream() << buff;
+	// 	res.getStrStream().read(buff, 2048);
+	// 	std::cout << buff << "\n";
+	// 	res.sendResponse_stream(socket);
+	// // }
 
-	if (pid == 0) //child - prosses for CGI programm
-	{
-		close(pipe1[PIPE_IN]); //Close unused pipe write end
-		close(pipe2[PIPE_OUT]); //Close unused pipe read end
-		dup2(pipe1[PIPE_OUT], 0);
-		dup2(pipe2[PIPE_IN], 1);
-		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
-			throw(codeException(500));
-		exit(ex);
-	}
-	else //parent - current programm prosses
-	{
+	// //если мы закончили всё читать из cgi то 
+	// //waitpid cgi 
+	// //close all fds
 
-		close(pipe1[PIPE_OUT]); //Close unused pipe read end
-		close(pipe2[PIPE_IN]); //Close unused pipe write end
-		// while ()
-		// {
-			// res.getStrStream().read(buff, 100);
-			write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
-		// }
-		//добавить проверку write
-		close(pipe1[PIPE_IN]);
-		waitpid(pid, &status, 0);
-		while (read(pipe2[PIPE_OUT], buff, 2048) > 0)
-			res.getStrStream() << buff;
-		res.getStrStream().read(buff, 2048);
-		std::cout << buff << "\n";
-		res.sendResponse_stream(socket);
-	}
+	// // if (???)
+	// // 	status |= RESP_DONE;
+	// if (status & RESP_DONE)
+	// {
+	// 	close(pipe1[PIPE_IN]);
+	// 	waitpid(pid, &status, 0); // ???
+	// 	cleaner();
+	// }
+		
 }
 
 void	Client::cleaner() {
 	message.clear();
 	location.clear();
 	req.cleaner();
-	res._hederHasSent = 0;
 	res.cleaner();
 	statusCode = 0;
 	status = 0;

@@ -31,24 +31,18 @@ class Response
 		std::string								_fileLoc;
 
 		//flags
-		// int										_streamType;
 
 		// for boby sending procces 
 		long									_bytesRead;
 		long									_bytesSent;
 		long									_totalBytesRead;
-		char 			buffer[RES_BUF_SIZE];
-
 
 	public:
 		std::ifstream							_file; //поток файла из которого читает в данный момент
 		std::stringstream						_stream;
+		bool									_isSent; //весь ответ был выслан
 
-
-		int										_hederHasSent; //сделать геттер и сеттер
-
-		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0),\
-					_hederHasSent(0) {};
+		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0), _isSent(0) {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
