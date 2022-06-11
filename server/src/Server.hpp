@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <signal.h>
 
 #include "config/Config.hpp"
 #include "Client.hpp"
@@ -79,6 +80,7 @@ class Server {
 			template <class T> void		cfg_sendfile( std::string & text, T * block );
 			template <class T> void		cfg_autoindex( std::string & text, T * block );
 			template <class T> void		cfg_return( std::string & text, T * block );
+			template <class T> void     cfg_error_page( std::string & text, T * block );
 			template <class T> void		cfg_client_max_body_size( std::string & text, T * block );
 			template <class T> void		cfg_location_block( std::string & text, T * block );
 			template <class T> void		cfg_server_block( std::string & text, T * block );
@@ -97,16 +99,12 @@ class Server {
 
 	public:
 
-		Server( std::string new_config_path = "" ) ;
+		Server( char **envp, std::string new_config_path = "" ) ;
 		~Server();
 
 		void	config( const int & fd );
 		void	create();
 		void	run( void );
-
-		//for errors ???
-		void	parseLocation();
-		void	setEnvp(char **envp);
 
 };
 

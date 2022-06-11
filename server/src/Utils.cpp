@@ -43,7 +43,7 @@ long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
 	FILE *file;
 	struct stat buff;
 	if (!(file = fopen(fileLoc, "r")))
-		codeException(404);
+		throw codeException(404);
 	fstat (fileno (file), &buff);
 	fclose (file);
 	return (buff.st_size);

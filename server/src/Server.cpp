@@ -1,5 +1,9 @@
 #include "Server.hpp"
 
+static void     ft(int) {
+    // ignore SIGPIPE
+}
+
 void    Server::create() {
     std::vector<std::string> brokenhosts;
     for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
@@ -17,6 +21,7 @@ void    Server::create() {
         srvs.erase(brokenhosts[i]);
     if (!srvs.size())
         closeServer(STOP);
+    signal(SIGPIPE, ft);
 }
 
 void    Server::run( void ) {
@@ -168,7 +173,7 @@ void Server::clientRequest( void ) {
                     {
                         std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
                         std::cout << client[socket]->getMessage();
-                        client[socket]->handleRequest();
+                        client[socket]->handleRequest(envp);
                     }
                 }  else if (fds[id].revents & POLLOUT) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
@@ -194,10 +199,16 @@ int     Server::readHeader( const size_t socket, std::string & text ) {
     int rd;
     int bytesRead = 0;
 
+    std::cout << YELLOW <<"READ HEAD: " << RESET << "\n";
+
     if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
+        std::cout << BLUE;
+        for (int i = 0; i < rd; i++)
+            printf("%d ", buf[i]);
+        std::cout << RESET << "\n";
         size_t pos = text.find("Host: ");
         if (pos != std::string::npos) {
             pos += 6;
@@ -234,6 +245,8 @@ int     Server::readRequest( const size_t socket ) {
         text.erase(text.find("\r"), 1);               // из комбинации CRLF
     client[socket]->checkConnection(text);
     client[socket]->setMessage(text);
+    std::cout << CYAN << text << RESET << "\n";
+    std::cout << PURPLE << "bytes read = " << bytesRead << RESET << "\n";
     return (bytesRead);
 }
 
@@ -268,14 +281,10 @@ void	Server::errorShutdown( int code, const std::string & path, const std::strin
     exit(code);
 }
 
-void	Server::setEnvp(char **envp)
-{
-	this->envp = envp;
-}
-
-Server::Server( std::string nw_cfg_path ) {
+Server::Server( char **envp, std::string nw_cfg_path ) {
 
     status = WORKING;
+    this->envp = envp;
     nw_cfg_path.size() ? cfg_path = nw_cfg_path : cfg_path =  DEFAULT_PATH;
 }
 
