@@ -111,7 +111,6 @@ int Response::sendResponse_stream(const size_t socket)
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 		_stream.clear();
-	
 		return (1);
 	}
 	return (0);
@@ -126,7 +125,7 @@ void Response::addCgiVar(char ***envp, Request req)
 
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
-	std::string path_info = ("PATH_INFO=.");
+	std::string path_info = ("PATH_INFO=");
 
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;

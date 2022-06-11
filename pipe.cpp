@@ -10,7 +10,7 @@
 
 int main (int argc, char **argv, char **envp)
 {
-	//------------------------ 1 ------------------------
+	// // ------------------------ 1 ------------------------
 	// char buff[100];
 	// for (int i = 0; i < 100; i++)
 	// 	buff[i] = 0;
@@ -51,14 +51,14 @@ int main (int argc, char **argv, char **envp)
 	// }
 
 
-	//------------------------ 2 ------------------------
-	char buff[100];
-	std::stringstream stream;
-	// for (int i = 0; i < 100; i++)
-	// 	buff[i] = 0;
-	stream << "bla bla bla";
-	stream.read(buff, 100);
-	std::cout << buff[13];
+	// //------------------------ 2 ------------------------
+	// char buff[100];
+	// std::stringstream stream;
+	// // for (int i = 0; i < 100; i++)
+	// // 	buff[i] = 0;
+	// stream << "bla bla bla";
+	// stream.read(buff, 100);
+	// std::cout << buff[13];
 
 	return 0;
 }

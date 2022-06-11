@@ -39,6 +39,7 @@ class Client
 		int					pipe2[2];
 		pid_t				pid;
 		int					ex;
+		id_t				totalSent;
 
 
 	public:
