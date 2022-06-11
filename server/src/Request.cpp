@@ -2,6 +2,7 @@
 
 
 Request::Request() {
+    this->_reqSize = 0;
     this->_typesMIME.insert(std::make_pair("json", "application/json"));
     this->_typesMIME.insert(std::make_pair("javascript", "application/javascript"));
     this->_typesMIME.insert(std::make_pair("pdf", "application/pdf"));
@@ -91,6 +92,7 @@ size_t Request::parseStrBody(std::vector<std::string> vec) {
             }
         }
     }
+    setReqSize();
     return pos;
 }
 
@@ -160,6 +162,7 @@ void Request::findHost() {
 
 void Request::splitDirectories() {
     std::string str;
+    _dirs.clear();
     _dirs.push_back(_reqURI);
     // std::cout << "_dirs[0] = " << _dirs[0] << "\n";
     size_t pos = _reqURI.find_last_of("/");
@@ -191,21 +194,6 @@ void Request::cleaner() {
     _dirs.clear();
 }
 
-std::string Request::getDirNamesWithoutRoot(std::string path) {
-    size_t pos = _reqURI.find(path);
-    std::string tmp;
-    if (pos != std::string::npos) {
-        tmp = _reqURI.substr(pos);
-        std::cout << "tmp = " << tmp << "\n";
-        _reqURI = tmp;
-        std::cout << "_reqURI = " << _reqURI << "\n";
-        // std::vector<std::string>::iterator it = _dirs.begin();
-        _dirs.clear();
-        splitDirectories();
-    }
-    return _reqURI;
-}
-
 std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
@@ -215,7 +203,10 @@ std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
+int Request::getReqSize() const { return _reqSize; }
 
+void Request::setReqURI(std::string URI) { _reqURI = URI; }
+void Request::setReqSize() { _reqSize = _body.size(); }
 void Request::setHost(std::string host) { _host = host; }
 void Request::setMIMEType(std::string type) { 
     size_t pos = type.find(".");

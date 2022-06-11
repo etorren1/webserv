@@ -99,13 +99,14 @@ void Client::makePostResponse(char **envp)
 	int		status;
 	std::stringstream reqBody;
 
-
 	res.addCgiVar(&envp, req);
 
-	res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+	reqBody << req.getBody();
 
-	if(!res._file.is_open())
-		throw(codeException(404));
+	// res._file.open(res.getFileLoc().c_str(), std::ios::binary|std::ios::in);
+	// if(!res._file.is_open())
+		// throw(codeException(404));
+
 	if (pipe(pipe1) && pipe(pipe2))
 		throw(codeException(500));
 	if ((pid = fork()) < 0)
@@ -113,7 +114,9 @@ void Client::makePostResponse(char **envp)
 	if (pid == 0) //child - prosses for CGI programm
 	{
 		close(pipe1[PIPE_IN]); //Close unused pipe write end
+		close(pipe2[PIPE_OUT]); //Close unused pipe read end
 		dup2(pipe1[PIPE_OUT], 0);
+		dup2(pipe2[PIPE_IN], 1);
 		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
 			throw(codeException(500));
 		exit(ex);
@@ -121,8 +124,11 @@ void Client::makePostResponse(char **envp)
 	else //parent - current programm prosses
 	{
 		close(pipe1[PIPE_OUT]); //Close unused pipe read end
-
+		close(pipe2[PIPE_IN]); //Close unused pipe write end
+		write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
 		waitpid(pid, &status, 0);
+		// res.get
+		// res.sendResponse_stream()
 	}
 }
 
@@ -201,6 +207,12 @@ Client::Client( size_t nwsock ) {
     this->resCode.insert(std::make_pair(407, "Proxy Authentication Required"));
     this->resCode.insert(std::make_pair(408, "Request Timeout"));
     this->resCode.insert(std::make_pair(409, "Conflict"));
+    this->resCode.insert(std::make_pair(410, "Gone"));
+    this->resCode.insert(std::make_pair(411, "Length Required"));
+    this->resCode.insert(std::make_pair(412, "Precondition Failed"));
+    this->resCode.insert(std::make_pair(413, "Request Entity Too Large"));
+    this->resCode.insert(std::make_pair(414, "Request-URI Too Long"));
+    this->resCode.insert(std::make_pair(415, "Unsupported Media Type"));
     this->resCode.insert(std::make_pair(500, "Internal Server Error"));
     this->resCode.insert(std::make_pair(501, "Not Implemented"));
     this->resCode.insert(std::make_pair(502, "Bad Gateway"));
@@ -210,30 +222,62 @@ Client::Client( size_t nwsock ) {
 
 Client::~Client() {}
 
-int Client::parseLocation() {
+int Client::parseLocation(std::string str) {
 	statusCode = 200;
 	if (req.getMIMEType() == "none") {
-		// std::cout << "IS_DIR\n";
+		std::cout << "IS_DIR\n";
         status |= IS_DIR;
-	}
-    else {
-		// std::cout << "IS_FILE\n";
+	} else {
+		std::cout << "IS_FILE\n";
 		status |= IS_FILE;
 	}
 	Location_block *loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		throw codeException(404);
+	if (loc->get_redirect().first && !(status & REDIRECT)) {
+		makeRedirect(loc->get_redirect().first, loc->get_redirect().second);
+		// std::cout << "loc->get_redirect().first - " << loc->get_redirect().first << ", loc->get_redirect().second - " << loc->get_redirect().second << "\n";
+		// statusCode = loc->get_redirect().first;
+		// location = loc->get_redirect().second;
+		// std::cout << "location - " << location << ", status - " << statusCode << "\n";
+		return 0;
+	}
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
+	if (str.length()) {
+		locn = str;
+		req.setReqURI(str);
+	}
+	std::string method = "none";
+	std::string tmp;
+	for (size_t i = 0; i != loc->get_accepted_methods().size(); i++) {
+		if (req.getMethod() == loc->get_accepted_methods()[i]) {
+			method = loc->get_accepted_methods()[i];
+			break;
+		}
+	}
+	if (method == "none") {
+		statusCode = 405;
+		// std::cout << "statusCode - " << statusCode << "\n";
+		throw codeException(405);
+	}
+	if (loc->get_client_max_body_size() < req.getReqSize()) {
+		statusCode = 413;
+		throw codeException(413);
+	}
 	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
 		root = root.substr(0, pos);
+	// std::cout << YELLOW << "root - " << root << RESET << "\n";
+	// std::cout << "location - " << location << ", root - " << root << ", req.getReqURI - " << req.getReqURI() << "\n";
 	location = root + locn + req.getReqURI().substr(locn.size());
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
-	if (location.size() > 1 && location[0] == '/')
+	if (location.size() > 1 && location[0] == '/') {
 		location = location.substr(1);
-	std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
+		// std::cout << RED << "this is location - " << location << " <-\n" << RESET;
+	}
+	// std::cout << GREEN << "this is location - " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
 		if (location.size() && location[location.size()-1] != '/') {
 			statusCode = 301;
@@ -247,28 +291,44 @@ int Client::parseLocation() {
 				if (access(tmp.c_str(), 0) != -1) {
 					location = tmp;
 					req.setMIMEType(indexes[i]);
+					std::cout << req.getMIMEType() << " - i\n";
 					break;
 				}
 			}
 			if (i == indexes.size()) {
-				std::cout << "i == indexes.size()\n";
+				// std::cout << i << " - i\n";
 				throw codeException(404);
 			}
 		}
 		else {
 			if (access(location.c_str(), 0) == -1) {
-				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+				// std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
 				throw codeException(404);
 			}
+			// std::cout << location << " IS_DIR\n";
 			status |= AUTOIDX;
 		}
 	} else if (status & IS_FILE) {
 		if (access(location.c_str(), 0) == -1) {
-			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
+			// std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
 			throw codeException(404);
 		}
     }
-	if (access(location.c_str(), 4) == -1)
+	if (access(location.c_str(), 4) == -1) {
+		// std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
 		throw codeException(403);
+	}
 	return (0);
+}
+
+void Client::makeRedirect(int code, std::string loc) {
+	status |= REDIRECT;
+	// std::cout << "code - " << code << ", loc - " << loc << "\n";
+	// location = loc;
+	statusCode = code;
+	req.setReqURI(loc);
+	req.splitDirectories();
+	parseLocation(loc);
+	// std::cout << "location after parseLocation - " << location << "\n";
+	// create new location
 }
