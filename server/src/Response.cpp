@@ -18,7 +18,6 @@ std::string Response::make_general_header (Request req, int statusCode)
 		contentLength.clear();
 	}
 
-
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
@@ -47,7 +46,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 	_header = statusLine + generalHeader;
 	_stream << _header;
 	
-	// std::cout << RED << _header << RESET;
+	std::cout << RED << _header << RESET;
 }
 
 int Response::sendResponse_file(const size_t socket)

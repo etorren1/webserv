@@ -4,16 +4,49 @@
 #define PIPE_IN 1	//we write
 #define PIPE_OUT 0	//we read
 
-void	Client::checkConnection( const std::string & mess ) {
-	if (mess.find_last_of("\n") != mess.size() - 1)
-		breakconnect = true;
-	breakconnect = false;
+void	Client::checkMessageEnd( void ) {
+	if (status & IS_BODY) {
+		if (message.size() == loc->get_client_max_body_size())
+			fullpart = true;
+		else
+			fullpart = false;
+	}
+	else {
+		size_t pos = message.rfind("\r\n\r\n");
+		if (pos != std::string::npos) {
+			while (message.find("\r") != std::string::npos) {
+				message.erase(message.find("\r"), 1);               // из комбинации CRLF
+				pos--;												// Удаляем символ возврата карретки
+			}
+			fullpart = true;
+			tail = message.substr(pos + 4);
+		}
+		else
+			fullpart = false;
+	}
 }
 
 void	Client::handleRequest( char **envp ) {
+	// OLD
 	req.parseText(message);
-	parseLocation();
-	initResponse(envp);
+	// parseLocation();
+	// initResponse(envp);
+	// status |= REQ_DONE;
+
+
+	// NEW
+	// int rd = req.parseText(message); // ПРИМЕР ЛОГИКИ РАЗДЕЛЕНИЯ ПАРСИНГА ХЕДЕРА И БОДИ
+	// if (rd == 1) // REQUEST HAVE BODY
+	// {
+	// 	parseLocation();
+	//	srv = SERVER <- нужно установить клиенту его сервер по хосту
+	//	message = tail;
+	// 	status |= IS_BODY;
+	// }
+	// else {
+	// 	initResponse(envp);
+	// 	status |= REQ_DONE;
+	// }
 }
 
 int		Client::searchErrorPages() {
@@ -35,6 +68,7 @@ int		Client::searchErrorPages() {
 void	Client::handleError( const int code ) {
 	int file = 0;
 	if (loc && loc->get_error_page().first == code) {
+		std::cout << "Try open error file\n";
 		if ((file = searchErrorPages()) == 1) {
 			req.setMIMEType(loc->get_error_page().second);
 			res.setContentType(req.getContentType());
@@ -42,6 +76,7 @@ void	Client::handleError( const int code ) {
 		}
 	}
 	if (!file) {
+		std::cout << "Standart error\n";
 		std::string mess = "none";
 		try {
 			mess = resCode.at(code);
@@ -96,7 +131,6 @@ void	Client::initResponse ( char **envp )
 	// 		}
 	// 	// }
 	// }
-	status |= REQ_DONE;
 }
 
 void	Client::makeResponse(char **envp) {  //envp не нужен уже
@@ -137,15 +171,21 @@ void	Client::makeErrorResponse() {
 void	Client::makeGetResponse()
 {
 	if (status & HEAD_SENT) {
-		if (res.sendResponse_file(socket))
+		if (res.sendResponse_file(socket)) {
 			status |= RESP_DONE;
+			// std::cout << "GET sendfile() must be second\n";
+		}
 	}
 	else {
-		if (res.sendResponse_stream(socket))
+		if (res.sendResponse_stream(socket)) {
 			status |= HEAD_SENT;
+			// std::cout << "GET sendstream() must be first\n";
+		}
 	}
-	if (status & RESP_DONE)
+	if (status & RESP_DONE) {
 		cleaner();
+		// std::cout << "GET cleaner() must be ending\n";
+	}
 }
 
 void Client::makePostResponse(char **envp)
@@ -188,6 +228,7 @@ void Client::makePostResponse(char **envp)
 
 void	Client::cleaner() {
 	message.clear();
+	tail.clear();
 	location.clear();
 	req.cleaner();
 	res.cleaner();
@@ -199,11 +240,11 @@ void	Client::cleaner() {
 void		Client::setMessage( const std::string & mess ) { message = mess; }
 void		Client::setServer( Server_block * s ) { srv = s; }
 
-bool 		Client::getBreakconnect() const { return breakconnect; }
+bool 		Client::readComplete() const { return fullpart; }
 Response &	Client::getResponse() { return res; }
 Request &	Client::getRequest() { return req; }
 size_t		Client::getMaxBodySize() const { return srv->get_client_max_body_size(); }
-std::string	Client::getHost() const { return srv->get_listen(); }
+std::string	Client::getHost() const { return req.getHost(); }
 std::string Client::getMessage() const { return message; }
 Server_block * Client::getServer( void ) { return srv;}
 
@@ -228,7 +269,7 @@ Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const 
 }
 
 Client::Client( size_t nwsock ) {
-	breakconnect = false;
+	fullpart = false;
 	location.clear();
 	message.clear();
 	socket = nwsock;
@@ -278,12 +319,16 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation(std::string str) {
-	std::cout << BLUE << "parse ocation: " << RESET << "\n";
+	// std::cout << BLUE << "MIME type: " << req.getMIMEType() << RESET << "\n";
 	statusCode = 200;
-	if (req.getMIMEType() == "none")
+	if (req.getMIMEType() == "none") {
+		// std::cout << "IS_DIR\n";
         status |= IS_DIR;
-	else
-		status |= IS_FILE;
+	}
+	else {
+		// std::cout << "IS_FILE\n";
+        status |= IS_FILE;
+	}
 	this->loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		throw codeException(404);
@@ -303,6 +348,8 @@ int Client::parseLocation(std::string str) {
 		locn = str;
 		req.setReqURI(str);
 	}
+	// if (locn[locn.size() - 1] != '/')
+	// 	locn += "/";
 	if (loc->get_accepted_methods().size()) {
 		std::string method = "";
 		for (size_t i = 0; i != loc->get_accepted_methods().size(); i++)
@@ -315,11 +362,13 @@ int Client::parseLocation(std::string str) {
 	// 	statusCode = 413;
 	// 	throw codeException(413);
 	// }
-	if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
-		root = root.substr(0, pos);
-	std::cout << RED << "ALERT: " << locn << RESET << "\n";
-	std::cout << RED << "URI: " << req.getReqURI() << RESET << "\n";
-	location = root + locn + req.getReqURI().substr(locn.size() - 1);
+	// if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
+	// 	root = root.substr(0, pos);
+	// std::cout << RED << "LOCN: " << locn << RESET << "\n";
+	// std::cout << RED << "URI: " << req.getReqURI() << RESET << "\n";
+	size_t subpos;
+	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
+	location = root + locn + req.getReqURI().substr(subpos);
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
@@ -329,30 +378,36 @@ int Client::parseLocation(std::string str) {
 		if (location.size() && location[location.size()-1] != '/') {
 			statusCode = 301;
 			location.push_back('/');
-		}
-		std::vector<std::string>indexes = loc->get_index();
-		int i = -1;
-		if (!loc->get_autoindex()) {
-			while (++i < indexes.size()) {
-				std::string tmp = location + indexes[i];
-				if (access(tmp.c_str(), 0) != -1) {
-					location = tmp;
-					req.setMIMEType(indexes[i]);
-					std::cout << req.getMIMEType() << " - i\n";
-					break;
-				}
-			}
-			if (i == indexes.size()) {
-				std::cout << location << " - i == indexes.size()\n";
-				throw codeException(404);
-			}
-		}
-		else {
 			if (access(location.c_str(), 0) == -1) {
 				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
 				throw codeException(404);
 			}
-			status |= AUTOIDX;
+		}
+		else {
+			std::vector<std::string>indexes = loc->get_index();
+			int i = -1;
+			if (!loc->get_autoindex()) {
+				while (++i < indexes.size()) {
+					std::string tmp = location + indexes[i];
+					if (access(tmp.c_str(), 0) != -1) {
+						location = tmp;
+						req.setMIMEType(indexes[i]);
+						std::cout << req.getMIMEType() << " - access(tmp.c_str(), 0) != -1\n";
+						break;
+					}
+				}
+				if (i == indexes.size()) {
+					std::cout << location << " - i == indexes.size()\n";
+					throw codeException(404);
+				}
+			}
+			else {
+				if (access(location.c_str(), 0) == -1) {
+					std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+					throw codeException(404);
+				}
+				status |= AUTOIDX;
+			}
 		}
 	} else if (status & IS_FILE) { // FILE
 		if (access(location.c_str(), 0) == -1) {
@@ -361,7 +416,7 @@ int Client::parseLocation(std::string str) {
 		}
     }
 	if (access(location.c_str(), 4) == -1) {
-		std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
+		std::cout << location << " - access(location.c_str(), 4) == -1  403 access\n";
 		throw codeException(403);
 	}
 	return (0);

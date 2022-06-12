@@ -11,14 +11,15 @@
 #include <fcntl.h>
 #include <map>
 
-#define REQ_DONE	0x01
-#define RESP_DONE	0x02
-#define IS_DIR		0x04
-#define IS_FILE		0x08
-#define AUTOIDX		0x10
-#define ERROR		0x20
-#define	HEAD_SENT	0x40
-#define REDIRECT	0x80
+#define REQ_DONE	0x001
+#define RESP_DONE	0x002
+#define IS_DIR		0x004
+#define IS_FILE		0x008
+#define AUTOIDX		0x010
+#define ERROR		0x020
+#define	HEAD_SENT	0x040
+#define REDIRECT	0x080
+#define IS_BODY		0x100
 
 class Client
 {
@@ -28,9 +29,10 @@ class Client
 		Server_block				*srv;
 		Location_block				*loc;
 
-		bool						breakconnect;
+		bool						fullpart;
 		size_t						socket;
 		std::string					message;
+		std::string					tail;
 
 		std::map<int, std::string>	resCode;
 		int							statusCode;
@@ -47,7 +49,7 @@ class Client
 		int							status;
 		bool						cgiWriteFlag;
 
-		void 						checkConnection( const std::string & mess );
+		void 						checkMessageEnd( void );
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
 		int							parseLocation( std::string = "" );
@@ -67,7 +69,7 @@ class Client
 		void						setMessage( const std::string & mess );
 		void						setServer( Server_block * s );
 
-		bool 						getBreakconnect( void ) const;
+		bool 						readComplete( void ) const;
 		std::string					getHost( void ) const;
 		size_t						getMaxBodySize( void ) const;
 		Response &					getResponse( void );

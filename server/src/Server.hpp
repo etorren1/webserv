@@ -61,7 +61,7 @@ class Server {
 		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
 		void		checkBodySize( const size_t socket, const std::string & text );
-		int		    readHeader( const size_t socket, std::string & text );
+		// int		    readHeader( const size_t socket, std::string & text );
 		Server_block * getServerBlock( std::string host ) const;
 
 		// config file parser utilites

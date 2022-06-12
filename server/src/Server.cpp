@@ -169,11 +169,22 @@ void Server::clientRequest( void ) {
                         connectClients(socket);
                     else if (readRequest(socket) <= 0)
                         disconnectClients(id);
-                    else if (!client[socket]->getBreakconnect())
+                    else if (client[socket]->readComplete())
                     {
                         std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
                         std::cout << client[socket]->getMessage();
                         client[socket]->handleRequest(envp);
+
+                        Server_block * srv = getServerBlock( client[socket]->getHost() );
+                        if (srv == NULL) {
+                            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
+                            throw codeException(400);
+                        }
+                        client[socket]->setServer(srv);
+                        
+                        client[socket]->parseLocation();
+                        client[socket]->initResponse(envp);
+                        client[socket]->status |= REQ_DONE;
                     }
                 }  else if (fds[id].revents & POLLOUT) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
@@ -188,42 +199,29 @@ void Server::clientRequest( void ) {
     }
 }
 
-static bool checkConnection( const std::string & mess ) {
-    if (mess.find_last_of("\n") != mess.size() - 1)
-        return true;
-    return false;
-}
-
-int     Server::readHeader( const size_t socket, std::string & text ) {
-    char buf[BUF_SIZE + 1];
-    int rd;
-    int bytesRead = 0;
-
-    std::cout << YELLOW <<"READ HEAD: " << RESET << "\n";
-
-    if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
-        buf[rd] = 0;
-        bytesRead += rd;
-        text += buf;
-        std::cout << BLUE;
-        for (int i = 0; i < rd; i++)
-            printf("%d ", buf[i]);
-        std::cout << RESET << "\n";
-        size_t pos = text.find("Host: ");
-        if (pos != std::string::npos) {
-            pos += 6;
-            std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
-            Server_block * srv = getServerBlock(host);
-            if (srv == NULL)
-                throw codeException(400);
-            client[socket]->setServer(srv);
-        }
-        else 
-            throw codeException(400);
-        checkBodySize(socket, text);
-    }
-    return (bytesRead);
-}
+// int     Server::readHeader( const size_t socket, std::string & text ) {
+//     char buf[BUF_SIZE + 1];
+//     int rd;
+//     int bytesRead = 0;
+//     if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
+//         buf[rd] = 0;
+//         bytesRead += rd;
+//         text += buf;
+//         size_t pos = text.find("Host: ");
+//         if (pos != std::string::npos) {
+//             pos += 6;
+//             std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
+//             Server_block * srv = getServerBlock(host);
+//             if (srv == NULL)
+//                 throw codeException(400);
+//             client[socket]->setServer(srv);
+//         }
+//         else 
+//             throw codeException(400);
+//         checkBodySize(socket, text);
+//     }
+//     return (bytesRead);
+// }
 
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
@@ -233,20 +231,19 @@ int     Server::readRequest( const size_t socket ) {
 
     if (client[socket]->getMessage().size() > 0)
 		text = client[socket]->getMessage();
-    else
-        bytesRead = readHeader(socket, text);
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
-        checkBodySize(socket, text);
+        // std::cout <<  BLUE << "\e[1m";
+        // for (int i = 0; i < rd; i++)
+        //     printf("%d ", buf[i]);
+        // std::cout << RESET << "\n";
+        if (client[socket]->status & IS_BODY)
+            checkBodySize(socket, text);
     }
-    while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
-        text.erase(text.find("\r"), 1);               // из комбинации CRLF
-    client[socket]->checkConnection(text);
     client[socket]->setMessage(text);
-    std::cout << CYAN << text << RESET << "\n";
-    std::cout << PURPLE << "bytes read = " << bytesRead << RESET << "\n";
+    client[socket]->checkMessageEnd();
     return (bytesRead);
 }
 
