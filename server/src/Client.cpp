@@ -317,7 +317,7 @@ Client::Client( size_t nwsock ) {
 
 Client::~Client() {}
 
-int Client::parseLocation(std::string str) {
+int Client::parseLocation() {
 	// std::cout << BLUE << "MIME type: " << req.getMIMEType() << RESET << "\n";
 	statusCode = 200;
 	if (req.getMIMEType() == "none") {
@@ -346,10 +346,10 @@ int Client::parseLocation(std::string str) {
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
-	if (str.length()) {
-		locn = str;
-		req.setReqURI(str);
-	}
+	// if (str.length()) {
+	// 	locn = str;
+	// 	req.setReqURI(str);
+	// }
 	// if (locn[locn.size() - 1] != '/')
 	// 	locn += "/";
 	if (loc->get_accepted_methods().size()) {
@@ -430,15 +430,10 @@ int Client::makeRedirect(int code, std::string loc) {
 	// location = loc;
 	statusCode = code;
 	size_t pos = loc.find("http");
-	if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos) {
-		// req.setHost();
-
-		location = loc;
-		return 1;
-	}
-	req.setReqURI(loc);
+	if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
+		req.splitLocation(loc);
 	req.splitDirectories();
-	parseLocation(loc);
+	parseLocation();
 	return 0;
 	// std::cout << "location after parseLocation - " << location << "\n";
 	// create new location

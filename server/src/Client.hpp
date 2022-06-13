@@ -52,7 +52,7 @@ class Client
 		void 						checkMessageEnd( void );
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
-		int							parseLocation( std::string = "" );
+		int							parseLocation( );
 		int							searchErrorPages( void );
 		void						cleaner( void );
 
