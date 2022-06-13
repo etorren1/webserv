@@ -125,7 +125,7 @@ void Response::addCgiVar(char ***envp, Request req)
 
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
-	std::string path_info = ("PATH_INFO=");
+	std::string path_info = ("PATH_INFO=./");
 
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
@@ -137,10 +137,6 @@ void Response::addCgiVar(char ***envp, Request req)
 		tmp[i] = (*envp)[i];
 		i++;
 	}
-	// tmp[numOfLines] = (char *)malloc(req_metod.length() + 1);
-	// tmp[numOfLines] = strdup(req_metod.c_str());
-	// tmp[numOfLines + 1] = (char *)malloc(serv_protocol.length() + 1);
-	// tmp[numOfLines + 2] = (char *)malloc(path_info.length() + 1);
 
 	tmp[numOfLines] = strdup(req_metod.c_str());
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
@@ -148,9 +144,6 @@ void Response::addCgiVar(char ***envp, Request req)
 	tmp[numOfLines + 3] = NULL;
 
 	*envp = tmp;
-
-	// for (int i = 0; (*envp)[i] != NULL; ++i)
-	// 	std::cout << (*envp)[i] << "\n";
 }
 
 void Response::cleaner()

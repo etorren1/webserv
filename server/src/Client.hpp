@@ -43,6 +43,7 @@ class Client
 
 
 	public:
+		int			iter;
 		int			status;
 		bool		cgiWriteFlag;
 

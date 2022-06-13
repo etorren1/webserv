@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include <errno.h>
 
-#define PATH_INFO "cgi_tester"
+#define CGI_PATH "cgi_tester"
 #define PIPE_IN 1	//we write
 #define PIPE_OUT 0	//we read
 
@@ -13,11 +13,8 @@ void	Client::checkConnection( const std::string & mess ) {
 
 void	Client::handleRequest( char **envp ) {
 	req.parseText(message);
-	std::cout << "HERE1\n";
 	parseLocation();
-	std::cout << "HERE2\n";
 	initResponse(envp);
-	std::cout << "HERE3\n";
 }
 
 void	Client::handleError( const int code ) {
@@ -36,25 +33,25 @@ void	Client::initResponse ( char **envp )
 {
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
-	else {
+	else
+	{
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
+
 	if (req.getMethod() == "POST")
 	{
-		cgiWriteFlag= 0;
+		iter = 0;
+		cgiWriteFlag = false;
 		totalSent = 0;
 		res.addCgiVar(&envp, req);
 
-		if (pipe(pipe2) || pipe(pipe1))
+		if (pipe(pipe2))
 			throw(codeException(500));
-
-		std::cout << "pipe2[PIPE_IN]: " << pipe2[PIPE_IN] << "\n";		//0
-		std::cout << "pipe2[PIPE_OUT]: " << pipe2[PIPE_OUT] << "\n";	//0
-		std::cout << "pipe1[PIPE_IN]: " << pipe1[PIPE_IN] << "\n";		//9
-		std::cout << "pipe1[PIPE_OUT]: " << pipe1[PIPE_OUT] << "\n";	//8
+		if (pipe(pipe1))
+			throw(codeException(500));
 
 		// if (cgi used)
 		// {
@@ -67,7 +64,7 @@ void	Client::initResponse ( char **envp )
 				dup2(pipe1[PIPE_OUT], 0);
 				dup2(pipe2[PIPE_IN], 1);
 
-				if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
+				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
 					throw(codeException(500));
 				exit(ex);
 			}
@@ -132,64 +129,59 @@ void	Client::makeGetResponse()
 
 void Client::makePostResponse(char **envp)
 {
-	// char				buff[2048];
-	// int					wrtRet;
-	// int					readRet;
+	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	iter++;
+	std::cout << "iter = " << iter << "\n";
+	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+	char				buff[2048];
+	int					wrtRet;
+	int					readRet;
 
-	// // res.setStatusCode("200");
+	if (cgiWriteFlag == false) // флаг cgi записан == false 
+	{
+		wrtRet = write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+		totalSent += wrtRet;
+		if (totalSent == req.getBody().length()) //SIGPIPE
+		{
+			close(pipe1[PIPE_IN]);
+			cgiWriteFlag = true;
+		}
+	}
+	// if write < req.getBody().length()
+	//	закрыть stdin в cgi процессе и флаг cgi записан = true
+	if (cgiWriteFlag == true)//если флаг cgi записан == true
+	{
+		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
+		//читаем из cgi порцию даты
+		//прочитанный кусок из cgi пишем клиенту в сокет
+		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
+		std::cout << "readRet " << readRet << "\n";
+		if (readRet == -1)
+			throw(codeException(500));
+		if (readRet == 0)
+		{
+			std::cout << BLUE << "READ STOPED" << "\n" << RESET;
+			status |= RESP_DONE; //все прочитали из cgi
+			// res.getStrStream() << buff;
+		}
+		buff[readRet] = '\0';
+		res.getStrStream().write(buff, readRet);
+		res.sendResponse_stream(socket);
+	}
 
-	// if (cgiWriteFlag == false) // флаг cgi записан == false 
-	// {
+	//если мы закончили всё читать из cgi то 
+	//waitpid cgi 
+	//close all fds
 
-	// 	wrtRet = write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
-	// 	totalSent += wrtRet;
-	// 	std::cout << totalSent << "\n";
-	// 	if (totalSent == req.getBody().length()) //SIGPIPE
-	// 	{
-	// 		close(pipe1[PIPE_OUT]);
-	// 		cgiWriteFlag = true;
-	// 	}
-	// 	std::cout << wrtRet << "\n";
-	// }
-	// // if write < req.getBody().length()
-	// //	закрыть stdin в cgi процессе и флаг cgi записан = true
-	// if (cgiWriteFlag == true)//если флаг cgi записан == true
-	// {
-	// 	std::cout << BLUE << "HERE" << "\n" << RESET;
-	// 	//читаем из cgi порцию даты
-	// 	//прочитанный кусок из cgi пишем клиенту в сокет
-	// 	readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
-	// 	std::cout << "readRet " << readRet << "\n";
-	// 	if (readRet == -1)
-	// 	{
-	// 		std::cout << "errno: " << strerror(errno);
-	// 		// std::cout << "pipe1[PIPE_IN]: " << pipe1[PIPE_IN] << "\n";		//9
-	// 		// std::cout << "pipe1[PIPE_OUT]: " << pipe1[PIPE_OUT] << "\n";		//8
-	// 		// std::cout << "pipe2[PIPE_IN]: " << pipe2[PIPE_IN] << "\n";		//0
-	// 		// std::cout << "pipe2[PIPE_OUT]: " << pipe2[PIPE_OUT] << "\n";		//0
-	// 	}
-	// 	if (readRet <= 0)
-	// 	{
-	// 		status |= RESP_DONE; //все прочитали из cgi
-	// 		res.getStrStream() << buff;
-	// 	}
-	// 	res.getStrStream().write(buff, 2048);
-	// 	res.sendResponse_stream(socket);
-	// }
-
-	// //если мы закончили всё читать из cgi то 
-	// //waitpid cgi 
-	// //close all fds
-
-	// // if (???)
-	// // 	status |= RESP_DONE;
-	// if (status & RESP_DONE)
-	// {
-	// 	// close(pipe1[PIPE_IN]);
-	// 	waitpid(pid, &status, 0); // ???
-	// 	cleaner();
-	// 	//close all fds
-	// }
+	// if (???)
+	// 	status |= RESP_DONE;
+	if (status & RESP_DONE)
+	{
+		// close(pipe1[PIPE_IN]);
+		waitpid(pid, &status, 0); // ???
+		cleaner();
+		//close all fds
+	}
 }
 
 void	Client::cleaner() {
