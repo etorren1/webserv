@@ -64,6 +64,7 @@ class Server {
 		// int		    readHeader( const size_t socket, std::string & text );
 		Server_block * getServerBlock( std::string host ) const;
 		void		clientRequest(const int socket);
+		bool 		noErrors( const int socket );
 
 		// config file parser utilites
 			std::string get_raw_param(std::string key, std::string & text);

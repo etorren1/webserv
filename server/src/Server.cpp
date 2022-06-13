@@ -140,26 +140,6 @@ void Server::disconnectClients( const size_t id ) {
     fds.erase(fds.begin() + id);
 }
 
-void Server::clientRequest(const int socket) {
-    if (status & IS_BODY) {
-        std::cout << YELLOW << "Body handler from socket - " << socket << RESET << "\n";
-        client[socket]->handleRequest(envp);
-    } else {
-        std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-        std::cout << client[socket]->getMessage();
-        client[socket]->handleRequest(envp);
-
-        Server_block * srv = getServerBlock( client[socket]->getHost() );
-        if (srv == NULL) {
-            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
-            throw codeException(400);
-        }
-        client[socket]->setServer(srv);
-        client[socket]->parseLocation();
-        client[socket]->initResponse(envp);
-    }
-}
-
 void Server::connectClients( const int & fd ) {
     int newClientSock;
     struct sockaddr_in clientaddr;
@@ -178,22 +158,56 @@ void Server::connectClients( const int & fd ) {
     }
 }
 
+void Server::clientRequest(const int socket) {
+    // client[socket]->status |= IS_BODY;
+    std::cout << CYAN << "read " << client[socket]->status << " " << (client[socket]->status & IS_BODY) << RESET << "\n";
+    if (client[socket]->status & IS_BODY) {
+        std::cout << YELLOW << "Body handler from socket - " << socket << RESET << "\n";
+        client[socket]->handleRequest(envp);
+    } else {
+        std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+        std::cout << client[socket]->getMessage();
+        client[socket]->handleRequest(envp);
+
+        Server_block * srv = getServerBlock( client[socket]->getHost() );
+        if (srv == NULL) {
+            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
+            throw codeException(400);
+        }
+        client[socket]->setServer(srv);
+        client[socket]->parseLocation();
+        client[socket]->initResponse(envp);
+    }
+}
+
+bool Server::noErrors( const int socket ) {
+    if (!isServerSocket(socket))
+        if (client[socket]->status & ERROR) {
+            std::cout << "Can't read " << socket << " socket: ERROR\n";
+            return false;
+        }
+    return true;
+}
+
 void Server::mainHandler( void ) {
     int ret = poll(fds.data(), fds.size(), 0);
-    if (ret != 0)    {
+    if (ret != 0) {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
             try {
-                if (fds[id].revents & POLLIN) {
+                if (fds[id].revents & POLLIN && noErrors(socket)) {
                     if (isServerSocket(socket))
                         connectClients(socket);
                     else if (readRequest(socket) <= 0)
                         disconnectClients(id);
                     else if (client[socket]->readComplete())
                         clientRequest(socket);
-                }  else if (fds[id].revents & POLLOUT) {
-                    if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
+                }  
+                else if (fds[id].revents & POLLOUT) {
+                    if (!isServerSocket(socket) && client[socket]->status & REQ_DONE) {
+                        std::cout << YELLOW << "Send responce to " << socket << " socket" << RESET << "\n";
                         client[socket]->makeResponse(envp);
+                    }
                 }
             }
             catch(codeException& e) {
@@ -203,30 +217,6 @@ void Server::mainHandler( void ) {
         }
     }
 }
-
-// int     Server::readHeader( const size_t socket, std::string & text ) {
-//     char buf[BUF_SIZE + 1];
-//     int rd;
-//     int bytesRead = 0;
-//     if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
-//         buf[rd] = 0;
-//         bytesRead += rd;
-//         text += buf;
-//         size_t pos = text.find("Host: ");
-//         if (pos != std::string::npos) {
-//             pos += 6;
-//             std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
-//             Server_block * srv = getServerBlock(host);
-//             if (srv == NULL)
-//                 throw codeException(400);
-//             client[socket]->setServer(srv);
-//         }
-//         else 
-//             throw codeException(400);
-//         checkBodySize(socket, text);
-//     }
-//     return (bytesRead);
-// }
 
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
@@ -240,10 +230,6 @@ int     Server::readRequest( const size_t socket ) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
-        // std::cout <<  BLUE << "\e[1m";
-        // for (int i = 0; i < rd; i++)
-        //     printf("%d ", buf[i]);
-        // std::cout << RESET << "\n";
         if (client[socket]->status & IS_BODY)
             checkBodySize(socket, text);
     }

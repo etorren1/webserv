@@ -38,6 +38,8 @@ Request::Request() {
 Request::~Request() {}
 
 bool Request::parseText(std::string text) {
+    // if (text.find("/") == std::string::npos)
+    //     throw codeException(400);
     std::vector<std::string> vec;
     std::istringstream strs(text);
     std::string s;

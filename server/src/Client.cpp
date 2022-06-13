@@ -27,24 +27,21 @@ void	Client::checkMessageEnd( void ) {
 }
 
 void	Client::handleRequest( char **envp ) {
-	// OLD
-	// req.parseText(message);
-	// parseLocation();
-	// initResponse(envp);
-	// status |= REQ_DONE;
-
-
-// NEW
 	if (status & IS_BODY) {
+		std::cout << "parseBody\n";
 		req.parseBody(message);
 		status |= REQ_DONE;
 	} else {
-    	bool rd = req.parseText(message); // ПРИМЕР ЛОГИКИ РАЗДЕЛЕНИЯ ПАРСИНГА ХЕДЕРА И БОДИ
-    	if (rd == true) { // REQUEST HAVE BODY
+    	bool rd = req.parseText(message);
+    	if (rd == true) {
+			std::cout << "IS_BODY\n";
 			message = tail;
 			status |= IS_BODY;
-		} else
+			std::cout << PURPLE << "read " << status << " " << (status & IS_BODY) << RESET << "\n";
+		} else {
+			std::cout << "REQ_DONE without body\n";
 			status |= REQ_DONE;
+		}
 	}
 }
 
@@ -67,7 +64,6 @@ int		Client::searchErrorPages() {
 void	Client::handleError( const int code ) {
 	int file = 0;
 	if (loc && loc->get_error_page().first == code) {
-		std::cout << "Try open error file\n";
 		if ((file = searchErrorPages()) == 1) {
 			req.setMIMEType(loc->get_error_page().second);
 			res.setContentType(req.getContentType());
@@ -75,7 +71,6 @@ void	Client::handleError( const int code ) {
 		}
 	}
 	if (!file) {
-		std::cout << "Standart error\n";
 		std::string mess = "none";
 		try {
 			mess = resCode.at(code);
@@ -234,6 +229,7 @@ void	Client::cleaner() {
 	statusCode = 0;
 	status = 0;
 	loc = NULL;
+	srv = NULL;
 }
 
 void		Client::setMessage( const std::string & mess ) { message = mess; }
@@ -350,8 +346,6 @@ int Client::parseLocation(std::string str) {
 		locn = str;
 		req.setReqURI(str);
 	}
-	// if (locn[locn.size() - 1] != '/')
-	// 	locn += "/";
 	if (loc->get_accepted_methods().size()) {
 		std::string method = "";
 		for (size_t i = 0; i != loc->get_accepted_methods().size(); i++)
@@ -360,14 +354,6 @@ int Client::parseLocation(std::string str) {
 		if (!method.size())
 			throw codeException(405);
 	}
-	// if (loc->get_client_max_body_size() < req.getReqSize()) { // maybe not needed
-	// 	statusCode = 413;
-	// 	throw codeException(413);
-	// }
-	// if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
-	// 	root = root.substr(0, pos);
-	// std::cout << RED << "LOCN: " << locn << RESET << "\n";
-	// std::cout << RED << "URI: " << req.getReqURI() << RESET << "\n";
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
 	location = root + locn + req.getReqURI().substr(subpos);
