@@ -1,160 +1,190 @@
 #include "Response.hpp"
 
-
-std::string Response::make_general_header (Request req, std::string response_body)
+std::string Response::make_general_header (Request req, int statusCode)
 {
 	// std::string Server = "webserv";
 	// _date = getTime();
-	_contentLength = itos(getFileSize(_fileLoc.c_str()));
 
-	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
+	std::string location;
+	std::string contType = "Content-Type: " + _contentType + "\r\n";
+	std::string contentLength = "Content-Length: " + _contentLength + "\r\n";
 	std::string connection = "keep-alive"; //Connection: keep-alive
+
+	if (statusCode == 301)
+	{
+		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
+		// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
+		contType.clear();
+		contentLength.clear();
+	}
+
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
-			"Content-Type: " + _contentType + "\r\n" +
-			"Content-Length: " + _contentLength + "\r\n" +
+			location +
+			contType +
+			contentLength +
 			"Connection: " + connection + "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
 }
 
-void Response::make_response_header(Request req) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
+void Response::make_response_header(Request req, int code, std::string status, long size) // https://datatracker.ietf.org/doc/html/rfc2616#section-6
 {
 	std::string statusLine;
 	std::string generalHeader;
 
-	_statusCode = "200";
-	_reasonPhrase = "OK";
-
+	_statusCode = itos(code);
+	_reasonPhrase = status;
+	if (!size)
+		_contentLength = itos(getFileSize(_fileLoc.c_str()));
+	else
+		_contentLength = size;
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
-	generalHeader = make_general_header(req, _body);
+	generalHeader = make_general_header(req, code);
 
 	_header = statusLine + generalHeader;
-
-	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
-	size_t file_size = getFileSize(_fileLoc.c_str());	
-	// std::cout << RED << _header << RESET;
+	_stream << _header;
 	
+	std::cout << RED << _header << RESET;
 }
 
-int Response::make_response_body(Request req, const size_t socket)
+int Response::sendResponse_file(const size_t socket)
 {
+	char 			*buffer = new char [RES_BUF_SIZE];
 
-	//------------------------1------------------------
-	// FOR PARTIAL RESPONSES
-
-	int 			result;
-	char 			*buffer = new char [2048];
-	
-	// std::cout << "HEWAE\n";
-	// std::ifstream							_input;
-
-	// if (_hasSent != 1) {
-	// 	_input.open(_fileLoc.c_str(), std::ios::binary|std::ios::in);
-	// 	size_t file_size = getFileSize(_fileLoc.c_str());	
-	// }
-
-	if(!_input.is_open())
+	if(!_file.is_open())
 		throw(codeException(404));
+	
+	_file.read (buffer, RES_BUF_SIZE);
+		_bytesRead = _file.gcount();
+	
+	_totalBytesRead += _bytesRead;
 
-	size_t count = 0;
-	// while (!_input.eof())
+	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	// if (_bytesSent == -1)
 	// {
-		_input.read (buffer, 2048);
-		int read_bytes =  _input.gcount();
-		// if (read_bytes == -1)
-		// {
-		// 	std::cerr << "read = " << read_bytes << std::endl;
-		// 	throw (123 );
-		// }
-		// if (fds[id].revents & POLLOUT)
-		// usleep(1000);
-			result = send(socket, buffer, read_bytes, 0);		// Отправляем ответ клиенту с помощью функции send
-		if (result == -1)
-		{
-			std::cerr << "wrote = " << result << std::endl;
-			throw (123);
-		}
-		// std::cout << YELLOW << "wrote:" << result << "\nwritten: " << read_bytes << RESET << "\n";
-		// count += result;
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// std::cout << strerror(errno);
+		// std::cout << errno;
+	// 	throw codeException(502);
 	// }
-	// std::cout << GREEN << count << RESET << "\n";
-	if (_input.eof())								//закрываем файл только после того как оправили все содержание файла
+	if (_bytesSent < _bytesRead)
 	{
-			// std::cout << RED << "blabla" << RESET << "\n";	
-		_input.close();
-		_sendingFinished = 1;
-		delete[] buffer;
+		_totalBytesRead -= (_bytesRead - _bytesSent);
+		_file.seekg(_totalBytesRead);
+	}
+	delete[] buffer;
+	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
+	{
+		_file.close();
+		
 		return (1);
 	}
-	// std::cout << BLUE<< "HERE" << RESET << "\n";
-
-	delete[] buffer;
 	return (0);
 }
 
-void Response::clearResponseObj()
+int Response::sendResponse_stream(const size_t socket)
 {
-	_header.clear();
-	_body.clear();
-	_contentType.clear();
-	_statusCode.clear();
-	_reasonPhrase.clear();
+	char 			*buffer = new char [RES_BUF_SIZE];
+
+	_stream.read(buffer, RES_BUF_SIZE);
+	_bytesRead = _stream.gcount();
+	
+	_totalBytesRead += _bytesRead;
+
+	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	// if (_bytesSent == -1)
+	// {
+	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
+		// std::cout << strerror(errno);
+		// std::cout << errno;
+	// 	throw codeException(502);
+	// }
+	if (_bytesSent < _bytesRead)
+	{
+		_totalBytesRead -= (_bytesRead - _bytesSent);
+		_stream.seekg(_totalBytesRead);
+	}
+	delete[] buffer;
+	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
+	{
+		_stream.clear();
+	
+		return (1);
+	}
+	return (0);
 }
 
-// void Server::make_response(Request req, const size_t socket)
-// {
-// 	std::stringstream response;
-// 	size_t result;
-// 	Response &res = client[socket]->getResponse();
-// 	// if (req.getReqURI() == "/favicon.ico")
-// 	// {
-// 	// 	res.setFileLoc("./site/image.png");
-// 	// 	res.setContentType("image/png");
-// 	// }
-// 	// else
-// 	// {
-// 	// 	res.setFileLoc(location);
-// 	// 	res.setContentType(req.getContentType());
-// 	// }
-// 	res.setFileLoc("./site/video.mp4");
-// 	res.setContentType("video/mp4");
-// 	// res.setFileLoc("./site/index.html");
-// 	// res.setContentType("text/html");
-// 	// res.setFileLoc("./site/image.jpg");
-// 	// res.setContentType("image/jpg");
-// 	try
-// 	{
-// 		if (res._hasSent == 0)
-// 		{
-// 			res.make_response_header(req);
-// 			result = send(socket, res.getHeader().c_str(),	// Отправляем ответ клиенту с помощью функции send
-// 							res.getHeader().length(), 0);	
-// 			res._hasSent = 1;
-// 		}
-// 		// std::cout << "location: " << location << "\n";
-// 		if (res._hasSent == 1)
-// 			res.make_response_body(req, socket, fds);
-// 	}
-// 	catch (codeException &e)
-// 	{
-// 		generateErrorPage(e.getErrorCode(), socket);
-// 		return;
-// 	}
-// 	// catch (std::exception &e)
-// 	// {
-// 	// 	e.what();
-// 	// 	return;
-// 	// }
-// 	// res.clearResponseObj();
-// }
 
-std::string	Response::getHeader() { return(_header); }
-std::string	Response::getBody() { return(_body); }
-std::string	Response::getContentType() { return(_contentType); }
-std::string	Response::getStatusCode() { return(_statusCode); }
-std::string	Response::getReasonPhrase() { return(_reasonPhrase); }
-std::string	Response::getFileLoc() { return(_fileLoc); }
-void		Response::setFileLoc(std::string loc) { _fileLoc = loc; };
-void		Response::setContentType(std::string type) { _contentType = type; };
+void Response::addCgiVar(char ***envp, Request req)
+{
+	char **tmp;
+	size_t numOfLines = 0;
+	size_t i = 0;
+
+	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
+	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
+	std::string path_info = ("PATH_INFO=.");
+
+	for (int i = 0; (*envp)[i] != NULL; ++i)
+		numOfLines++;
+
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4)); // 3 for new vars and additional 1 for NULL ptr
+
+	while (i < numOfLines)
+	{
+		tmp[i] = (*envp)[i];
+		i++;
+	}
+	// tmp[numOfLines] = (char *)malloc(req_metod.length() + 1);
+	// tmp[numOfLines] = strdup(req_metod.c_str());
+	// tmp[numOfLines + 1] = (char *)malloc(serv_protocol.length() + 1);
+	// tmp[numOfLines + 2] = (char *)malloc(path_info.length() + 1);
+
+	tmp[numOfLines] = strdup(req_metod.c_str());
+	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
+	tmp[numOfLines + 2] = strdup(path_info.c_str());
+	tmp[numOfLines + 3] = NULL;
+
+	*envp = tmp;
+
+	// for (int i = 0; (*envp)[i] != NULL; ++i)
+	// 	std::cout << (*envp)[i] << "\n";
+}
+
+void Response::cleaner()
+{
+	_header.clear();
+	_contentType.clear();
+	_contentLength.clear();
+	_statusCode.clear();
+	_reasonPhrase.clear();
+	_connection.clear();
+	_fileLoc.clear();
+	_bytesRead = 0;
+	_bytesSent = 0;
+	_totalBytesRead = 0;
+}
+
+bool Response::openFile()
+{
+	_file.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
+	if (!_file.is_open())
+		return false;
+	return true;
+}
+
+std::string		Response::getHeader() { return(_header); }
+std::string		Response::getContentType() { return(_contentType); }
+std::string		Response::getStatusCode() { return(_statusCode); }
+std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
+std::string		Response::getFileLoc() { return(_fileLoc); }
+// std::ifstream 	Response::getFileStream() { return(_file); }
+std::stringstream &	Response::getStrStream() { return(_stream); } 
+
+void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
+void			Response::setContentType(std::string type) { _contentType = type; };
+void			Response::setStatusCode(std::string code){ _statusCode = code; };;
+// void			Response::setInput(std::ifstream &input) { _file = input; };
+// void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

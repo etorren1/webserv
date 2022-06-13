@@ -1,5 +1,9 @@
 #include "Server.hpp"
 
+static void     ft(int) {
+    // ignore SIGPIPE
+}
+
 void    Server::create() {
     std::vector<std::string> brokenhosts;
     for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
@@ -17,6 +21,7 @@ void    Server::create() {
         srvs.erase(brokenhosts[i]);
     if (!srvs.size())
         closeServer(STOP);
+    signal(SIGPIPE, ft);
 }
 
 void    Server::run( void ) {
@@ -24,7 +29,7 @@ void    Server::run( void ) {
     if (status & ~STOP)
         std::cout << GREEN << "Server running." << RESET << "\n";
     while(status & WORKING) {
-        clientRequest();
+        mainHandler();
         consoleCommands();
     }
     if (status & RESTART) {
@@ -47,10 +52,10 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
 
     pe = getprotobyname("tcp");
     if ((newSrvSock = socket(AF_INET, SOCK_STREAM, pe->p_proto)) == 0)
-        return closeVirtualServer(srv, newSrvSock, "error: create socket failed.", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " socket failed");
     int enable = 1;
     if (setsockopt(newSrvSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-        return closeVirtualServer(srv, newSrvSock, "error: setsockopt(SO_REUSEADDR) failed.", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " setsockopt failed");
     newPoll.fd = newSrvSock;
     newPoll.events = POLLIN;
     newPoll.revents = 0;
@@ -58,9 +63,10 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     address.sin_addr.s_addr = inet_addr(hostname.c_str());
     address.sin_port = htons(atoi(port.c_str()));
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
-        return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
+        // return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
     if (listen(newSrvSock, 5) < 0)
-        return closeVirtualServer(srv, newSrvSock, "error: listen failed.", "Host: " + hostname + ":" + port);
+        return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
     / F_SETFL устанавливет флаг O_NONBLOCK для подаваемого дескриптора 
@@ -78,6 +84,8 @@ int    Server::closeVirtualServer( Server_block * srv, int sock, const std::stri
         writeLog(srv->get_error_log(), error, text);
         std::cerr << "error: can not up domain: see error_log for more information\n";
     }
+    else
+        std::cerr << RED << "Host: " << srv->get_listen() << " break down" << RESET << "\n";
     for (lctn_iterator it = srv->lctn.begin(); it != srv->lctn.end(); it++) {
         delete (*it).second;
     }
@@ -132,6 +140,26 @@ void Server::disconnectClients( const size_t id ) {
     fds.erase(fds.begin() + id);
 }
 
+void Server::clientRequest(const int socket) {
+    if (status & IS_BODY) {
+        std::cout << YELLOW << "Body handler from socket - " << socket << RESET << "\n";
+        client[socket]->handleRequest(envp);
+    } else {
+        std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
+        std::cout << client[socket]->getMessage();
+        client[socket]->handleRequest(envp);
+
+        Server_block * srv = getServerBlock( client[socket]->getHost() );
+        if (srv == NULL) {
+            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
+            throw codeException(400);
+        }
+        client[socket]->setServer(srv);
+        client[socket]->parseLocation();
+        client[socket]->initResponse(envp);
+    }
+}
+
 void Server::connectClients( const int & fd ) {
     int newClientSock;
     struct sockaddr_in clientaddr;
@@ -150,91 +178,77 @@ void Server::connectClients( const int & fd ) {
     }
 }
 
-void Server::clientRequest( void ) {
+void Server::mainHandler( void ) {
     int ret = poll(fds.data(), fds.size(), 0);
     if (ret != 0)    {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
-            if (fds[id].revents & POLLIN) {
-                if (isServerSocket(socket))
-                    connectClients(socket);
-                else if (readRequest(socket) <= 0)
-                    disconnectClients(id);
-                else if (!client[socket]->getBreakconnect())
-                {
-                    std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-                    std::cout << client[socket]->getMessage();
-                    client[socket]->handleRequest();
+            try {
+                if (fds[id].revents & POLLIN) {
+                    if (isServerSocket(socket))
+                        connectClients(socket);
+                    else if (readRequest(socket) <= 0)
+                        disconnectClients(id);
+                    else if (client[socket]->readComplete())
+                        clientRequest(socket);
+                }  else if (fds[id].revents & POLLOUT) {
+                    if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
+                        client[socket]->makeResponse(envp);
                 }
             }
-            else if (fds[id].revents & POLLOUT) {
-                // std::cout << "POLLOUT" << "\n";
-                if (!isServerSocket(socket) && client[socket]->status & REQ_DONE)
-                    client[socket]->makeResponse();
+            catch(codeException& e) {
+                client[socket]->handleError(e.getErrorCode());
             }
             fds[id].revents = 0;
         }
     }
 }
 
-static bool checkConnection( const std::string & mess ) {
-    if (mess.find_last_of("\n") != mess.size() - 1)
-        return true;
-    return false;
-}
-
-int     Server::readHeader( const size_t socket, std::string & text ) {
-    char buf[BUF_SIZE + 1];
-    int rd;
-    int bytesRead = 0;
-
-    if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
-        buf[rd] = 0;
-        bytesRead += rd;
-        text += buf;
-        size_t pos = text.find("Host: ");
-        if (pos != std::string::npos) {
-            pos += 6;
-            std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
-            Server_block * srv = getServerBlock(host);
-            if (srv == NULL) {
-                client[socket]->generateErrorPage(400);
-                return (0);
-            }
-            client[socket]->setServer(srv);
-        }
-        else {
-            client[socket]->generateErrorPage(400);
-            return (0);
-        }
-    }
-    return (bytesRead);
-}
+// int     Server::readHeader( const size_t socket, std::string & text ) {
+//     char buf[BUF_SIZE + 1];
+//     int rd;
+//     int bytesRead = 0;
+//     if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
+//         buf[rd] = 0;
+//         bytesRead += rd;
+//         text += buf;
+//         size_t pos = text.find("Host: ");
+//         if (pos != std::string::npos) {
+//             pos += 6;
+//             std::string host = text.substr(pos, text.find("\r\n", pos) - pos);
+//             Server_block * srv = getServerBlock(host);
+//             if (srv == NULL)
+//                 throw codeException(400);
+//             client[socket]->setServer(srv);
+//         }
+//         else 
+//             throw codeException(400);
+//         checkBodySize(socket, text);
+//     }
+//     return (bytesRead);
+// }
 
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
-    long bytesRead = 0, bodyRead = 0;
+    long bytesRead = 0;
     int rd;
     std::string text;
 
     if (client[socket]->getMessage().size() > 0)
 		text = client[socket]->getMessage();
-    else
-        if ((bytesRead = readHeader(socket, text)) <= 0)
-            return (0);
-    if (checkBodySize(socket, text))
-        return (0);
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         text += buf;
-        if (checkBodySize(socket, text))
-            return (0);
+        // std::cout <<  BLUE << "\e[1m";
+        // for (int i = 0; i < rd; i++)
+        //     printf("%d ", buf[i]);
+        // std::cout << RESET << "\n";
+        if (client[socket]->status & IS_BODY)
+            checkBodySize(socket, text);
     }
-    while (text.find("\r") != std::string::npos)      // Удаляем символ возврата карретки
-        text.erase(text.find("\r"), 1);               // из комбинации CRLF
-    client[socket]->checkConnection(text);
     client[socket]->setMessage(text);
+    client[socket]->checkMessageEnd();
     return (bytesRead);
 }
 
@@ -269,9 +283,10 @@ void	Server::errorShutdown( int code, const std::string & path, const std::strin
     exit(code);
 }
 
-Server::Server( std::string nw_cfg_path ) {
+Server::Server( char **envp, std::string nw_cfg_path ) {
 
     status = WORKING;
+    this->envp = envp;
     nw_cfg_path.size() ? cfg_path = nw_cfg_path : cfg_path =  DEFAULT_PATH;
 }
 

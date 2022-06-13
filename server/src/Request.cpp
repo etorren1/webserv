@@ -2,6 +2,7 @@
 
 
 Request::Request() {
+    this->_reqSize = 0;
     this->_typesMIME.insert(std::make_pair("json", "application/json"));
     this->_typesMIME.insert(std::make_pair("javascript", "application/javascript"));
     this->_typesMIME.insert(std::make_pair("pdf", "application/pdf"));
@@ -18,6 +19,7 @@ Request::Request() {
     this->_typesMIME.insert(std::make_pair("pjpeg", "image/pjpeg"));
     this->_typesMIME.insert(std::make_pair("png", "image/png"));
     this->_typesMIME.insert(std::make_pair("tiff", "image/tiff"));
+    this->_typesMIME.insert(std::make_pair("svg", "image/svg+xml"));
     this->_typesMIME.insert(std::make_pair("ico", "image/vnd.microsoft.icon")); //"image/x-icon"
     this->_typesMIME.insert(std::make_pair("webp", "image/webp"));
 
@@ -35,7 +37,7 @@ Request::Request() {
 
 Request::~Request() {}
 
-void Request::parseText(std::string text) {
+bool Request::parseText(std::string text) {
     std::vector<std::string> vec;
     std::istringstream strs(text);
     std::string s;
@@ -45,7 +47,7 @@ void Request::parseText(std::string text) {
     this->parseStartLine(vec[0]);
     vec.erase(vec.begin());
     // std::cout << "vec.size() = " << vec.size() << "\n";
-    size_t pos = this->parseStrBody(vec);
+    size_t pos = this->findHeadersEnd(vec);
     if (pos == 0) {
         for (size_t i = 0; i < vec.size(); i++) {
             // std::cout << "vec[" << i << "].length() - " << vec[i].length() << "\n";
@@ -60,8 +62,13 @@ void Request::parseText(std::string text) {
         splitDirectories();
     else
         _dirs.push_back(getReqURI());
-    findType();
+    if (!(checkHeaders(_typesMIME, _MIMEType, _responseContentType)))
+        _responseContentType = "none";
+    // findType();
+    // if (!(checkHeaders(_headers, "Host", _host)))
+    //     throw codeException(400);
     findHost();
+    return _bodyExist;
 }
 
 void Request::parseStartLine(std::string str) {
@@ -77,7 +84,7 @@ void Request::parseStartLine(std::string str) {
     // std::cout << GREEN << "_protocolVersion = |" << _protocolVersion << "|\n";
 }
 
-size_t Request::parseStrBody(std::vector<std::string> vec) {
+size_t Request::findHeadersEnd(std::vector<std::string> vec) {
     // std::cout << GREEN << "_body = |" << _body << "|\n";
 
     // const char *c = vec[]
@@ -85,11 +92,12 @@ size_t Request::parseStrBody(std::vector<std::string> vec) {
     for (size_t i = 0; i < vec.size() - 1; i++) {
         if (vec[i].length() == 0) {
             pos = i;
-            for (; i < vec.size(); i++) {
-                this->_body += vec[i];
-            }
+            // for (; i < vec.size(); i++) {
+            //     this->_body += vec[i];
+            // }
         }
     }
+    // setReqSize();
     return pos;
 }
 
@@ -105,6 +113,11 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         _headers.insert(std::make_pair(key, val));
         // std::cout << "[" << key << "] - [" << val << "]\n";
     }
+    if ((checkHeaders(_headers, "Content-Type", _contentType) && \
+        checkHeaders(_headers, "Content-Length", _contentLenght)) || \
+        checkHeaders(_headers, "Transfer-Encoding", _transferEnc))
+        _bodyExist = true;
+    else _bodyExist = false;
     // std::cout << "_headers.size() - " << _headers.size() << "\n";
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (; it != _headers.end(); it++) {
@@ -116,6 +129,7 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
 void Request::parseMIMEType() {
     size_t pos = 0;
     size_t typeEnd = _reqURI.find("?");
+    // std::cout << GREEN << "_reqURI = |" << _reqURI << "|\n";
     if (_reqURI.length() > 1) {
         pos = _reqURI.find(".");
         if (pos != std::string::npos) {
@@ -127,27 +141,33 @@ void Request::parseMIMEType() {
             _MIMEType = "none";
         }
     }
+    else
+        _MIMEType = "none";
     // std::cout << GREEN << "_MIMEType = |" << _MIMEType << "|\n";
 }
 
-void Request::findType() {
-    std::map<std::string, std::string>::iterator it = _typesMIME.begin();
-    for ( ; it != _typesMIME.end(); it++) {
-        if (_MIMEType == (*it).first) {
-            _responseContentType = (*it).second;
-        }
-    }
-    // std::cout << GREEN << "_responseContentType = |" << _responseContentType << "|\n";
-}
+// void Request::findType() {
+//     std::map<std::string, std::string>::iterator it = _typesMIME.begin();
+//     for ( ; it != _typesMIME.end(); it++) {
+//         if (_MIMEType == (*it).first) {
+//             _responseContentType = (*it).second;
+//         }
+//     }
+//     // std::cout << GREEN << "_responseContentType = |" << _responseContentType << "|\n";
+// }
 
 void Request::findHost() {
-    std::map<std::string, std::string>::iterator it = _headers.begin();
-    for ( ; it != _headers.end(); it++) {
-        if ((*it).first == "Host")
-            _host = (*it).second;
-    }
-    size_t pos = _host.find("localhost");
-    if (pos != std::string::npos) {
+    // std::map<std::string, std::string>::iterator it = _headers.begin();
+    // for ( ; it != _headers.end(); it++) {
+    //     if ((*it).first == "Host")
+    //         _host = (*it).second;
+    // }
+    // if (it == _headers.end() && _host.empty())
+        // throw codeException(400);
+    if (!(checkHeaders(_headers, "Host", _host)))
+        throw codeException(400);
+    // size_t pos = _host.find("localhost");
+    if (_host.find("localhost") != std::string::npos) {
         std::string ip = "127.0.0.1" + _host.substr(9);
         _host = ip;
     }
@@ -156,21 +176,24 @@ void Request::findHost() {
 
 void Request::splitDirectories() {
     std::string str;
+    _dirs.clear();
     _dirs.push_back(_reqURI);
     // std::cout << "_dirs[0] = " << _dirs[0] << "\n";
     size_t pos = _reqURI.find_last_of("/");
     str = _reqURI.substr(0, pos);
-    for (size_t i = 1; i < _reqURI.length() - 2; i++) {
+    _dirs.push_back(str);
+    for (size_t i = 1; i < _reqURI.length() - 1; i++) {
         pos = str.find_last_of("/");
         if (pos != std::string::npos && pos != 0) {
             str = str.substr(0, pos);
-            _dirs.push_back(str);
+            if (!str.empty())
+                _dirs.push_back(str);
         }
     }
     _dirs.push_back("/");
     // std::vector<std::string>::iterator it = _dirs.begin();
     // for (; it != _dirs.end(); it++)
-        // std::cout << GREEN << "it = " << *it << RESET << "\n";
+    //     std::cout << RED << "it = " << *it << RESET << "\n";
 }
 
 void Request::cleaner() {
@@ -178,9 +201,8 @@ void Request::cleaner() {
     _reqURI.clear();
     _protocolVersion.clear();
     _headers.clear();
-    _body.clear();
+    // _body.clear();
     _MIMEType.clear();
-    _contentType.clear();
     _responseContentType.clear();
     _host.clear();
     _dirs.clear();
@@ -190,10 +212,43 @@ std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() const { return this->_headers; }
-std::string Request::getBody() const { return this->_body; }
+// std::string Request::getBody() const { return this->_body; } // добавить ссылку
 std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
+int Request::getReqSize() const { return _reqSize; }
 
 void Request::setHost(std::string host) { _host = host; }
+// void Request::setReqSize() { _reqSize = _body.size(); }
+void Request::setReqURI(std::string URI) { _reqURI = URI; }
+void Request::setMIMEType(std::string type) { 
+    size_t pos = type.find(".");
+    if (pos != std::string::npos) {
+        try {
+            _MIMEType = type.substr(pos + 1);
+        }
+        catch(const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+    } else {
+        _MIMEType = "none";
+    }
+}
+
+int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header) {
+    std::map<std::string, std::string>::iterator it = fMap.begin();
+    for ( ; it != fMap.end(); it++) {
+        if ((*it).first == checked) {
+            header = (*it).second;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void Request::parseBody(std::string body) {
+    for (int i = 0; i < body.length(); i++) {
+        this->_body.push_back(body[i]);
+    }
+}

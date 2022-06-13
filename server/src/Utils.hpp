@@ -13,14 +13,7 @@
 #define CYAN "\e[36m"
 #define GRAY "\e[37m"
 
-#if __APPLE__
-	#define IRC_NOSIGNAL SO_NOSIGPIPE
-#else
-	#define IRC_NOSIGNAL MSG_NOSIGNAL
-#endif
-
-
-std::vector<std::string>	split(std::string str, std::string delimiter);
+std::vector<std::string>	split(std::string str, std::string delimiter, std::string trimer = "");
 std::string					trim(std::string str, std::string cut);
 // std::string					itos( int const & num );
 bool 						existDir(const char * name);
@@ -35,7 +28,8 @@ struct codeException : public std::exception
 	int errorCode;
 	const char * what () const throw ()
 	{
-		return "Error while opnening file";
+		std::string error = "Error while opening file with code " + itos(errorCode);
+		return error.c_str();
 	}
 	int getErrorCode() { return(errorCode); }
 };

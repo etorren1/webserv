@@ -1,16 +1,7 @@
 #include "Server.hpp"
 
-#include <signal.h>
-
-void     ft(int) {
-    std::cout << "ALERT\n";
-}
-
-int     main(int argc, char **argv)
+int     main(int argc, char **argv, char **envp)
 {
-
-    signal(SIGPIPE, ft);
-
     int fd;
     std::string path;
     if (argc > 2) {
@@ -33,10 +24,7 @@ int     main(int argc, char **argv)
             return (1);
         }
     }
-    Server server(path);
-
-
-
+    Server server(envp, path);
     server.config(fd);
     server.create();
     server.run();

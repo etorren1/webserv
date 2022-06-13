@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <errno.h>
 #include <unistd.h>
 #include <vector>
 #include <list>
@@ -18,6 +19,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
+#include <signal.h>
 
 #include "config/Config.hpp"
 #include "Client.hpp"
@@ -47,19 +50,20 @@ class Server {
 		int							status;
 
 		std::string					location;
-		bool						reqType;
+		char						**envp;
 		
 		void 		connectClients( const int & fd );
-		void 		clientRequest( void );
+		void 		mainHandler( void );
 		int  		readRequest( const size_t id );
 		void 		disconnectClients( const size_t id );
 		void 		consoleCommands( void );
 		int			createVirtualServer( const std::string & hostname, const std::string & port, Server_block * srv );
 		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
-		int			checkBodySize( const size_t socket, const std::string & text );
-		int		    readHeader( const size_t socket, std::string & text );
+		void		checkBodySize( const size_t socket, const std::string & text );
+		// int		    readHeader( const size_t socket, std::string & text );
 		Server_block * getServerBlock( std::string host ) const;
+		void		clientRequest(const int socket);
 
 		// config file parser utilites
 			std::string get_raw_param(std::string key, std::string & text);
@@ -76,6 +80,8 @@ class Server {
 			template <class T> void		cfg_access_log( std::string & text, T * block );
 			template <class T> void		cfg_sendfile( std::string & text, T * block );
 			template <class T> void		cfg_autoindex( std::string & text, T * block );
+			template <class T> void		cfg_return( std::string & text, T * block );
+			template <class T> void     cfg_error_page( std::string & text, T * block );
 			template <class T> void		cfg_client_max_body_size( std::string & text, T * block );
 			template <class T> void		cfg_location_block( std::string & text, T * block );
 			template <class T> void		cfg_server_block( std::string & text, T * block );
@@ -94,15 +100,12 @@ class Server {
 
 	public:
 
-		Server( std::string new_config_path = "" ) ;
+		Server( char **envp, std::string new_config_path = "" ) ;
 		~Server();
 
 		void	config( const int & fd );
 		void	create();
 		void	run( void );
-
-		//for errors
-		void	parseLocation();
 
 };
 

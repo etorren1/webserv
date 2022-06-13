@@ -16,7 +16,7 @@ class Server_block : virtual public Block {
         std::map<std::string, Location_block * > lctn;
     
         void    set_listen( const std::string & s ) { listen = s; }
-        void    set_server_name( const std::string & s ) { server_name = split(s, " "); }
+        void    set_server_name( const std::string & s ) { server_name = split(s, " ", " \t"); }
 
         std::string    get_listen() { return listen; }
         std::vector<std::string> get_server_name() { return server_name; }
@@ -38,7 +38,6 @@ class Server_block : virtual public Block {
             sendfile = other.get_sendfile();
             autoindex = other.get_autoindex();
             client_max_body_size = other.get_client_max_body_size();
-            default_page = other.get_default_page();
             accepted_methods = other.get_accepted_methods();
         }
         ~Server_block() {}
