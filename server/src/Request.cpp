@@ -79,12 +79,11 @@ void Request::parseStartLine(std::string str) {
     size_t pos_n = str.find(" ");
     str.erase(str.find(' '), 1);
     this->_protocolVersion = str.substr(pos_n);
+    if (_method != "GET" && _method != "POST" && \
+     _method != "PUT" && _method != "DELETE") {
+        throw codeException(400);
+     }
     // std::cout << GREEN << "_method = |" << _method << "|\n";
-    // if (_method != "GET" || _method != "POST" || \
-    //  _method != "PUT" || _method != "DELETE") {
-    //     std::cout << RED << "_method = |" << _method << "|\n";
-    //     throw codeException(400);
-    //  }
     // std::cout << GREEN << "_reqURI = |" << _reqURI << "|\n";
     // std::cout << GREEN << "_protocolVersion = |" << _protocolVersion << "|\n";
 }
