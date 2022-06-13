@@ -52,8 +52,11 @@ void     Server::checkBodySize( const size_t socket, const std::string & text ) 
     size_t pos = text.find("\r\n\r\n");
     if (pos != std::string::npos)
         bodySize = text.size() - pos - 4;
-    if (bodySize > client[socket]->getMaxBodySize())
+    if (bodySize > client[socket]->getMaxBodySize()) 
+    {
+        std::cout << RED << "400 exception client_max_body_size" << RESET << "\n";
         throw codeException(400);
+    }
 }
 
 Server_block * Server::getServerBlock( std::string host ) const {

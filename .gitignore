@@ -9,3 +9,5 @@ a.out
 nginx.conf
 main.cpp
 test.cpp
+CGI.cpp
+CGI.hpp
