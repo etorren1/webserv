@@ -76,11 +76,15 @@ bool Request::parseText(std::string text) {
 void Request::parseStartLine(std::string str) {
     size_t pos = str.find(" ");
     this->_method = str.substr(0, pos);
-    str.erase(pos, 1);
-    this->_reqURI = str.substr(pos, str.find(" ") - pos);
+    if (pos != std::string::npos) {
+        str.erase(pos, 1);
+        this->_reqURI = str.substr(pos, str.find(" ") - pos);
+    }
     size_t pos_n = str.find(" ");
-    str.erase(str.find(' '), 1);
-    this->_protocolVersion = str.substr(pos_n);
+    if (pos_n != std::string::npos) {
+        str.erase(str.find(' '), 1);
+        this->_protocolVersion = str.substr(pos_n);
+    }
     if (_method != "GET" && _method != "POST" && \
      _method != "PUT" && _method != "DELETE") {
         throw codeException(405);
