@@ -22,7 +22,6 @@ void	Response::make_response_autoidx(Request req, std::string path, int code, st
     DIR *dir;
     struct dirent *entry;
 
-    std::cout << path << "\n";
     if (path.size() == 1)
         path = "." + path;
     dir = opendir(path.c_str());

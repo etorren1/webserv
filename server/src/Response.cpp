@@ -46,7 +46,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 	_header = statusLine + generalHeader;
 	_stream << _header;
 	
-	std::cout << RED << _header << RESET;
+	// std::cout << RED << _header << RESET;
 }
 
 int Response::sendResponse_file(const size_t socket)

@@ -6,10 +6,26 @@
 
 void	Client::checkMessageEnd( void ) {
 	if (status & IS_BODY) {
-		// if (message.size() == loc->get_client_max_body_size())
-			fullpart = true;
-		// else
-			// fullpart = false;
+		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
+		// std::cout << BLUE << "Content-Length: " << req.getСontentLenght() << RESET << "\n";
+		
+		if (req.getTransferEnc() == "chunked") {
+			if (message.find("0\r\n\r\n"))
+				fullpart = true;
+			else
+				fullpart = false;
+		}
+		else if (req.getСontentLenght().size()) {
+			size_t len = atoi(req.getСontentLenght().c_str());
+			// std::cout << "message.size = " << message.size() << " " << "len = " << len << "\n";
+			if (message.size() == len)
+				fullpart = true;
+			else
+				fullpart = false;
+		}
+		else
+			std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
+			// fullpart = true;
 		// ЕСЛИ Transfer-Encoding ждем 0
 		// ECЛИ Content-length ждем контент лен
 	}
@@ -32,15 +48,18 @@ void	Client::handleRequest( char **envp ) {
 	if (status & IS_BODY) {
 		req.parseBody(message);
 		status |= REQ_DONE;
-		std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
+		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	} else {
     	bool rd = req.parseText(message);
     	if (rd == true) {
-			std::cout << "IS_BODY\n";
+			// std::cout << PURPLE << "IS_BODY" << RESET << "\n";
 			message = tail;
 			status |= IS_BODY;
+			checkMessageEnd();
+			if (fullpart)
+				status |= REQ_DONE;
 		} else {
-			std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
+			// std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
 			status |= REQ_DONE;
 		}
 	}
@@ -54,10 +73,10 @@ int		Client::searchErrorPages() {
 		tmp = location + loc->get_error_page().second;
 		res.setFileLoc(tmp);
 		if (res.openFile()) {
-			std::cout << CYAN << tmp << RESET << "\n";
+			// std::cout << CYAN << tmp << RESET << "\n";
 			return 1;
 		}
-		std::cout << PURPLE << tmp << RESET << "\n";
+		// std::cout << PURPLE << tmp << RESET << "\n";
 	}
 	return 0;
 }
@@ -135,15 +154,18 @@ void	Client::makeResponse(char **envp) {  //envp не нужен уже
 		makeAutoidxResponse();
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
-	// else if (req.getMethod() == "POST")
+	else if (req.getMethod() == "POST")
+		cleaner();
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
 void	Client::makeAutoidxResponse() {
 	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
-	if (status & RESP_DONE)
+	if (status & RESP_DONE) {
+		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
 		cleaner();
+	}
 }
 
 void	Client::makeErrorResponse() {
@@ -159,8 +181,10 @@ void	Client::makeErrorResponse() {
 		if (res.sendResponse_stream(socket))
 			status |= HEAD_SENT;
 	}
-	if (status & RESP_DONE)
+	if (status & RESP_DONE) {
+		// std::cout << GREEN << "End ERROR response on " << socket << " socket" << RESET << "\n";
 		cleaner();
+	}
 }
 
 void	Client::makeGetResponse()
@@ -180,6 +204,7 @@ void	Client::makeGetResponse()
 	if (status & RESP_DONE) {
 		cleaner();
 		// std::cout << "GET cleaner() must be ending\n";
+		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
 	}
 }
 
@@ -222,6 +247,10 @@ void Client::makePostResponse(char **envp)
 }
 
 void	Client::cleaner() {
+	if (status & ERROR)
+		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
+	else
+		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	message.clear();
 	tail.clear();
 	location.clear();
@@ -237,14 +266,16 @@ void		Client::setMessage( const std::string & mess ) { message = mess; }
 void		Client::setServer( Server_block * s ) {
 	srv = s;
 	this->loc = getLocationBlock(req.getDirs());
-	if (loc == NULL)
+	if (loc == NULL) {
+		std::cout << RED << "Location not found: has 404 exception " << RESET << "\n";
 		throw codeException(404);
+	}
 }
 
 bool 		Client::readComplete() const { return fullpart; }
 Response &	Client::getResponse() { return res; }
 Request &	Client::getRequest() { return req; }
-size_t		Client::getMaxBodySize() const { return srv->get_client_max_body_size(); }
+size_t		Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
 std::string	Client::getHost() const { return req.getHost(); }
 std::string Client::getMessage() const { return message; }
 Server_block * Client::getServer( void ) { return srv;}
@@ -322,16 +353,12 @@ Client::~Client() {}
 int Client::parseLocation() {
 	// std::cout << BLUE << "MIME type: " << req.getMIMEType() << RESET << "\n";
 	statusCode = 200;
-	if (req.getMIMEType() == "none") {
-		std::cout << "IS_DIR\n";
+	if (req.getMIMEType() == "none")
         status |= IS_DIR;
-	}
-	else {
-		std::cout << "IS_FILE\n";
+	else
         status |= IS_FILE;
-	}
 	if (loc->get_redirect().first && !(status & REDIRECT)) {
-		std::cout << "makeRedirect\n";
+		// std::cout << "makeRedirect\n";
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			return 0;
 		}
@@ -367,12 +394,12 @@ int Client::parseLocation() {
 	location = root + locn + req.getReqURI().substr(subpos);
 
 	// FOR INTRA TESTER
-	std::cout << location << "\n";
-	if (location.find("directory") != std::string::npos) {
-		location.erase(location.find("directory"), 10);
-		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
-	}
-	std::cout << location << '\n';
+	// std::cout << location << "\n";
+	// if (location.find("directory") != std::string::npos) {
+	// 	location.erase(location.find("directory"), 10);
+	// 	std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+	// }
+	// std::cout << location << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
@@ -384,7 +411,7 @@ int Client::parseLocation() {
 			statusCode = 301; // COMMENT IT FOR TESTER
 			location.push_back('/');
 			if (access(location.c_str(), 0) == -1) {
-				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
 				throw codeException(404);
 			}
 		}
@@ -392,26 +419,22 @@ int Client::parseLocation() {
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex()) {
-				std::cout << i << " @ASDASD\n";
-				std::cout << i << " == " << indexes.size() << "\n";
 				while (++i < indexes.size()) {
 					std::string tmp = location + indexes[i];
 					if (access(tmp.c_str(), 0) != -1) {
 						location = tmp;
-						std::cout << RED << location << RESET << "\n";
 						req.setMIMEType(indexes[i]);
-						std::cout << req.getMIMEType() << " - access(tmp.c_str(), 0) != -1\n";
 						break;
 					}
 				}
 				if (i == indexes.size()) {
-					std::cout << location << " - i == indexes.size()\n";
+					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 			}
 			else {
 				if (access(location.c_str(), 0) == -1) {
-					std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
+					std::cout << RED << "No such directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 				status |= AUTOIDX;
@@ -419,15 +442,15 @@ int Client::parseLocation() {
 		} // COMMENT IT FOR TESTER
 	} else if (status & IS_FILE) { // FILE
 		if (access(location.c_str(), 0) == -1) {
-			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
+			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
     }
 	if (access(location.c_str(), 4) == -1) {
-		std::cout << location << " - access(location.c_str(), 4) == -1  403 access\n";
+		std::cout << RED << "Permisson denied: " << location << RESET << "\n";
 		throw codeException(403);
 	}
-	std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
+	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 
