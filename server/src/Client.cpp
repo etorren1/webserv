@@ -1,9 +1,6 @@
 #include "Client.hpp"
+#include "Utils.hpp"
 #include <errno.h>
-
-#define CGI_PATH "cgi_tester"
-#define PIPE_IN 1	//we write
-#define PIPE_OUT 0	//we read
 
 void	Client::checkConnection( const std::string & mess ) {
 	if (mess.find_last_of("\n") != mess.size() - 1)
@@ -40,9 +37,9 @@ void	Client::initResponse ( char **envp )
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-
 	if (req.getMethod() == "POST")
 	{
+
 		iter = 0;
 		cgiWriteFlag = false;
 		totalSent = 0;
@@ -55,9 +52,11 @@ void	Client::initResponse ( char **envp )
 
 		// if (cgi used)
 		// {
+			res.getStrStream().str(""); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
+			res.getStrStream().clear();
 			if ((pid = fork()) < 0)
 				throw(codeException(500));
-			if (pid == 0) //child - prosses for CGI programm
+			if (pid == 0) //child - process for CGI programm
 			{
 				close(pipe1[PIPE_IN]); //Close unused pipe write end
 				close(pipe2[PIPE_OUT]); //Close unused pipe read end
@@ -66,6 +65,8 @@ void	Client::initResponse ( char **envp )
 
 				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
 					throw(codeException(500));
+				close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
+				close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
 				exit(ex);
 			}
 			else
@@ -164,9 +165,14 @@ void Client::makePostResponse(char **envp)
 			status |= RESP_DONE; //все прочитали из cgi
 			// res.getStrStream() << buff;
 		}
-		buff[readRet] = '\0';
-		res.getStrStream().write(buff, readRet);
-		res.sendResponse_stream(socket);
+		else
+		{
+			res.make_response_header(req, 200, "OK", 500);
+			res.sendResponse_stream(socket);
+			buff[readRet] = '\0';
+			res.getStrStream().write(buff, readRet);
+			std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
+		}
 	}
 
 	//если мы закончили всё читать из cgi то 
@@ -180,10 +186,11 @@ void Client::makePostResponse(char **envp)
 		// close(pipe1[PIPE_IN]);
 		waitpid(pid, &status, 0); // ???
 		cleaner();
-		//close all fds
+		// closeAllFds();
+		close(pipe2[PIPE_OUT]);
+		std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
 }
-
 void	Client::cleaner() {
 	message.clear();
 	location.clear();
@@ -193,16 +200,18 @@ void	Client::cleaner() {
 	status = 0;
 }
 
-void		Client::setMessage( const std::string & mess ) { message = mess; }
-void		Client::setServer( Server_block * s ) { srv = s; }
+void			Client::setMessage( const std::string & mess ) { message = mess; }
+void			Client::setServer( Server_block * s ) { srv = s; }
 
-bool 		Client::getBreakconnect() const { return breakconnect; }
-Response &	Client::getResponse() { return res; }
-Request &	Client::getRequest() { return req; }
-size_t		Client::getMaxBodySize() const { return srv->get_client_max_body_size(); }
-std::string	Client::getHost() const { return srv->get_listen(); }
-std::string Client::getMessage() const { return message; }
-Server_block * Client::getServer( void ) { return srv;}
+bool 			Client::getBreakconnect() const { return breakconnect; }
+Response &		Client::getResponse() { return res; }
+Request &		Client::getRequest() { return req; }
+size_t			Client::getMaxBodySize() const { return srv->get_client_max_body_size(); }
+std::string		Client::getHost() const { return srv->get_listen(); }
+std::string 	Client::getMessage() const { return message; }
+Server_block *	Client::getServer( void ) { return srv;}
+int *			Client::getPipe1() { return pipe1; };
+int *			Client::getPipe2() { return pipe2; };
 
 Location_block * Client::getLocationBlock( std::vector<std::string> vec ) const {
     Location_block * lctn;

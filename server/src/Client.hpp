@@ -54,25 +54,28 @@ class Client
 		void		cleaner( void );
 
 		//for response:
-		void		initResponse( char **envp );
-		void		makeResponse( char **envp );
-		void		makeGetResponse( void );
-		void		makePostResponse( char **envp );
-		void		makeDeleteResponse( void );
-		void		makeErrorResponse( void );
-		void		makeAutoidxResponse( void );
+		void				initResponse( char **envp );
+		void				makeResponse( char **envp );
+		void				makeGetResponse( void );
+		void				makePostResponse( char **envp );
+		void				makeDeleteResponse( void );
+		void				makeErrorResponse( void );
+		void				makeAutoidxResponse( void );
 
-		void		setMessage( const std::string & mess );
-		void		setServer( Server_block * s );
+		void				setMessage( const std::string & mess );
+		void				setServer( Server_block * s );
 
-		bool 		getBreakconnect( void ) const;
-		std::string	getHost( void ) const;
-		size_t		getMaxBodySize( void ) const;
-		Response &	getResponse( void );
-		Request &	getRequest( void );
-		Server_block * getServer( void );
-		std::string getMessage( void ) const;
-		Location_block * getLocationBlock( std::vector<std::string> vec ) const;
+		bool 				getBreakconnect( void ) const;
+		std::string			getHost( void ) const;
+		size_t				getMaxBodySize( void ) const;
+		Response &			getResponse( void );
+		Request &			getRequest( void );
+		Server_block *		getServer( void );
+		std::string			getMessage( void ) const;
+		Location_block *	getLocationBlock( std::vector<std::string> vec ) const;
+		int *				getPipe1();
+		int *				getPipe2();
+
 
 		void		autoindex( const std::string & path );
 
