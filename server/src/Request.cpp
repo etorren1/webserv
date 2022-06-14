@@ -38,6 +38,8 @@ Request::Request() {
 Request::~Request() {}
 
 bool Request::parseText(std::string text) {
+    // if (text.find("/") == std::string::npos)
+    //     throw codeException(400);
     std::vector<std::string> vec;
     std::istringstream strs(text);
     std::string s;
@@ -85,8 +87,8 @@ void Request::parseStartLine(std::string str) {
     }
     if (_method != "GET" && _method != "POST" && \
      _method != "PUT" && _method != "DELETE") {
-        throw codeException(400);
-     }
+        throw codeException(405);
+    }
     // std::cout << GREEN << "_method = |" << _method << "|\n";
     // std::cout << GREEN << "_reqURI = |" << _reqURI << "|\n";
     // std::cout << GREEN << "_protocolVersion = |" << _protocolVersion << "|\n";
@@ -199,9 +201,9 @@ void Request::splitDirectories( ) {
         }
     }
     _dirs.push_back("/");
-    std::vector<std::string>::iterator it = _dirs.begin();
-    for (; it != _dirs.end(); it++)
-        std::cout << RED << "it = " << *it << RESET << "\n";
+    // std::vector<std::string>::iterator it = _dirs.begin();
+    // for (; it != _dirs.end(); it++)
+    //     std::cout << RED << "it = " << *it << RESET << "\n";
 }
 
 void Request::cleaner() {
@@ -272,10 +274,10 @@ void Request::splitLocation(std::string loc) {
     size_t posBegin = loc.find("//");
     size_t posEnd = loc.find_last_of("/");
     // std::string host, dir;
-    std::cout << "before host - " << _host << ", reqURI - " << _reqURI << "\n";
+    // std::cout << "before host - " << _host << ", reqURI - " << _reqURI << "\n";
     if (posBegin != std::string::npos && posEnd != std::string::npos)
-        _host = loc.substr(posBegin + 2, posEnd - posBegin - 2);
+        _host = loc.substr(posBegin + 2, posEnd - posBegin - 3);
     if (posEnd != std::string::npos)
         _reqURI = loc.substr(posEnd);
-    std::cout << "after host - " << _host << ", reqURI - " << _reqURI << "\n";
+    // std::cout << "after host - " << _host << ", reqURI - " << _reqURI << "\n";
 }

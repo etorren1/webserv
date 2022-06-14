@@ -1,0 +1,54 @@
+NAME = webserv
+SERVER = server
+SRC = src/webserver.cpp
+# SRC = $(wildcard server/src/*.cpp)\
+# 	  $(wildcard server/src/config/*.cpp)
+
+HEADER = $(wildcard server/src/*.hpp)\
+	  	 $(wildcard server/src/config/*.hpp)
+
+# FLAGS = -Wall -Werror -Wextra 
+FLAGS = -std=c++98
+
+OBJS_DIR = obj
+
+ALL_OBJS_DIRS = $(sort $(dir $(OBJ)))
+
+# OBJ = $(SRC:.cpp=.o)
+OBJ = $(patsubst %.cpp,$(OBJS_DIR)/%.o, $(SRC))
+
+all: $(NAME)
+$(NAME): $(ALL_OBJS_DIRS) $(OBJ) $(HEADER) 
+	printf "$<  $@" 
+	clang++ $(OBJ) $(FLAGS) -o $(NAME) -g
+
+$(ALL_OBJS_DIRS): $(OBJS_DIR)
+	mkdir -p $@
+
+$(OBJS_DIR): 
+	mkdir -p $(OBJS_DIR)
+
+$(OBJS_DIR)/%.o:$(SERVER)/%.cpp $(HEADER)
+	printf "$<  $@"  
+	clang++ $(FLAGS) -c $< -o $@ -g
+# @clang++ $(FLAGS) -c $< -o $(<:.cpp=.o) -g
+
+clean: 
+	rm -f $(OBJ)
+fclean: clean
+	rm -f $(NAME)
+re: fclean all
+
+run: 
+	@./$(NAME)
+
+rerun: re 
+	@./$(NAME)
+
+ip: #macOS
+	@ipconfig getifaddr en0
+
+iplx: #linux
+	@hostname -I
+
+.PHONY: clean fclean re run rerun

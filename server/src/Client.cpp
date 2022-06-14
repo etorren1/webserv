@@ -6,10 +6,12 @@
 
 void	Client::checkMessageEnd( void ) {
 	if (status & IS_BODY) {
-		if (message.size() == loc->get_client_max_body_size())
+		// if (message.size() == loc->get_client_max_body_size())
 			fullpart = true;
-		else
-			fullpart = false;
+		// else
+			// fullpart = false;
+		// ЕСЛИ Transfer-Encoding ждем 0
+		// ECЛИ Content-length ждем контент лен
 	}
 	else {
 		size_t pos = message.rfind("\r\n\r\n");
@@ -27,24 +29,20 @@ void	Client::checkMessageEnd( void ) {
 }
 
 void	Client::handleRequest( char **envp ) {
-	// OLD
-	// req.parseText(message);
-	// parseLocation();
-	// initResponse(envp);
-	// status |= REQ_DONE;
-
-
-// NEW
 	if (status & IS_BODY) {
 		req.parseBody(message);
 		status |= REQ_DONE;
+		std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	} else {
-    	bool rd = req.parseText(message); // ПРИМЕР ЛОГИКИ РАЗДЕЛЕНИЯ ПАРСИНГА ХЕДЕРА И БОДИ
-    	if (rd == true) { // REQUEST HAVE BODY
+    	bool rd = req.parseText(message);
+    	if (rd == true) {
+			std::cout << "IS_BODY\n";
 			message = tail;
 			status |= IS_BODY;
-		} else
+		} else {
+			std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
 			status |= REQ_DONE;
+		}
 	}
 }
 
@@ -67,7 +65,6 @@ int		Client::searchErrorPages() {
 void	Client::handleError( const int code ) {
 	int file = 0;
 	if (loc && loc->get_error_page().first == code) {
-		std::cout << "Try open error file\n";
 		if ((file = searchErrorPages()) == 1) {
 			req.setMIMEType(loc->get_error_page().second);
 			res.setContentType(req.getContentType());
@@ -75,7 +72,6 @@ void	Client::handleError( const int code ) {
 		}
 	}
 	if (!file) {
-		std::cout << "Standart error\n";
 		std::string mess = "none";
 		try {
 			mess = resCode.at(code);
@@ -94,6 +90,9 @@ void	Client::initResponse ( char **envp )
 {
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
+	else if (status & REDIRECT) {
+		res.make_response_header(req, statusCode, resCode[statusCode], 1);
+	}
 	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -234,10 +233,16 @@ void	Client::cleaner() {
 	statusCode = 0;
 	status = 0;
 	loc = NULL;
+	srv = NULL;
 }
 
 void		Client::setMessage( const std::string & mess ) { message = mess; }
-void		Client::setServer( Server_block * s ) { srv = s; }
+void		Client::setServer( Server_block * s ) {
+	srv = s;
+	this->loc = getLocationBlock(req.getDirs());
+	if (loc == NULL)
+		throw codeException(404);
+}
 
 bool 		Client::readComplete() const { return fullpart; }
 Response &	Client::getResponse() { return res; }
@@ -322,11 +327,9 @@ int Client::parseLocation() {
 	if (req.getMIMEType() == "none")
         status |= IS_DIR;
 	else
-        status |= IS_FILE;
-	this->loc = getLocationBlock(req.getDirs());
-	if (loc == NULL)
-		throw codeException(404);
+        status |= IS_FILE;	
 	if (loc->get_redirect().first && !(status & REDIRECT)) {
+		// std::cout << "makeRedirect\n";
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			std::cout << CYAN << "REDIRECT" << RESET << "\n";
 			return 0;
@@ -349,34 +352,38 @@ int Client::parseLocation() {
 			if (req.getMethod() == loc->get_accepted_methods()[i])
 				method = loc->get_accepted_methods()[i];
 		if (!method.size())
+		{
+			std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
 			throw codeException(405);
+		}
 	}
-	// if (loc->get_client_max_body_size() < req.getReqSize()) { // maybe not needed
-	// 	statusCode = 413;
-	// 	throw codeException(413);
-	// }
-	// if (locn.size() > 1 && (pos = root.find(locn)) != std::string::npos)
-	// 	root = root.substr(0, pos);
-	// std::cout << RED << "LOCN: " << locn << RESET << "\n";
-	// std::cout << RED << "URI: " << req.getReqURI() << RESET << "\n";
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
 	location = root + locn + req.getReqURI().substr(subpos);
+
+	// FOR INTRA TESTER
+	// std::cout << location << "\n";
+	// if (location.find("directory") != std::string::npos) {
+	// 	location.erase(location.find("directory"), 10);
+	// 	std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+	// }
+	// std::cout << location << '\n';
+	// DELETE IT IN FINAL VERSION!
+
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
-	std::cout << GREEN << "this is location: " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
 		if (location.size() && location[location.size()-1] != '/') {
-			statusCode = 301;
+			statusCode = 301; // COMMENT IT FOR TESTER
 			location.push_back('/');
 			if (access(location.c_str(), 0) == -1) {
 				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
 				throw codeException(404);
 			}
 		}
-		else {
+		else { // COMMENT IT FOR TESTER
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex()) {
@@ -384,6 +391,7 @@ int Client::parseLocation() {
 					std::string tmp = location + indexes[i];
 					if (access(tmp.c_str(), 0) != -1) {
 						location = tmp;
+						std::cout << RED << location << RESET << "\n";
 						req.setMIMEType(indexes[i]);
 						// std::cout << req.getMIMEType() << " - access(tmp.c_str(), 0) != -1\n";
 						break;
@@ -401,7 +409,7 @@ int Client::parseLocation() {
 				}
 				status |= AUTOIDX;
 			}
-		}
+		} // COMMENT IT FOR TESTER
 	} else if (status & IS_FILE) { // FILE
 		if (access(location.c_str(), 0) == -1) {
 			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
@@ -412,6 +420,7 @@ int Client::parseLocation() {
 		std::cout << location << " - access(location.c_str(), 4) == -1  403 access\n";
 		throw codeException(403);
 	}
+	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 
@@ -423,7 +432,7 @@ int Client::makeRedirect(int code, std::string loc) {
 	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
 	req.splitLocation(loc);
 	req.splitDirectories();
-	std::cout << "req.split = " << req.getReqURI() << "\n";
+	// std::cout << "req.split = " << req.getReqURI() << "\n";
 	// parseLocation();
 	return 1;
 }
