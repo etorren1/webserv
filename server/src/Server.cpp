@@ -187,7 +187,6 @@ void Server::clientRequest(const int socket) {
         }
         client[socket]->setServer(srv);
         if (!(client[socket]->status & IS_BODY)) {
-            std::cout << "here\n";
             client[socket]->parseLocation();
             client[socket]->initResponse(envp);
         }

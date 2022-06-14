@@ -323,16 +323,16 @@ int Client::parseLocation() {
 	// std::cout << BLUE << "MIME type: " << req.getMIMEType() << RESET << "\n";
 	statusCode = 200;
 	if (req.getMIMEType() == "none") {
-		// std::cout << "IS_DIR\n";
+		std::cout << "IS_DIR\n";
         status |= IS_DIR;
 	}
 	else {
-		// std::cout << "IS_FILE\n";
+		std::cout << "IS_FILE\n";
         status |= IS_FILE;
 	}
 	if (loc->get_redirect().first && !(status & REDIRECT)) {
+		std::cout << "makeRedirect\n";
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
-			std::cout << "makeRedirect\n";
 			return 0;
 		}
 		// std::cout << "loc->get_redirect().first - " << loc->get_redirect().first << ", loc->get_redirect().second - " << loc->get_redirect().second << "\n";
@@ -365,28 +365,40 @@ int Client::parseLocation() {
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
 	location = root + locn + req.getReqURI().substr(subpos);
+
+	// FOR INTRA TESTER
+	std::cout << location << "\n";
+	if (location.find("directory") != std::string::npos) {
+		location.erase(location.find("directory"), 10);
+		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+	}
+	std::cout << location << '\n';
+	// DELETE IT IN FINAL VERSION!
+
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
-	std::cout << GREEN << "this is location: " << location << " <-\n" << RESET;
 	if (status & IS_DIR) {
 		if (location.size() && location[location.size()-1] != '/') {
-			statusCode = 301;
+			statusCode = 301; // COMMENT IT FOR TESTER
 			location.push_back('/');
 			if (access(location.c_str(), 0) == -1) {
 				std::cout << location << " - access(location.c_str(), 0) == -1 IS_DIR\n";
 				throw codeException(404);
 			}
 		}
-		else {
+		else { // COMMENT IT FOR TESTER
 			std::vector<std::string>indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex()) {
+				std::cout << i << " @ASDASD\n";
+				std::cout << i << " == " << indexes.size() << "\n";
 				while (++i < indexes.size()) {
 					std::string tmp = location + indexes[i];
 					if (access(tmp.c_str(), 0) != -1) {
 						location = tmp;
+						std::cout << RED << location << RESET << "\n";
 						req.setMIMEType(indexes[i]);
 						std::cout << req.getMIMEType() << " - access(tmp.c_str(), 0) != -1\n";
 						break;
@@ -404,7 +416,7 @@ int Client::parseLocation() {
 				}
 				status |= AUTOIDX;
 			}
-		}
+		} // COMMENT IT FOR TESTER
 	} else if (status & IS_FILE) { // FILE
 		if (access(location.c_str(), 0) == -1) {
 			std::cout << location << " - access(location.c_str(), 0) == -1 IS_FILE\n";
@@ -415,6 +427,7 @@ int Client::parseLocation() {
 		std::cout << location << " - access(location.c_str(), 4) == -1  403 access\n";
 		throw codeException(403);
 	}
+	std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 
