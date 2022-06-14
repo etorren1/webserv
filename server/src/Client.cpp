@@ -318,38 +318,29 @@ Client::Client( size_t nwsock ) {
 Client::~Client() {}
 
 int Client::parseLocation() {
-	// std::cout << BLUE << "MIME type: " << req.getMIMEType() << RESET << "\n";
 	statusCode = 200;
-	if (req.getMIMEType() == "none") {
-		// std::cout << "IS_DIR\n";
+	if (req.getMIMEType() == "none")
         status |= IS_DIR;
-	}
-	else {
-		// std::cout << "IS_FILE\n";
+	else
         status |= IS_FILE;
-	}
 	this->loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 		throw codeException(404);
 	if (loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
-			std::cout << "makeRedirect\n";
+			std::cout << CYAN << "REDIRECT" << RESET << "\n";
 			return 0;
 		}
+	}
 		// std::cout << "loc->get_redirect().first - " << loc->get_redirect().first << ", loc->get_redirect().second - " << loc->get_redirect().second << "\n";
 		// statusCode = loc->get_redirect().first;
 		// location = loc->get_redirect().second;
 		// std::cout << "location - " << location << ", status - " << statusCode << "\n";
-		// std::cout << CYAN << "REDIRECT" << RESET << "\n";
 		// return 0;
-	}
+	// }
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
-	// if (str.length()) {
-	// 	locn = str;
-	// 	req.setReqURI(str);
-	// }
 	// if (locn[locn.size() - 1] != '/')
 	// 	locn += "/";
 	if (loc->get_accepted_methods().size()) {
@@ -394,7 +385,7 @@ int Client::parseLocation() {
 					if (access(tmp.c_str(), 0) != -1) {
 						location = tmp;
 						req.setMIMEType(indexes[i]);
-						std::cout << req.getMIMEType() << " - access(tmp.c_str(), 0) != -1\n";
+						// std::cout << req.getMIMEType() << " - access(tmp.c_str(), 0) != -1\n";
 						break;
 					}
 				}
@@ -426,15 +417,13 @@ int Client::parseLocation() {
 
 int Client::makeRedirect(int code, std::string loc) {
 	status |= REDIRECT;
-	// std::cout << "code - " << code << ", loc - " << loc << "\n";
-	// location = loc;
+	std::cout << "code - " << code << ", loc - " << loc << "\n";
 	statusCode = code;
-	size_t pos = loc.find("http");
-	if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
-		req.splitLocation(loc);
+	// size_t pos = loc.find("http");
+	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
+	req.splitLocation(loc);
 	req.splitDirectories();
-	parseLocation();
-	return 0;
-	// std::cout << "location after parseLocation - " << location << "\n";
-	// create new location
+	std::cout << "req.split = " << req.getReqURI() << "\n";
+	// parseLocation();
+	return 1;
 }

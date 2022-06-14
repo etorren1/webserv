@@ -182,7 +182,7 @@ void Request::findHost() {
     // std::cout << GREEN << "_host = |" << _host << "|\n";
 }
 
-void Request::splitDirectories() {
+void Request::splitDirectories( ) {
     std::string str;
     _dirs.clear();
     _dirs.push_back(_reqURI);
@@ -199,9 +199,9 @@ void Request::splitDirectories() {
         }
     }
     _dirs.push_back("/");
-    // std::vector<std::string>::iterator it = _dirs.begin();
-    // for (; it != _dirs.end(); it++)
-    //     std::cout << RED << "it = " << *it << RESET << "\n";
+    std::vector<std::string>::iterator it = _dirs.begin();
+    for (; it != _dirs.end(); it++)
+        std::cout << RED << "it = " << *it << RESET << "\n";
 }
 
 void Request::cleaner() {
@@ -272,8 +272,10 @@ void Request::splitLocation(std::string loc) {
     size_t posBegin = loc.find("//");
     size_t posEnd = loc.find_last_of("/");
     // std::string host, dir;
-    if (posBegin != std::string::npos && posEnd != std::string::npos) {
+    std::cout << "before host - " << _host << ", reqURI - " << _reqURI << "\n";
+    if (posBegin != std::string::npos && posEnd != std::string::npos)
         _host = loc.substr(posBegin + 2, posEnd - posBegin - 2);
+    if (posEnd != std::string::npos)
         _reqURI = loc.substr(posEnd);
-    }
+    std::cout << "after host - " << _host << ", reqURI - " << _reqURI << "\n";
 }

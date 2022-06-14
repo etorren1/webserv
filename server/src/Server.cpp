@@ -142,7 +142,7 @@ void Server::disconnectClients( const size_t id ) {
 
 void Server::clientRequest(const int socket) {
     if (status & IS_BODY) {
-        std::cout << YELLOW << "Body handler from socket - " << socket << RESET << "\n";
+        // std::cout << YELLOW << "Body handler from socket - " << socket << RESET << "\n";
         client[socket]->handleRequest(envp);
     } else {
         std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
