@@ -6,10 +6,12 @@
 
 void	Client::checkMessageEnd( void ) {
 	if (status & IS_BODY) {
-		if (message.size() == loc->get_client_max_body_size())
+		// if (message.size() == loc->get_client_max_body_size())
 			fullpart = true;
-		else
-			fullpart = false;
+		// else
+			// fullpart = false;
+		// ЕСЛИ Transfer-Encoding ждем 0
+		// ECЛИ Content-length ждем контент лен
 	}
 	else {
 		size_t pos = message.rfind("\r\n\r\n");
@@ -28,18 +30,17 @@ void	Client::checkMessageEnd( void ) {
 
 void	Client::handleRequest( char **envp ) {
 	if (status & IS_BODY) {
-		std::cout << "parseBody\n";
 		req.parseBody(message);
 		status |= REQ_DONE;
+		std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	} else {
     	bool rd = req.parseText(message);
     	if (rd == true) {
 			std::cout << "IS_BODY\n";
 			message = tail;
 			status |= IS_BODY;
-			std::cout << PURPLE << "read " << status << " " << (status & IS_BODY) << RESET << "\n";
 		} else {
-			std::cout << "REQ_DONE without body\n";
+			std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
 			status |= REQ_DONE;
 		}
 	}
@@ -233,7 +234,12 @@ void	Client::cleaner() {
 }
 
 void		Client::setMessage( const std::string & mess ) { message = mess; }
-void		Client::setServer( Server_block * s ) { srv = s; }
+void		Client::setServer( Server_block * s ) {
+	srv = s;
+	this->loc = getLocationBlock(req.getDirs());
+	if (loc == NULL)
+		throw codeException(404);
+}
 
 bool 		Client::readComplete() const { return fullpart; }
 Response &	Client::getResponse() { return res; }
@@ -313,7 +319,7 @@ Client::Client( size_t nwsock ) {
 
 Client::~Client() {}
 
-int Client::parseLocation(std::string str) {
+int Client::parseLocation() {
 	// std::cout << BLUE << "MIME type: " << req.getMIMEType() << RESET << "\n";
 	statusCode = 200;
 	if (req.getMIMEType() == "none") {
@@ -324,9 +330,6 @@ int Client::parseLocation(std::string str) {
 		// std::cout << "IS_FILE\n";
         status |= IS_FILE;
 	}
-	this->loc = getLocationBlock(req.getDirs());
-	if (loc == NULL)
-		throw codeException(404);
 	if (loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			std::cout << "makeRedirect\n";
@@ -342,17 +345,22 @@ int Client::parseLocation(std::string str) {
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string	locn = loc->get_location();
-	if (str.length()) {
-		locn = str;
-		req.setReqURI(str);
-	}
+	// if (str.length()) {
+	// 	locn = str;
+	// 	req.setReqURI(str);
+	// }
+	// if (locn[locn.size() - 1] != '/')
+	// 	locn += "/";
 	if (loc->get_accepted_methods().size()) {
 		std::string method = "";
 		for (size_t i = 0; i != loc->get_accepted_methods().size(); i++)
 			if (req.getMethod() == loc->get_accepted_methods()[i])
 				method = loc->get_accepted_methods()[i];
 		if (!method.size())
+		{
+			std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
 			throw codeException(405);
+		}
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
@@ -416,15 +424,10 @@ int Client::makeRedirect(int code, std::string loc) {
 	// location = loc;
 	statusCode = code;
 	size_t pos = loc.find("http");
-	if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos) {
-		// req.setHost();
-
-		location = loc;
-		return 1;
-	}
-	req.setReqURI(loc);
+	if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
+		req.splitLocation(loc);
 	req.splitDirectories();
-	parseLocation(loc);
+	parseLocation();
 	return 0;
 	// std::cout << "location after parseLocation - " << location << "\n";
 	// create new location

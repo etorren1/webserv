@@ -46,21 +46,25 @@ public:
 	void									setMIMEType(std::string);									
 	int										checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header);
 	void									parseBody(std::string );
+	void									splitLocation(std::string);
 
 
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;
 	std::map<std::string, std::string>		getHeadears() const;
-	// std::string								getBody() const;
+	std::vector<char>						getBody() const;
 	std::string								getMIMEType() const;
 	std::string								getContentType() const;
 	std::string								getHost() const;
+	std::string								getСontentLenght() const;
+	std::string								getСontType() const;
+	std::string								getTransferEnc() const;
 	std::vector<std::string>				getDirs() const;
 	int										getReqSize() const;
 
 	void									setHost(std::string);
-	// void									setReqSize();
+	void									setReqSize();
 	void									setReqURI(std::string);
 };
 

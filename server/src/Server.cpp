@@ -158,28 +158,6 @@ void Server::connectClients( const int & fd ) {
     }
 }
 
-void Server::clientRequest(const int socket) {
-    // client[socket]->status |= IS_BODY;
-    std::cout << CYAN << "read " << client[socket]->status << " " << (client[socket]->status & IS_BODY) << RESET << "\n";
-    if (client[socket]->status & IS_BODY) {
-        std::cout << YELLOW << "Body handler from socket - " << socket << RESET << "\n";
-        client[socket]->handleRequest(envp);
-    } else {
-        std::cout << YELLOW << "Client " << socket << " send: " << RESET << "\n";
-        std::cout << client[socket]->getMessage();
-        client[socket]->handleRequest(envp);
-
-        Server_block * srv = getServerBlock( client[socket]->getHost() );
-        if (srv == NULL) {
-            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
-            throw codeException(400);
-        }
-        client[socket]->setServer(srv);
-        client[socket]->parseLocation();
-        client[socket]->initResponse(envp);
-    }
-}
-
 bool Server::noErrors( const int socket ) {
     if (!isServerSocket(socket))
         if (client[socket]->status & ERROR) {
@@ -187,6 +165,33 @@ bool Server::noErrors( const int socket ) {
             return false;
         }
     return true;
+}
+
+void Server::clientRequest(const int socket) {
+    if (client[socket]->status & IS_BODY) {
+        std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
+        std::cout << client[socket]->getMessage();
+
+        client[socket]->handleRequest(envp);
+        client[socket]->parseLocation();
+        client[socket]->initResponse(envp);
+    } else {
+        std::cout << YELLOW << "Client " << socket << " send HEADER: " << RESET << "\n";
+        std::cout << client[socket]->getMessage();
+
+        client[socket]->handleRequest(envp);
+        Server_block * srv = getServerBlock( client[socket]->getHost() );
+        if (srv == NULL) {
+            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
+            throw codeException(400);
+        }
+        client[socket]->setServer(srv);
+        if (!(client[socket]->status & IS_BODY)) {
+            std::cout << "here\n";
+            client[socket]->parseLocation();
+            client[socket]->initResponse(envp);
+        }
+    }
 }
 
 void Server::mainHandler( void ) {
@@ -235,6 +240,7 @@ int     Server::readRequest( const size_t socket ) {
     }
     client[socket]->setMessage(text);
     client[socket]->checkMessageEnd();
+    std::cout << CYAN << "bytes = " << bytesRead << " End read" << RESET << "\n";
     return (bytesRead);
 }
 

@@ -81,6 +81,10 @@ void Request::parseStartLine(std::string str) {
     size_t pos_n = str.find(" ");
     str.erase(str.find(' '), 1);
     this->_protocolVersion = str.substr(pos_n);
+    if (_method != "GET" && _method != "POST" && \
+     _method != "PUT" && _method != "DELETE") {
+        throw codeException(405);
+    }
     // std::cout << GREEN << "_method = |" << _method << "|\n";
     // std::cout << GREEN << "_reqURI = |" << _reqURI << "|\n";
     // std::cout << GREEN << "_protocolVersion = |" << _protocolVersion << "|\n";
@@ -203,26 +207,33 @@ void Request::cleaner() {
     _reqURI.clear();
     _protocolVersion.clear();
     _headers.clear();
-    // _body.clear();
     _MIMEType.clear();
     _responseContentType.clear();
     _host.clear();
     _dirs.clear();
+    _contentLenght.clear();
+    _contentType.clear();
+    _body.clear();
+    _reqSize = 0;
+    _bodyExist = false;
 }
 
 std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() const { return this->_headers; }
-// std::string Request::getBody() const { return this->_body; } // добавить ссылку
+std::vector<char> Request::getBody() const { return this->_body; } // добавить ссылку
 std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
+std::string Request::getСontType() const { return this->_contentType; }
+std::string Request::getСontentLenght() const { return this->_contentLenght; }
+std::string Request::getTransferEnc() const { return this->_transferEnc; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 int Request::getReqSize() const { return _reqSize; }
 
 void Request::setHost(std::string host) { _host = host; }
-// void Request::setReqSize() { _reqSize = _body.size(); }
+void Request::setReqSize() { _reqSize = _body.size(); }
 void Request::setReqURI(std::string URI) { _reqURI = URI; }
 void Request::setMIMEType(std::string type) { 
     size_t pos = type.find(".");
@@ -252,5 +263,15 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
 void Request::parseBody(std::string body) {
     for (int i = 0; i < body.length(); i++) {
         this->_body.push_back(body[i]);
+    }
+}
+
+void Request::splitLocation(std::string loc) {
+    size_t posBegin = loc.find("//");
+    size_t posEnd = loc.find_last_of("/");
+    // std::string host, dir;
+    if (posBegin != std::string::npos && posEnd != std::string::npos) {
+        _host = loc.substr(posBegin + 2, posEnd - posBegin - 2);
+        _reqURI = loc.substr(posEnd);
     }
 }
