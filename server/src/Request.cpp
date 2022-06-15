@@ -265,9 +265,11 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
 }
 
 void Request::parseBody(std::string body) {
+    // std::cout << CYAN << "parseBody" << RESET << "\n";
     for (int i = 0; i < body.length(); i++) {
         this->_body.push_back(body[i]);
     }
+    // std::cout << CYAN << "parseBodyEnd" << RESET << "\n";
 }
 
 void Request::splitLocation(std::string loc) {

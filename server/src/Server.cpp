@@ -158,15 +158,6 @@ void Server::connectClients( const int & fd ) {
     }
 }
 
-bool Server::noErrors( const int socket ) {
-    if (!isServerSocket(socket))
-        if (client[socket]->status & ERROR) {
-            std::cout << "Can't read " << socket << " socket: ERROR\n";
-            return false;
-        }
-    return true;
-}
-
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
         std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
@@ -182,11 +173,11 @@ void Server::clientRequest(const int socket) {
         client[socket]->handleRequest(envp);
         Server_block * srv = getServerBlock( client[socket]->getHost() );
         if (srv == NULL) {
-            std::cout << RED << "400 exception No such server with this host\n" << RESET << "\n";
+            std::cout << RED << "No such server with this host: has 400 exception \n" << RESET << "\n";
             throw codeException(400);
         }
         client[socket]->setServer(srv);
-        if (!(client[socket]->status & IS_BODY)) {
+        if (!(client[socket]->status & IS_BODY) || client[socket]->readComplete()) {
             client[socket]->parseLocation();
             std::cout << "status after location - " << client[socket]->status << "\n";
             client[socket]->initResponse(envp);
@@ -200,7 +191,7 @@ void Server::mainHandler( void ) {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
             try {
-                if (fds[id].revents & POLLIN && noErrors(socket)) {
+                if (fds[id].revents & POLLIN) {
                     if (isServerSocket(socket))
                         connectClients(socket);
                     else if (readRequest(socket) <= 0)
@@ -229,8 +220,10 @@ int     Server::readRequest( const size_t socket ) {
     int rd;
     std::string text;
 
-    if (client[socket]->getMessage().size() > 0)
+    if (client[socket]->getMessage().size() > 0) {
 		text = client[socket]->getMessage();
+        bytesRead = text.size();
+    }
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;

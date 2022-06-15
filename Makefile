@@ -3,13 +3,14 @@ NAME =	webserv
 SRC = $(wildcard server/src/*.cpp)\
 	  $(wildcard server/src/config/*.cpp)
 
+HEADER = $(wildcard server/src/*.hpp)\
+		 $(wildcard server/src/config/*.hpp)
+
+COUNT_FILES = $(words $(SRC))
+
 OBJ_DIR = server/obj
 
 SRC_DIR = server/src
-
-#OBJ = $(patsubst %.cpp,$(OBJ_DIR)/%.o, $(SRC))
-
-#OBJ = $(OBJ:server/obj/server/src/%=$(OBJ_DIR)/%)
 
 OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
@@ -19,37 +20,50 @@ CC = clang++ -g
 FLAGS = #-Wall -Wextra -Werror -std=c++98
 
 #colors for beauty
-YELLOW =	\033[33;1m
+RED =		\033[31m
+GREEN =		\033[32m
+YELLOW =	\033[33m
+BLUE =		\033[34m
+MAGENTA =	\033[35m
+CYAN =		\033[36m
+GRAY =		\033[37m
 RESET =		\033[0m
-RED =		\033[31;1m
-GREEN =		\033[32;1m
-MAGENTA =	\033[35;1m
-
-ERASE = \33[2K
-
-.PHONY: all clean fclean re
+ERASE = 	\33[2K
 
 all: $(NAME)
 
-$(NAME): $(MKDIR) $(OBJ)
+$(NAME): $(MKDIR) $(OBJ) $(HEADER)
 	@$(CC) $(FLAGS) $(OBJ) -o $(NAME)
-	@echo "\n$(MAGENTA)$(NAME) $(GREEN)compiled$(RESET)"
+	@printf "$(ERASE)\r"
+	@echo "$(RED)>>$(RESET) $(COUNT_FILES) files $(GREEN)compiled$(RESET)"
 
 $(MKDIR):
 	@mkdir -p $@
 
-$(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp
+$(OBJ_DIR)/%.o:$(SRC_DIR)/%.cpp $(HEADER)
 	@$(CC) $(FLAGS) -c $< -o $@
 	@printf "$(ERASE)$(RED)>> $(YELLOW)[$@]$(GREEN)$(RESET)\r"
 
-include $(wildcard $(D_FILES))
-
-clean:
+clean: 
 	@rm -rf $(OBJ_DIR)
-	@echo "$(YELLOW)obj $(RED)deleted$(RESET)"
+	@echo "$(RED)>>$(RESET) $(OBJ_DIR) $(RED)deleted$(RESET)"
 
 fclean: clean
-	@rm -rf $(NAME) $(NAME).dSYM
-	@echo "$(MAGENTA)$(NAME) $(RED)deleted$(RESET)"
+	@rm -f $(NAME)
+	@echo "$(RED)>>$(RESET) $(NAME) $(RED)deleted$(RESET)"
 
 re: fclean all
+
+run: 
+	@./$(NAME)
+
+rerun: re 
+	@./$(NAME)
+
+ip: #macOS
+	@ipconfig getifaddr en0
+
+iplx: #linux
+	@hostname -I
+
+.PHONY: clean fclean re run rerun
