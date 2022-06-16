@@ -5,24 +5,24 @@ std::string Response::make_general_header (Request req, int statusCode)
 	// std::string Server = "webserv";
 	// _date = getTime();
 
-	std::string location;
+	// std::string location;
 	std::string contType = "Content-Type: " + _contentType + "\r\n";
 	std::string contentLength = "Content-Length: " + _contentLength + "\r\n";
 	std::string connection = "keep-alive"; //Connection: keep-alive
 
-	if (statusCode == 301)
-	{
-		location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
-		// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
-		contType.clear();
-		contentLength.clear();
-	}
-
+	// if (statusCode == 301)
+	// {
+	// 	location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
+	// 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
+	// 	contType.clear();
+	// 	contentLength.clear();
+	// 	contentLength = "Content-Length: 0\r\n";
+	// }
 
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
 			// "Server: " + Server + "\r\n" +
-			location +
+			// location +
 			contType +
 			contentLength +
 			"Connection: " + connection + "\r\n" +
@@ -47,7 +47,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 	_header = statusLine + generalHeader;
 	_stream << _header;
 	
-	// std::cout << RED << _header << RESET;
+	std::cout << RED << _header << RESET;
 }
 
 int Response::sendResponse_file(const size_t socket)
@@ -160,9 +160,12 @@ void Response::cleaner()
 	_totalBytesRead = 0;
 }
 
-void Response::openFile()
+bool Response::openFile()
 {
 	_file.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
+	if (!_file.is_open())
+		return false;
+	return true;
 }
 
 std::string		Response::getHeader() { return(_header); }
