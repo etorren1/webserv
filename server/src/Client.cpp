@@ -98,29 +98,22 @@ int Client::searchErrorPages()
 	return 0;
 }
 
-void Client::handleError(const int code)
-{
+void Client::handleError(const int code)	{
 	int file = 0;
-	if (loc && loc->get_error_page().first == code)
-	{
-		if ((file = searchErrorPages()) == 1)
-		{
+	if (loc && loc->get_error_page().first == code)	{
+		if ((file = searchErrorPages()) == 1)		{
 			req.setMIMEType(loc->get_error_page().second);
 			res.setContentType(req.getContentType());
 			res.make_response_header(req, code, resCode[code]);
 		}
 	}
-	if (!file)
-	{
+	if (!file)	{
 		std::string mess = "none";
-		try
-		{
+		try		{
 			mess = resCode.at(code);
 		}
-		catch (const std::exception &e)
-		{
-		}
-		res.make_response_html(code, mess); //TODO: 
+		catch (const std::exception &e) {}
+		res.make_response_html(code, mess); 
 	}
 	cleaner();
 	statusCode = code;
@@ -130,17 +123,13 @@ void Client::handleError(const int code)
 		status |= IS_FILE;
 }
 
-void Client::initResponse(char **envp)
-{
+void Client::initResponse(char **envp)	{
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
-	{
 		res.make_response_html(statusCode, resCode[statusCode], req.getHost() + req.getReqURI()); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
-	}
-	else
-	{
+	else	{
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
@@ -187,9 +176,9 @@ void Client::makeResponse(char **envp)
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
 	else if (req.getMethod() == "POST")
-		cleaner();
+		makePostResponse(envp);
 	else if (req.getMethod() == "DELETE")
-		makeDeleteResponse();
+		makeDeleteResponse(envp);
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
@@ -291,8 +280,23 @@ void Client::makePostResponse(char **envp)
 	// }
 }
 
-void Client::makeDeleteResponse()
-{
+void Client:: makeDeleteResponse(char **envp)	{
+	std::cout << RED << "DELETE\n" << RESET;
+	if (access(location.c_str(), 0) == -1)
+		codeException(403);
+	else {
+		if (remove(location.c_str()) != 0) 
+			codeException(403);
+		else {
+			statusCode = 204;
+			// initResponse(envp);
+			res.getStrStream().str("");
+			res.getStrStream().clear();
+			res.make_response_html(204, resCode[204]);
+			if (res.sendResponse_stream(socket))
+				status |= RESP_DONE;
+		}
+	}
 }
 
 void Client::cleaner()
@@ -418,7 +422,7 @@ int Client::parseLocation()
 		status |= IS_DIR;
 	else
 		status |= IS_FILE;
-	if (loc->get_redirect().first && !(status & REDIRECT)) {
+	if (req.getMethod() != "DELETE" && loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			std::cout << CYAN << "REDIRECT" << RESET << "\n";
 			return 0;

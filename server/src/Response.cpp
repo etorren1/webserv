@@ -47,7 +47,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 	_header = statusLine + generalHeader;
 	_stream << _header;
 	
-	std::cout << RED << _header << RESET;
+	// std::cout << RED << _header << RESET;
 }
 
 int Response::sendResponse_file(const size_t socket)
@@ -110,6 +110,7 @@ int Response::sendResponse_stream(const size_t socket)
 	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
+		_stream.str("");
 		_stream.clear();
 	
 		return (1);
@@ -186,6 +187,6 @@ std::stringstream &	Response::getStrStream() { return(_stream); }
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setStatusCode(std::string code){ _statusCode = code; };;
+void			Response::setStatusCode(std::string code){ _statusCode = code; };
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };
