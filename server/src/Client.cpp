@@ -282,19 +282,20 @@ void Client::makePostResponse(char **envp)
 
 void Client:: makeDeleteResponse(char **envp)	{
 	std::cout << RED << "DELETE\n" << RESET;
-	if (access(location.c_str(), 0) == -1)
+	if (remove(location.c_str()) != 0) 
 		codeException(403);
 	else {
-		if (remove(location.c_str()) != 0) 
-			codeException(403);
-		else {
-			statusCode = 204;
-			// initResponse(envp);
-			res.getStrStream().str("");
-			res.getStrStream().clear();
-			res.make_response_html(204, resCode[204]);
-			if (res.sendResponse_stream(socket))
-				status |= RESP_DONE;
+		statusCode = 204;
+		// initResponse(envp);
+		res.setFileLoc(location);
+		res.getStrStream().str("");
+		res.getStrStream().clear();
+		res.make_response_html(204, resCode[204]);
+
+		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
+		if (res.sendResponse_stream(socket))  {
+			status |= RESP_DONE;
+			cleaner();
 		}
 	}
 }
@@ -374,6 +375,7 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
+	cookies.clear();
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -534,4 +536,9 @@ int Client::makeRedirect(int code, std::string loc)
 	req.splitLocation(loc);
 	req.splitDirectories();
 	return 1;
+}
+
+// cookie: _ga=GA1.2.2120095365.1653411668; _gid=GA1.2.1298615499.1655479922
+void Client::createCookie() {
+	
 }

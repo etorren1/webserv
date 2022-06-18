@@ -95,6 +95,7 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	std::cout << buffer <<"\n";
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -177,6 +178,7 @@ bool Response::openFile()
 	return true;
 }
 
+int				Response::getContentLenght() { return(std::atoi(_contentLength.c_str())); }
 std::string		Response::getHeader() { return(_header); }
 std::string		Response::getContentType() { return(_contentType); }
 std::string		Response::getStatusCode() { return(_statusCode); }

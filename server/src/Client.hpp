@@ -24,19 +24,22 @@
 class Client
 {
 	private:
-		Request						req;
-		Response					res;
-		Server_block				*srv;
-		Location_block				*loc;
+		Request								req;
+		Response							res;
+		Server_block						*srv;
+		Location_block						*loc;
 
-		bool						fullpart;
-		size_t						socket;
-		std::string					message;
-		std::string					tail;
+		bool								fullpart;
+		size_t								socket;
+		std::string							message;
+		std::string							tail;
 
-		std::map<int, std::string>	resCode;
-		int							statusCode;
-		std::string					location;
+		std::map<int, std::string>			resCode;
+		int									statusCode;
+		std::string							location;
+
+		//bonus:
+		std::map<std::string, std::string>	cookies;
 
 		// for POST:
 		int					pipe1[2];
@@ -53,6 +56,7 @@ class Client
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
 		int							parseLocation( );
+		void						createCookie( );
 		int							searchErrorPages( void );
 		void						cleaner( void );
 

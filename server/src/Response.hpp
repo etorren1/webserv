@@ -57,6 +57,7 @@ class Response
 
 		void			cleaner();
 
+		int				getContentLenght();
 		std::string		getHeader();
 		std::string		getContentType();
 		std::string		getStatusCode();
