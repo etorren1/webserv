@@ -9,7 +9,14 @@
     <title>Document</title>
 </head>
 <body>
-    <form action="./upload" method="post">
+
+<form action="index.html" method="post">
+    <div class="button">
+		<button type="submit">UPPERCASE</button>
+    </div><br>
+</form>
+
+<form action="./upload" method="post">
     <div>
         <label for="name">Name:</label>
         <input type="text" id="name" name="user_name">
@@ -25,13 +32,15 @@
     <div class="button">
 		<button type="submit">Send your message</button>
     </div><br>
-	
+		
     <div align="center"><img src="image.png" alt="image"></div>
     <!-- <div><img src="image.png" alt="image"></div> -->
 </form>
-<form action="./upload" method="post">
-	<input type="file" accept="image/jpeg,image/png"/>
+
+<form action="./upload" method="post" enctype="multipart/form-data">
+	<input type="file" name="file.png" accept="image/jpeg,image/png"/>
 	<input type="submit" name="commit" value="Upload"/>
 </form>
+
 </body>
 </html>

@@ -17,14 +17,14 @@ private:
 	std::string                             _reqURI;
 	std::string                             _protocolVersion;
 	std::map<std::string, std::string>      _headers;
-	// std::string                             _body;
+	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_host;
 	std::string								_contentLenght;
 	std::string								_contentType;
 	std::string								_transferEnc;
 	std::vector<std::string>				_dirs;
-	std::vector<char>						_body;
+	// std::vector<char>					_body;
 	int										_reqSize;
 	bool									_bodyExist;
 
@@ -53,12 +53,12 @@ public:
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;
 	std::map<std::string, std::string>		getHeadears() const;
-	std::vector<char>						getBody() const;
+	std::string								getBody() const;
 	std::string								getMIMEType() const;
 	std::string								getContentType() const;
 	std::string								getHost() const;
-	std::string								getСontentLenght() const;
-	std::string								getСontType() const;
+	std::string								getContentLenght() const;
+	std::string								getContType() const;
 	std::string								getTransferEnc() const;
 	std::vector<std::string>				getDirs() const;
 	int										getReqSize() const;

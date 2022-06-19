@@ -1,8 +1,8 @@
 #include "Client.hpp"
+#include "Utils.hpp"
+#include <errno.h>
 
-#define PATH_INFO "cgi_tester"
-#define PIPE_IN 1  // we write
-#define PIPE_OUT 0 // we read
+
 
 void Client::checkMessageEnd(void)
 {
@@ -18,9 +18,9 @@ void Client::checkMessageEnd(void)
 			else
 				fullpart = false;
 		}
-		else if (req.getСontentLenght().size())
+		else if (req.getContentLenght().size())
 		{
-			size_t len = atoi(req.getСontentLenght().c_str());
+			size_t len = atoi(req.getContentLenght().c_str());
 			// std::cout << "message.size = " << message.size() << " " << "len = " << len << "\n";
 			if (message.size() == len)
 				fullpart = true;
@@ -55,6 +55,7 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY)
 	{
+		std::cout << "PARSE BODY\n";
 		req.parseBody(message);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
@@ -146,36 +147,46 @@ void Client::initResponse(char **envp)
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-	// if (req.getMethod() == "POST")
-	// {
-	// 	cgiWriteFlag= 0;
-	// 	res.getStrStream() << req.getBody();
-	// 	res.addCgiVar(&envp, req);
+	if (req.getMethod() == "POST")
+	{
 
-	// 	if (pipe(pipe1) && pipe(pipe2))
-	// 		throw(codeException(500));
+		iter = 0;
+		cgiWriteFlag = false;
+		totalSent = 0;
+		res.addCgiVar(&envp, req);
 
-	// 	// if (cgi)
-	// 	// {
-	// 		if ((pid = fork()) < 0)
-	// 			throw(codeException(500));
-	// 		if (pid == 0) //child - prosses for CGI programm
-	// 		{
-	// 			close(pipe1[PIPE_IN]); //Close unused pipe write end
-	// 			close(pipe2[PIPE_OUT]); //Close unused pipe read end
-	// 			dup2(pipe1[PIPE_OUT], 0);
-	// 			dup2(pipe2[PIPE_IN], 1);
-	// 			if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
-	// 				throw(codeException(500));
-	// 			exit(ex);
-	// 		}
-	// 		else
-	// 		{
-	// 			close(pipe1[PIPE_OUT]); //Close unused pipe read end
-	// 			close(pipe2[PIPE_IN]); //Close unused pipe write end
-	// 		}
-	// 	// }
-	// }
+		if (pipe(pipe2))
+			throw(codeException(500));
+		if (pipe(pipe1))
+			throw(codeException(500));
+
+		// if (cgi used)
+		// {
+			res.getStrStream().str(""); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
+			res.getStrStream().clear();
+			if ((pid = fork()) < 0)
+				throw(codeException(500));
+			if (pid == 0) //child - process for CGI programm
+			{
+				close(pipe1[PIPE_IN]); //Close unused pipe write end
+				close(pipe2[PIPE_OUT]); //Close unused pipe read end
+				dup2(pipe1[PIPE_OUT], 0);
+				dup2(pipe2[PIPE_IN], 1);
+
+				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
+					throw(codeException(500));
+				close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
+				close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
+				exit(ex);
+			}
+			else
+			{
+				close(pipe1[PIPE_OUT]); //Close unused pipe read end
+				close(pipe2[PIPE_IN]); //Close unused pipe write end
+			}
+		// }
+	}
+	status |= REQ_DONE;
 }
 
 void Client::makeResponse(char **envp)
@@ -187,7 +198,7 @@ void Client::makeResponse(char **envp)
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
 	else if (req.getMethod() == "POST")
-		cleaner();
+		makePostResponse(envp);
 	else if (req.getMethod() == "DELETE")
 		makeDeleteResponse();
 	// 	makePostResponse(envp);  //envp не нужен уже
@@ -256,39 +267,72 @@ void Client::makeGetResponse()
 
 void Client::makePostResponse(char **envp)
 {
-	// char				buff[2048];
-	// int					wrtRet;
+	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	iter++;
+	std::cout << "iter = " << iter << "\n";
+	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+	char				buff[2048];
+	int					wrtRet;
+	int					readRet;
 
-	// // res.setStatusCode("200");
-
-	// if (cgiWriteFlag = false) // флаг cgi записан == false
-	// 	write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+	if (cgiWriteFlag == false) // флаг cgi записан == false 
+	{
+		// std::cout << "BODY: " << req.getBody() << "\n";
+		
+		// wrtRet = write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+		std::cout << "BODY: " << message << "\n";
+		
+		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
+		totalSent += wrtRet;
+		// if (totalSent == req.getBody().length()) //SIGPIPE
+		if (totalSent == message.length()) //SIGPIPE
+		{
+			close(pipe1[PIPE_IN]);
+			cgiWriteFlag = true;
+		}
+	}
 	// if write < req.getBody().length()
-	// //	закрыть stdin в cgi процессе и флаг cgi записан = true
+	//	закрыть stdin в cgi процессе и флаг cgi записан = true
+	if (cgiWriteFlag == true)//если флаг cgi записан == true
+	{
+		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
+		//читаем из cgi порцию даты
+		//прочитанный кусок из cgi пишем клиенту в сокет
+		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
+		std::cout << "readRet " << readRet << "\n";
+		if (readRet == -1)
+			throw(codeException(500));
+		if (readRet == 0)
+		{
+			std::cout << BLUE << "READ STOPED" << "\n" << RESET;
+			status |= RESP_DONE; //все прочитали из cgi
+			// res.getStrStream() << buff;
+		}
+		else
+		{
+			// res.make_response_header(req, 200, "OK", 500); //заменить!!!
+			res.sendResponse_stream(socket);
+			buff[readRet] = '\0';
+			res.getStrStream().write(buff, readRet);
+			std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
+		}
+	}
 
-	// //если флаг cgi записан == true {
-	// 	//читаем из cgi  порцию даты
-	// //}
-	// 	//прочитанный кусок из cgi пишем клиенту в сокет
-	// 	while (read(pipe2[PIPE_OUT], buff, 2048) > 0)
-	// 		res.getStrStream() << buff;
-	// 	res.getStrStream().read(buff, 2048);
-	// 	std::cout << buff << "\n";
-	// 	res.sendResponse_stream(socket);
-	// // }
+	//если мы закончили всё читать из cgi то 
+	//waitpid cgi 
+	//close all fds
 
-	// //если мы закончили всё читать из cgi то
-	// //waitpid cgi
-	// //close all fds
-
-	// // if (???)
-	// // 	status |= RESP_DONE;
-	// if (status & RESP_DONE)
-	// {
-	// 	close(pipe1[PIPE_IN]);
-	// 	waitpid(pid, &status, 0); // ???
-	// 	cleaner();
-	// }
+	// if (???)
+	// 	status |= RESP_DONE;
+	if (status & RESP_DONE)
+	{
+		// close(pipe1[PIPE_IN]);
+		waitpid(pid, &status, 0); // ???
+		cleaner();
+		// closeAllFds();
+		close(pipe2[PIPE_OUT]);
+		std::cout << "COMPLEATING POST RESPONSE2\n"; 
+	}
 }
 
 void Client::makeDeleteResponse()
@@ -324,13 +368,15 @@ void Client::setServer(Server_block *s)
 	}
 }
 
-bool Client::readComplete() const { return fullpart; }
-Response &Client::getResponse() { return res; }
-Request &Client::getRequest() { return req; }
-size_t Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
-std::string Client::getHost() const { return req.getHost(); }
-std::string Client::getMessage() const { return message; }
-Server_block *Client::getServer(void) { return srv; }
+bool			Client::readComplete() const { return fullpart; }
+Response &		Client::getResponse() { return res; }
+Request &		Client::getRequest() { return req; }
+size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
+std::string		Client::getHost() const { return req.getHost(); }
+std::string		Client::getMessage() const { return message; }
+Server_block *	Client::getServer(void) { return srv; }
+int *			Client::getPipe1() { return pipe1; };
+int *			Client::getPipe2() { return pipe2; };
 
 Location_block *Client::getLocationBlock(std::vector<std::string> vec) const
 {

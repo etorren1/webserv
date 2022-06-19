@@ -228,12 +228,12 @@ std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
 std::map<std::string, std::string> Request::getHeadears() const { return this->_headers; }
-std::vector<char> Request::getBody() const { return this->_body; } // добавить ссылку
+std::string Request::getBody() const { return this->_body; } // добавить ссылку
 std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
-std::string Request::getСontType() const { return this->_contentType; }
-std::string Request::getСontentLenght() const { return this->_contentLenght; }
+std::string Request::getContType() const { return this->_contentType; }
+std::string Request::getContentLenght() const { return this->_contentLenght; }
 std::string Request::getTransferEnc() const { return this->_transferEnc; }
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 int Request::getReqSize() const { return _reqSize; }
@@ -268,10 +268,10 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
 
 void Request::parseBody(std::string body) {
     // std::cout << CYAN << "parseBody" << RESET << "\n";
-    for (int i = 0; i < body.length(); i++) {
-        this->_body.push_back(body[i]);
-    }
-    // std::cout << CYAN << "parseBodyEnd" << RESET << "\n";
+    // for (int i = 0; i < body.length(); i++) {
+    //     this->_body.push_back(body[i]);
+    // }
+    _body = body;
 }
 
 void Request::splitLocation(std::string loc) {

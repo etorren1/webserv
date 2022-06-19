@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-std::vector<std::string> split(std::string str, std::string delimiter, std::string trimer)
+std::vector<std::string>	split(std::string str, std::string delimiter, std::string trimer)
 {
     size_t pos = 0;
     std::string token;
@@ -16,7 +16,7 @@ std::vector<std::string> split(std::string str, std::string delimiter, std::stri
     return (res);
 }
 
-std::string trim(std::string str, std::string cut)
+std::string					trim(std::string str, std::string cut)
 {
     if (!cut.size())
         return str;
@@ -25,20 +25,20 @@ std::string trim(std::string str, std::string cut)
     return str.substr(beg, end - beg + 1);
 }
 
-std::string	itos( long long const & num )
+std::string					itos( long long const & num )
 {
 	std::stringstream ss;
 	ss << num;
 	return(ss.str());
 }
 
-bool existDir(const char * name) { // don't work with relative path
+bool						existDir(const char * name) { // don't work with relative path
     struct stat s;
     if (stat(name,&s)) return false;
     return S_ISDIR(s.st_mode);
 }
 
-long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
+long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
 {
 	FILE *file;
 	struct stat buff;
@@ -49,6 +49,10 @@ long long getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fstat
 	return (buff.st_size);
 }
 
+void						closeAllFds(Client &client)
+{
+	(client.getPipe1());
+}
 // std::string	getTime()
 // {
 // 	char buf[1000];

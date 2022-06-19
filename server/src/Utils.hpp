@@ -13,6 +13,13 @@
 #define CYAN "\e[36m"
 #define GRAY "\e[37m"
 
+//for CGI:
+#define PIPE_IN 1	//we write
+#define PIPE_OUT 0	//we read
+#define CGI_PATH "cgi_tester"
+
+class Client;
+
 std::vector<std::string>	split(std::string str, std::string delimiter, std::string trimer = "");
 std::string					trim(std::string str, std::string cut);
 // std::string					itos( int const & num );
@@ -21,6 +28,7 @@ bool 						existDir(const char * name);
 std::string					itos( long long const & num );
 // std::string					getTime(); //https://stackoverflow.com/questions/7548759/generate-a-date-string-in-http-response-date-format-in-c
 long long					getFileSize(const char *fileLoc);
+void						closeAllFds(Client &client);
 
 struct codeException : public std::exception
 {

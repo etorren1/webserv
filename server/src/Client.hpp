@@ -43,11 +43,13 @@ class Client
 		int					pipe2[2];
 		pid_t				pid;
 		int					ex;
+		id_t				totalSent;
 
 
 	public:
-		int							status;
-		bool						cgiWriteFlag;
+		int			iter; //TEMPORARY - TO DELETE
+		int			status;
+		bool		cgiWriteFlag;
 
 		void 						checkMessageEnd( void );
 		void						handleRequest( char **envp );
@@ -77,6 +79,8 @@ class Client
 		Server_block * 				getServer( void );
 		std::string 				getMessage( void ) const;
 		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
+		int *						getPipe1();
+		int *						getPipe2();
 
 		void						autoindex( const std::string & path );
 
