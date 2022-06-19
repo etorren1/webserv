@@ -125,8 +125,10 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
     }
     if ((checkHeaders(_headers, "Content-Type", _contentType) && \
         checkHeaders(_headers, "Content-Length", _contentLenght)) || \
-        checkHeaders(_headers, "Transfer-Encoding", _transferEnc))
+        checkHeaders(_headers, "Transfer-Encoding", _transferEnc)) {
         _bodyExist = true;
+        std::cout << "body exist\n";
+        }
     else _bodyExist = false;
     // std::cout << "_headers.size() - " << _headers.size() << "\n";
     // std::map<std::string, std::string>::iterator it = _headers.begin();
