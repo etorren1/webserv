@@ -265,6 +265,21 @@ void Client::makeGetResponse()
 	}
 }
 
+void Client::extractCgiHeader( char * buff )
+{
+	std::string tmp;
+	std::vector<std::string> splitted; 
+
+	tmp = buff;
+	splitted = split(tmp, "\r\n\r\n", "");
+	
+	splitted.at(0); //распарсить на компоненты
+
+	//отправка body оставшаяся в буффере после первого прочтения из пайпа
+	res.getStrStream().write(splitted.at(1).c_str(), splitted.at(1).length());
+	res.sendResponse_stream(socket);
+}
+
 void Client::makePostResponse(char **envp)
 {
 	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
@@ -275,52 +290,52 @@ void Client::makePostResponse(char **envp)
 	int					wrtRet;
 	int					readRet;
 
-	if (cgiWriteFlag == false) // флаг cgi записан == false 
+	if (cgiWriteFlag == false)		// флаг cgi записан == false 
 	{
 		// std::cout << "BODY: " << req.getBody() << "\n";
-		
-		// wrtRet = write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
 		std::cout << "BODY: " << message << "\n";
 		
 		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
 		totalSent += wrtRet;
-		// if (totalSent == req.getBody().length()) //SIGPIPE
 		if (totalSent == message.length()) //SIGPIPE
 		{
 			close(pipe1[PIPE_IN]);
 			cgiWriteFlag = true;
 		}
 	}
-	// if write < req.getBody().length()
-	//	закрыть stdin в cgi процессе и флаг cgi записан = true
-	if (cgiWriteFlag == true)//если флаг cgi записан == true
+
+	if (cgiWriteFlag == true)		//если все данные передались в cgi
 	{
 		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
-		//читаем из cgi порцию даты
-		//прочитанный кусок из cgi пишем клиенту в сокет
+		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
-		std::cout << "readRet " << readRet << "\n";
-		if (readRet == -1)
-			throw(codeException(500));
-		if (readRet == 0)
-		{
-			std::cout << BLUE << "READ STOPED" << "\n" << RESET;
-			status |= RESP_DONE; //все прочитали из cgi
-			// res.getStrStream() << buff;
-		}
-		else
-		{
-			// res.make_response_header(req, 200, "OK", 500); //заменить!!!
-			res.sendResponse_stream(socket);
-			buff[readRet] = '\0';
-			res.getStrStream().write(buff, readRet);
-			std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
-		}
-	}
+		
+		// if (!(status & HEAD_SENT))
+		// {
+		// 	extractCgiHeader(buff);
+		// 	status |= HEAD_SENT;
+		// }
+		// else
+		// {
+			std::cout << "readRet " << readRet << "\n";
+			if (readRet == -1)
+				throw(codeException(500));
+			if (readRet == 0)
+			{
+				std::cout << BLUE << "READ STOPED" << "\n" << RESET;
+				status |= RESP_DONE; //все прочитали из cgi
+			}
+			else
+			{
+				// res.make_response_header(req, 200, "OK", 500); //заменить!!!
+				// res.sendResponse_stream(socket);
+				buff[readRet] = '\0';
+				res.getStrStream().write(buff, readRet);
+				std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
+			}
+		// }
 
-	//если мы закончили всё читать из cgi то 
-	//waitpid cgi 
-	//close all fds
+	}
 
 	// if (???)
 	// 	status |= RESP_DONE;
@@ -329,7 +344,6 @@ void Client::makePostResponse(char **envp)
 		// close(pipe1[PIPE_IN]);
 		waitpid(pid, &status, 0); // ???
 		cleaner();
-		// closeAllFds();
 		close(pipe2[PIPE_OUT]);
 		std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}

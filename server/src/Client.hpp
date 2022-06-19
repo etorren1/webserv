@@ -83,6 +83,7 @@ class Client
 		int *						getPipe2();
 
 		void						autoindex( const std::string & path );
+		void						extractCgiHeader( char * buff );
 
 		Client( size_t nwsock );
 		~Client();
