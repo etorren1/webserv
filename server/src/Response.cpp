@@ -25,7 +25,7 @@ std::string Response::make_general_header (Request req, int statusCode)
 			// location +
 			contType +
 			contentLength +
-			"Connection: " + connection + "\r\n" +
+			"Connection: " + connection +// "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
 }
@@ -43,11 +43,15 @@ void Response::make_response_header(Request req, int code, std::string status, l
 		_contentLength = size;
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
-
-	_header = statusLine + generalHeader;
+	addCookie(getCurTime());
+	_header = statusLine + generalHeader + _cookie;
 	_stream << _header;
 	
 	// std::cout << RED << _header << RESET;
+}
+
+void Response::addCookie(std::string cookie) {
+	_cookie = "Set-Cookie: time=" + cookie + ";\r\n\r\n";
 }
 
 int Response::sendResponse_file(const size_t socket)
@@ -113,7 +117,6 @@ int Response::sendResponse_stream(const size_t socket)
 	{
 		_stream.str("");
 		_stream.clear();
-	
 		return (1);
 	}
 	return (0);
@@ -128,7 +131,7 @@ void Response::addCgiVar(char ***envp, Request req)
 
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
-	std::string path_info = ("PATH_INFO=.");
+	std::string path_info = ("PATH_INFO=./");
 
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
@@ -140,10 +143,6 @@ void Response::addCgiVar(char ***envp, Request req)
 		tmp[i] = (*envp)[i];
 		i++;
 	}
-	// tmp[numOfLines] = (char *)malloc(req_metod.length() + 1);
-	// tmp[numOfLines] = strdup(req_metod.c_str());
-	// tmp[numOfLines + 1] = (char *)malloc(serv_protocol.length() + 1);
-	// tmp[numOfLines + 2] = (char *)malloc(path_info.length() + 1);
 
 	tmp[numOfLines] = strdup(req_metod.c_str());
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
@@ -151,9 +150,6 @@ void Response::addCgiVar(char ***envp, Request req)
 	tmp[numOfLines + 3] = NULL;
 
 	*envp = tmp;
-
-	// for (int i = 0; (*envp)[i] != NULL; ++i)
-	// 	std::cout << (*envp)[i] << "\n";
 }
 
 void Response::cleaner()
@@ -184,11 +180,15 @@ std::string		Response::getContentType() { return(_contentType); }
 std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
+std::string		Response::getCookie() { return(_cookie); }
+std::string		Response::getTime() { return(_time); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
 std::stringstream &	Response::getStrStream() { return(_stream); } 
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setStatusCode(std::string code){ _statusCode = code; };
+void			Response::setStatusCode(std::string code) { _statusCode = code; };
+void			Response::setCookie(std::string cookie) { _cookie = cookie; }
+void			Response::setTime(std::string time) { _time = time; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

@@ -21,6 +21,7 @@
 #include <filesystem>
 #include <fstream>
 #include <signal.h>
+#include <stdio.h>
 
 #include "config/Config.hpp"
 #include "Client.hpp"

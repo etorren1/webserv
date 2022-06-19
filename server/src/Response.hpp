@@ -25,6 +25,8 @@ class Response
 		std::string								_reasonPhrase;
 		std::string								_connection;
 
+		std::string								_time;
+		std::string								_cookie;
 		// std::string								_date;
 
 		// work with file
@@ -50,10 +52,11 @@ class Response
 		std::string		make_general_header (Request req, int statusCode);
 		void			make_response_html( const int code, std::string & mess, std::string loc = "" );
 		void			make_response_autoidx(Request req, std::string location, int code, std::string & status);
+		void			addCookie(std::string cookie);
 		// template <class T>
 		// int				sendResponse(T * input, const size_t socket);
-		int sendResponse_file(const size_t socket);
-		int sendResponse_stream(const size_t socket);
+		int 			sendResponse_file(const size_t socket);
+		int 			sendResponse_stream(const size_t socket);
 
 		void			cleaner();
 
@@ -63,11 +66,15 @@ class Response
 		std::string		getStatusCode();
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
+		std::string		getCookie();
+		std::string		getTime();
 		// std::ifstream 	getFileStream();
 		std::stringstream &	getStrStream();
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
+		void			setCookie(std::string cookie);
+		void			setTime(std::string time);
 		void			setStatusCode(std::string code);							//убрать
 		// void			setInput(std::ifstream &_file);
 		// void			setStrStream(std::stringstream stream);
@@ -92,6 +99,7 @@ class Response
 			which are CGI environment variables to pass them all
 			to CGI new stream */
 		bool openFile();
+
 };
 
 #endif
