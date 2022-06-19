@@ -24,11 +24,14 @@ long long					getFileSize(const char *fileLoc);
 
 struct codeException : public std::exception
 {
-	codeException(int code) : errorCode(code) {}
+	std::string error;
+	codeException(int code) : errorCode(code) {
+		error = "Error while opening file with code " + itos(errorCode);
+	}
+	virtual ~codeException() throw () {}
 	int errorCode;
 	const char * what () const throw ()
 	{
-		std::string error = "Error while opening file with code " + itos(errorCode);
 		return error.c_str();
 	}
 	int getErrorCode() { return(errorCode); }
