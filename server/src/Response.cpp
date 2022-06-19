@@ -51,12 +51,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 }
 
 void Response::addCookie(std::string cookie) {
-	// if (_cookie.empty()) {
-		_cookie = "Set-Cookie: time=" + cookie + ";\r\n\r\n";
-		// _time = getCurTime();
-		std::cout << CYAN << cookie << RESET << "\n";
-	// }	else {
-	// }
+	_cookie = "Set-Cookie: time=" + cookie + ";\r\n\r\n";
 }
 
 int Response::sendResponse_file(const size_t socket)
@@ -104,6 +99,7 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	std::cout << buffer <<"\n";
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -119,6 +115,7 @@ int Response::sendResponse_stream(const size_t socket)
 	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
+		_stream.str("");
 		_stream.clear();
 		return (1);
 	}
@@ -177,6 +174,7 @@ bool Response::openFile()
 	return true;
 }
 
+int				Response::getContentLenght() { return(std::atoi(_contentLength.c_str())); }
 std::string		Response::getHeader() { return(_header); }
 std::string		Response::getContentType() { return(_contentType); }
 std::string		Response::getStatusCode() { return(_statusCode); }
