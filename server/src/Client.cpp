@@ -55,6 +55,7 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY)
 	{
+		std::cout << "PARSE BODY\n";
 		req.parseBody(message);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
@@ -276,12 +277,15 @@ void Client::makePostResponse(char **envp)
 
 	if (cgiWriteFlag == false) // флаг cgi записан == false 
 	{
-		std::string Body (req.getBody().begin(), req.getBody().end());  //заглушка УБРАТЬ!
-		std::cout << "BODY: " << Body << "\n";
+		// std::cout << "BODY: " << req.getBody() << "\n";
 		
-		wrtRet = write(pipe1[PIPE_IN], Body.c_str(), Body.length());
+		// wrtRet = write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
+		std::cout << "BODY: " << message << "\n";
+		
+		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
 		totalSent += wrtRet;
-		if (totalSent == Body.length()) //SIGPIPE
+		// if (totalSent == req.getBody().length()) //SIGPIPE
+		if (totalSent == message.length()) //SIGPIPE
 		{
 			close(pipe1[PIPE_IN]);
 			cgiWriteFlag = true;
@@ -306,7 +310,7 @@ void Client::makePostResponse(char **envp)
 		}
 		else
 		{
-			// res.make_response_header(req, 200, "OK", 500);
+			// res.make_response_header(req, 200, "OK", 500); //заменить!!!
 			res.sendResponse_stream(socket);
 			buff[readRet] = '\0';
 			res.getStrStream().write(buff, readRet);
