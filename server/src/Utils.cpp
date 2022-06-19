@@ -53,12 +53,13 @@ void						closeAllFds(Client &client)
 {
 	(client.getPipe1());
 }
-// std::string	getTime()
-// {
-// 	char buf[1000];
-// 	time_t now = time(0);
-// 	struct tm tm = *gmtime(&now);
-// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-// 	sprintf("Time is: [%s]\n", buf);
-// 	return 0;
-// };
+
+std::string	getCurTime()
+{
+	char buf[1000];
+	time_t now = time(0);
+	struct tm tm = *gmtime(&now);
+	strftime(buf, sizeof buf, "%a_%d_%b_%Y_%H:%M:%S_%Z", &tm);
+	// sprintf("Time is: [%s]\n", buf);
+	return buf;
+};

@@ -416,6 +416,7 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
+	res.setTime(getCurTime());
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));

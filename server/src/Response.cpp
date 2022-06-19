@@ -25,7 +25,7 @@ std::string Response::make_general_header (Request req, int statusCode)
 			// location +
 			contType +
 			contentLength +
-			"Connection: " + connection + "\r\n" +
+			"Connection: " + connection +// "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
 }
@@ -43,11 +43,20 @@ void Response::make_response_header(Request req, int code, std::string status, l
 		_contentLength = size;
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
-
-	_header = statusLine + generalHeader;
+	addCookie(getCurTime());
+	_header = statusLine + generalHeader + _cookie;
 	_stream << _header;
 	
 	// std::cout << RED << _header << RESET;
+}
+
+void Response::addCookie(std::string cookie) {
+	// if (_cookie.empty()) {
+		_cookie = "Set-Cookie: time=" + cookie + ";\r\n\r\n";
+		// _time = getCurTime();
+		std::cout << CYAN << cookie << RESET << "\n";
+	// }	else {
+	// }
 }
 
 int Response::sendResponse_file(const size_t socket)
@@ -173,11 +182,15 @@ std::string		Response::getContentType() { return(_contentType); }
 std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
+std::string		Response::getCookie() { return(_cookie); }
+std::string		Response::getTime() { return(_time); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
 std::stringstream &	Response::getStrStream() { return(_stream); } 
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setStatusCode(std::string code){ _statusCode = code; };;
+void			Response::setStatusCode(std::string code) { _statusCode = code; };
+void			Response::setCookie(std::string cookie) { _cookie = cookie; }
+void			Response::setTime(std::string time) { _time = time; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };
