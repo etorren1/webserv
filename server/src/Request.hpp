@@ -27,6 +27,7 @@ private:
 	// std::vector<char>					_body;
 	int										_reqSize;
 	bool									_bodyExist;
+	std::string								_cgiStatusCode;
 
 	//data for response
 	std::string								_responseContentType;
@@ -48,7 +49,6 @@ public:
 	void									parseBody(std::string );
 	void									splitLocation(std::string);
 
-
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;
@@ -62,10 +62,12 @@ public:
 	std::string								getTransferEnc() const;
 	std::vector<std::string>				getDirs() const;
 	int										getReqSize() const;
+	std::string								getCgiStatusCode() const;
 
 	void									setHost(std::string);
 	void									setReqSize();
 	void									setReqURI(std::string);
+	void									setCgiStatusCode(std::string);
 };
 
 

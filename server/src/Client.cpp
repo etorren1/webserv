@@ -267,16 +267,30 @@ void Client::makeGetResponse()
 
 void Client::extractCgiHeader( char * buff )
 {
-	std::string tmp;
-	std::vector<std::string> splitted; 
+	res.getStrStream().str("");
+	res.getStrStream().clear();
+
+	std::string					tmp, tmp2;
+	std::vector<std::string>	headerAndBody;
+	std::vector<std::string>	headerStrs;
+	int							code;
 
 	tmp = buff;
-	splitted = split(tmp, "\r\n\r\n", "");
-	
-	splitted.at(0); //распарсить на компоненты
+	headerAndBody = split(tmp, "\r\n\r\n", "");
+	headerStrs = split(headerAndBody.at(0), "\r\n", "");
+
+	req.parseMapHeaders(headerStrs, headerStrs.size());
+	tmp.clear();
+	tmp = req.getCgiStatusCode();
+	tmp2 = tmp.substr(0, 3);
+	req.setCgiStatusCode(tmp2);
+	res.setStatusCode(tmp2);
+
+	code = std::atoi(req.getCgiStatusCode().c_str());
+	res.make_response_header(req, code, resCode[code]);
 
 	//отправка body оставшаяся в буффере после первого прочтения из пайпа
-	res.getStrStream().write(splitted.at(1).c_str(), splitted.at(1).length());
+	res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length());
 	res.sendResponse_stream(socket);
 }
 
@@ -310,13 +324,13 @@ void Client::makePostResponse(char **envp)
 		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
 		
-		// if (!(status & HEAD_SENT))
-		// {
-		// 	extractCgiHeader(buff);
-		// 	status |= HEAD_SENT;
-		// }
-		// else
-		// {
+		if (!(status & HEAD_SENT))
+		{
+			extractCgiHeader(buff);
+			status |= HEAD_SENT;
+		}
+		else
+		{
 			std::cout << "readRet " << readRet << "\n";
 			if (readRet == -1)
 				throw(codeException(500));
@@ -333,7 +347,7 @@ void Client::makePostResponse(char **envp)
 				res.getStrStream().write(buff, readRet);
 				std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
 			}
-		// }
+		}
 
 	}
 
