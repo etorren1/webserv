@@ -342,7 +342,6 @@ void Client::makePostResponse(char **envp)
 				status |= RESP_DONE;		//все прочитали из cgi
 				code = std::atoi(req.getCgiStatusCode().c_str());
 				res.make_response_header(req, code, resCode[code], getStrStreamSize(res.getStrStream()));
-
 			}
 			else //записываем из буффера часть данных в поток
 			{
