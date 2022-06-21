@@ -124,7 +124,7 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         // std::cout << "[" << key << "] - [" << val << "]\n";
     }
     if ((checkHeaders(_headers, "Content-Type", _contentType) && \
-        checkHeaders(_headers, "Content-Length", _contentLenght)) || \
+        checkHeaders(_headers, "Content-Length", _contentLength)) || \
         checkHeaders(_headers, "Transfer-Encoding", _transferEnc))
         _bodyExist = true;
     else _bodyExist = false;
@@ -216,7 +216,7 @@ void Request::cleaner() {
     _responseContentType.clear();
     _host.clear();
     _dirs.clear();
-    _contentLenght.clear();
+    _contentLength.clear();
     _contentType.clear();
     _body.clear();
     _reqSize = 0;
@@ -232,7 +232,7 @@ std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
 std::string Request::getContType() const { return this->_contentType; }
-std::string Request::getContentLenght() const { return this->_contentLenght; }
+std::string Request::getContentLenght() const { return this->_contentLength; }
 std::string Request::getTransferEnc() const { return this->_transferEnc; }
 std::string	Request::getCgiStatusCode() const { return this->_cgiStatusCode; };
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }

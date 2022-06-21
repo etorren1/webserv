@@ -273,7 +273,7 @@ void Client::extractCgiHeader( char * buff )
 	std::string					tmp, tmp2;
 	std::vector<std::string>	headerAndBody;
 	std::vector<std::string>	headerStrs;
-	int							code;
+	// int							code;
 
 	tmp = buff;
 	headerAndBody = split(tmp, "\r\n\r\n", "");
@@ -286,12 +286,12 @@ void Client::extractCgiHeader( char * buff )
 	req.setCgiStatusCode(tmp2);
 	res.setStatusCode(tmp2);
 
-	code = std::atoi(req.getCgiStatusCode().c_str());
-	res.make_response_header(req, code, resCode[code]);
+	// code = std::atoi(req.getCgiStatusCode().c_str());
+	// res.make_response_header(req, code, resCode[code]);
 
 	//отправка body оставшаяся в буффере после первого прочтения из пайпа
-	res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length());
-	res.sendResponse_stream(socket);
+	res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
+	// res.sendResponse_stream(socket); //не тут должно быть 
 }
 
 void Client::makePostResponse(char **envp)
@@ -303,12 +303,12 @@ void Client::makePostResponse(char **envp)
 	char				buff[2048];
 	int					wrtRet;
 	int					readRet;
+	int					code;
 
 	if (cgiWriteFlag == false)		// флаг cgi записан == false 
 	{
-		// std::cout << "BODY: " << req.getBody() << "\n";
 		std::cout << "BODY: " << message << "\n";
-		
+
 		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
 		totalSent += wrtRet;
 		if (totalSent == message.length()) //SIGPIPE
@@ -323,7 +323,7 @@ void Client::makePostResponse(char **envp)
 		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
 		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
-		
+
 		if (!(status & HEAD_SENT))
 		{
 			extractCgiHeader(buff);
@@ -331,24 +331,27 @@ void Client::makePostResponse(char **envp)
 		}
 		else
 		{
-			std::cout << "readRet " << readRet << "\n";
+			// std::cout << "readRet " << readRet << "\n";
 			if (readRet == -1)
 				throw(codeException(500));
-			if (readRet == 0)
+			if(status & RESP_DONE)			//весь body уже записан в поток, отпавляем его частями клиенту
+				std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
+			if (readRet == 0)				//0 запишется в readRet один раз и больше не будет меняться до конца response
 			{
-				std::cout << BLUE << "READ STOPED" << "\n" << RESET;
-				status |= RESP_DONE; //все прочитали из cgi
+				// std::cout << BLUE << "READ STOPED" << "\n" << RESET;
+				status |= RESP_DONE;		//все прочитали из cgi
+				code = std::atoi(req.getCgiStatusCode().c_str());
+				res.make_response_header(req, code, resCode[code], getStrStreamSize(res.getStrStream()));
+
 			}
-			else
+			else //записываем из буффера часть данных в поток
 			{
 				// res.make_response_header(req, 200, "OK", 500); //заменить!!!
 				// res.sendResponse_stream(socket);
 				buff[readRet] = '\0';
 				res.getStrStream().write(buff, readRet);
-				std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
 			}
 		}
-
 	}
 
 	// if (???)

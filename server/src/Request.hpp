@@ -20,7 +20,7 @@ private:
 	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_host;
-	std::string								_contentLenght;
+	std::string								_contentLength;
 	std::string								_contentType;
 	std::string								_transferEnc;
 	std::vector<std::string>				_dirs;
