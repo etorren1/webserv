@@ -286,3 +286,7 @@ void Request::splitLocation(std::string loc) {
         _reqURI = loc.substr(posEnd);
     // std::cout << "after host - " << _host << ", reqURI - " << _reqURI << "\n";
 }
+
+void Request::clearHeaders(){
+    _headers.clear();
+}

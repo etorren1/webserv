@@ -28,7 +28,8 @@ bool 						existDir(const char * name);
 std::string					itos( long long const & num );
 // std::string					getTime(); //https://stackoverflow.com/questions/7548759/generate-a-date-string-in-http-response-date-format-in-c
 long long					getFileSize(const char *fileLoc);
-long						getStrStreamSize(std::stringstream &strstring);
+long						getStrStreamSize(std::stringstream &strm);
+void						clearStrStream(std::stringstream &strstring);
 
 struct codeException : public std::exception
 {

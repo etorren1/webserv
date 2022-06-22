@@ -49,14 +49,28 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	return (buff.st_size);
 }
 
-long						getStrStreamSize(std::stringstream &strstring) //http://www.c-cpp.ru/content/fstat
-{
-	std::stringstream oss("Foo");
-	oss.seekg(0, std::ios::end);
-	long size = oss.tellg();
-	oss.seekg(0, std::ios::beg);
+// long						getStrStreamSize(std::stringstream &strstring) //http://www.c-cpp.ru/content/fstat
+// {
+// 	std::stringstream oss("Foo");
+// 	oss.seekg(0, std::ios::end);
+// 	long size = oss.tellg();
+// 	oss.seekg(0, std::ios::beg);
+// 	return (size);
+// }
 
-	return (size);
+long						getStrStreamSize(std::stringstream &strm)
+{
+    std::streambuf* buf = strm.rdbuf();
+	long size = buf->pubseekoff(0, strm.end);
+	buf->pubseekpos(0);
+	
+	return size;
+}
+
+void						clearStrStream(std::stringstream &strstring)
+{
+	strstring.str("");
+	strstring.clear();
 }
 
 

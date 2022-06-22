@@ -48,6 +48,7 @@ public:
 	int										checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header);
 	void									parseBody(std::string );
 	void									splitLocation(std::string);
+	void									clearHeaders();
 
 	std::string								getMethod() const;
 	std::string								getReqURI() const;

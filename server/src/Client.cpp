@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include "Utils.hpp"
 #include <errno.h>
-
+#define BUF 2048   //можно заменить на общий buff
 
 
 void Client::checkMessageEnd(void)
@@ -162,8 +162,9 @@ void Client::initResponse(char **envp)
 
 		// if (cgi used)
 		// {
-			res.getStrStream().str(""); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
-			res.getStrStream().clear();
+			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
+			// res.getStrStream().str(""); //заменила функцией выше
+			// res.getStrStream().clear();
 			if ((pid = fork()) < 0)
 				throw(codeException(500));
 			if (pid == 0) //child - process for CGI programm
@@ -267,8 +268,9 @@ void Client::makeGetResponse()
 
 void Client::extractCgiHeader( char * buff )
 {
-	res.getStrStream().str("");
-	res.getStrStream().clear();
+	clearStrStream(res.getStrStream());
+	// res.getStrStream().str(""); //заменила функцией выше
+	// res.getStrStream().clear();
 
 	std::string					tmp, tmp2;
 	std::vector<std::string>	headerAndBody;
@@ -279,18 +281,21 @@ void Client::extractCgiHeader( char * buff )
 	headerAndBody = split(tmp, "\r\n\r\n", "");
 	headerStrs = split(headerAndBody.at(0), "\r\n", "");
 
+	req.clearHeaders();
 	req.parseMapHeaders(headerStrs, headerStrs.size());
 	tmp.clear();
 	tmp = req.getCgiStatusCode();
 	tmp2 = tmp.substr(0, 3);
 	req.setCgiStatusCode(tmp2);
 	res.setStatusCode(tmp2);
+	res.setContentType(req.getContType());
 
 	// code = std::atoi(req.getCgiStatusCode().c_str());
 	// res.make_response_header(req, code, resCode[code]);
 
 	//отправка body оставшаяся в буффере после первого прочтения из пайпа
 	res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
+	
 	// res.sendResponse_stream(socket); //не тут должно быть 
 }
 
@@ -300,9 +305,9 @@ void Client::makePostResponse(char **envp)
 	iter++;
 	std::cout << "iter = " << iter << "\n";
 	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
-	char				buff[2048];
-	int					wrtRet;
-	int					readRet;
+	char				buff[BUF];
+	int					wrtRet = 0;
+	int					readRet = 0;
 	int					code;
 
 	if (cgiWriteFlag == false)		// флаг cgi записан == false 
@@ -318,11 +323,11 @@ void Client::makePostResponse(char **envp)
 		}
 	}
 
-	if (cgiWriteFlag == true)		//если все данные передались в cgi
+	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
 		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
 		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
-		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
+		readRet = read(pipe2[PIPE_OUT], buff, BUF);  // ret -1
 
 		if (!(status & HEAD_SENT))
 		{
@@ -334,27 +339,32 @@ void Client::makePostResponse(char **envp)
 			// std::cout << "readRet " << readRet << "\n";
 			if (readRet == -1)
 				throw(codeException(500));
-			if(status & RESP_DONE)			//весь body уже записан в поток, отпавляем его частями клиенту
-				std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
-			if (readRet == 0)				//0 запишется в readRet один раз и больше не будет меняться до конца response
+			if(status & STRM_READY)										//весь body уже записан в поток, отпавляем его частями клиенту, в нижние условия больше не заходим до конца response
+			{
+				if (res.sendResponse_stream(socket))
+					status |= RESP_DONE;
+			}
+			else if (readRet == 0)										//0 запишется в readRet один раз и больше не будет меняться до конца response
 			{
 				// std::cout << BLUE << "READ STOPED" << "\n" << RESET;
-				status |= RESP_DONE;		//все прочитали из cgi
+				std::stringstream tmp;									//нужен, чтобы хедер записать в начало основного потока
+				status |= STRM_READY;									//все прочитали из cgi
 				code = std::atoi(req.getCgiStatusCode().c_str());
-				res.make_response_header(req, code, resCode[code], getStrStreamSize(res.getStrStream()));
+				tmp << res.getStrStream().rdbuf();						//временyо перекладываем записанный в _strstream body в другой поток
+				clearStrStream(res.getStrStream());						//очищаем _stream
+				res.make_response_header(req, code, resCode[code], getStrStreamSize(tmp));
+				res.getStrStream() << tmp.str();						//!!! Возможно все не влезет в объет строки
+				/*	The buffer of a std::stringstream object is a wrapper around a std::string object.
+					As such, the maximum size is std::string::max_size().
+					https://stackoverflow.com/questions/22025324/what-is-the-maximum-size-of-stdostringstream-buffer */
 			}
-			else //записываем из буффера часть данных в поток
+			else														//записываем из буффера часть данных в поток
 			{
-				// res.make_response_header(req, 200, "OK", 500); //заменить!!!
-				// res.sendResponse_stream(socket);
 				buff[readRet] = '\0';
 				res.getStrStream().write(buff, readRet);
 			}
 		}
 	}
-
-	// if (???)
-	// 	status |= RESP_DONE;
 	if (status & RESP_DONE)
 	{
 		// close(pipe1[PIPE_IN]);
