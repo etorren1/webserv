@@ -58,8 +58,8 @@ std::string	getCurTime()
 {
 	char buf[1000];
 	time_t now = time(0);
-	struct tm tm = *gmtime(&now);
-	strftime(buf, sizeof buf, "%a_%d_%b_%Y_%H:%M:%S_%Z", &tm);
+	struct tm tm = *localtime(&now);
+	strftime(buf, sizeof buf, "%a %d %b %Y %H:%M:%S %Z", &tm);
 	// sprintf("Time is: [%s]\n", buf);
 	return buf;
 };

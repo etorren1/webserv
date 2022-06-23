@@ -99,7 +99,7 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	std::cout << buffer <<"\n";
+	// std::cout << buffer <<"\n";
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -181,7 +181,6 @@ std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
 std::string		Response::getCookie() { return(_cookie); }
-std::string		Response::getTime() { return(_time); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
 std::stringstream &	Response::getStrStream() { return(_stream); } 
 
@@ -189,6 +188,5 @@ void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
 void			Response::setStatusCode(std::string code) { _statusCode = code; };
 void			Response::setCookie(std::string cookie) { _cookie = cookie; }
-void			Response::setTime(std::string time) { _time = time; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

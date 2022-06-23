@@ -113,7 +113,7 @@ void Server::consoleCommands( void ) {
             closeServer(STOP);
         }
         else if (text == "RESTART") {
-            std::cout << YELLOW << "Restarting server ... " << RESET;
+            std::cout << YELLOW << "Restarting server ... \n" << RESET;
             closeServer(RESTART);
             int fd = open(cfg_path.c_str(), O_RDONLY);
             config(fd);

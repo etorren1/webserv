@@ -421,7 +421,6 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
-	res.setTime(getCurTime());
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -461,7 +460,9 @@ Client::Client(size_t nwsock)
 	this->resCode.insert(std::make_pair(504, "Gateway Timeout"));
 }
 
-Client::~Client() {}
+Client::~Client() {
+	res.setCookie("");
+}
 
 int Client::parseLocation()
 {
@@ -582,9 +583,4 @@ int Client::makeRedirect(int code, std::string loc)
 	req.splitLocation(loc);
 	req.splitDirectories();
 	return 1;
-}
-
-// cookie: _ga=GA1.2.2120095365.1653411668; _gid=GA1.2.1298615499.1655479922
-void Client::createCookie() {
-	
 }

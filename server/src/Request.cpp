@@ -97,7 +97,6 @@ void Request::parseStartLine(std::string str) {
 size_t Request::findHeadersEnd(std::vector<std::string> vec) {
     // std::cout << GREEN << "_body = |" << _body << "|\n";
 
-    // const char *c = vec[]
     size_t pos = 0;
     for (size_t i = 0; i < vec.size() - 1; i++) {
         if (vec[i].length() == 0) {
@@ -158,32 +157,13 @@ void Request::parseMIMEType() {
     // std::cout << GREEN << "_MIMEType = |" << _MIMEType << "|\n";
 }
 
-// void Request::findType() {
-//     std::map<std::string, std::string>::iterator it = _typesMIME.begin();
-//     for ( ; it != _typesMIME.end(); it++) {
-//         if (_MIMEType == (*it).first) {
-//             _responseContentType = (*it).second;
-//         }
-//     }
-//     // std::cout << GREEN << "_responseContentType = |" << _responseContentType << "|\n";
-// }
-
 void Request::findHost() {
-    // std::map<std::string, std::string>::iterator it = _headers.begin();
-    // for ( ; it != _headers.end(); it++) {
-    //     if ((*it).first == "Host")
-    //         _host = (*it).second;
-    // }
-    // if (it == _headers.end() && _host.empty())
-        // throw codeException(400);
     if (!(checkHeaders(_headers, "Host", _host)))
         throw codeException(400);
-    // size_t pos = _host.find("localhost");
     if (_host.find("localhost") != std::string::npos) {
         std::string ip = "127.0.0.1" + _host.substr(9);
         _host = ip;
     }
-    // std::cout << GREEN << "_host = |" << _host << "|\n";
 }
 
 void Request::splitDirectories( ) {
@@ -278,10 +258,8 @@ void Request::splitLocation(std::string loc) {
     size_t posBegin = loc.find("//");
     size_t posEnd = loc.find_last_of("/");
     // std::string host, dir;
-    // std::cout << "before host - " << _host << ", reqURI - " << _reqURI << "\n";
     if (posBegin != std::string::npos && posEnd != std::string::npos)
         _host = loc.substr(posBegin + 2, posEnd - posBegin - 3);
     if (posEnd != std::string::npos)
         _reqURI = loc.substr(posEnd);
-    // std::cout << "after host - " << _host << ", reqURI - " << _reqURI << "\n";
 }

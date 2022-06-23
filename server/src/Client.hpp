@@ -58,7 +58,6 @@ class Client
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
 		int							parseLocation( );
-		void						createCookie( );
 		int							searchErrorPages( void );
 		void						cleaner( void );
 
