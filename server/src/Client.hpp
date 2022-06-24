@@ -20,6 +20,7 @@
 #define	HEAD_SENT	0x040
 #define REDIRECT	0x080
 #define IS_BODY		0x100
+#define STRM_READY	0x200
 
 class Client
 {
@@ -47,7 +48,6 @@ class Client
 		pid_t				pid;
 		int					ex;
 		id_t				totalSent;
-
 
 	public:
 		int			iter; //TEMPORARY - TO DELETE
@@ -87,6 +87,7 @@ class Client
 		int *						getPipe2();
 
 		void						autoindex( const std::string & path );
+		void						extractCgiHeader( char * buff );
 
 		Client( size_t nwsock );
 		~Client();

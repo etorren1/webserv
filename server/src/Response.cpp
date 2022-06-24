@@ -40,7 +40,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 	if (!size)
 		_contentLength = itos(getFileSize(_fileLoc.c_str()));
 	else
-		_contentLength = size;
+		_contentLength = itos(size);
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
 	addCookie(getCurTime());
