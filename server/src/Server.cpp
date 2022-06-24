@@ -160,6 +160,8 @@ void Server::connectClients( const int & fd ) {
 
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
+
+        writeLog(client[socket]->getServer()->get_access_log(), "" , client[socket]->getMessage());
         std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
         std::cout << client[socket]->getMessage();
 
@@ -167,6 +169,7 @@ void Server::clientRequest(const int socket) {
         client[socket]->parseLocation();
         client[socket]->initResponse(envp);
     } else {
+
         std::cout << YELLOW << "Client " << socket << " send HEADER: " << RESET << "\n";
         std::cout << client[socket]->getMessage();
 
@@ -177,6 +180,7 @@ void Server::clientRequest(const int socket) {
             throw codeException(400);
         }
         client[socket]->setServer(srv);
+        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket), client[socket]->getMessage());
         if (!(client[socket]->status & IS_BODY) || client[socket]->readComplete()) {
             client[socket]->parseLocation();
             std::cout << "status after location - " << client[socket]->status << "\n";
