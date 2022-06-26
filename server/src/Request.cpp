@@ -129,15 +129,15 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         checkHeaders(_headers, "Content-Length", _contentLength)) || \
         checkHeaders(_headers, "Transfer-Encoding", _transferEnc)) {
         _bodyExist = true;
-        std::cout << "body exist\n";
+        // std::cout << "body exist\n";
         }
     else  {
         _bodyExist = false;
-        std::cout << "body not exist\n";
+        // std::cout << "body not exist\n";
     }
     checkHeaders(_headers, "Status", _cgiStatusCode);
-    std::cout << RED << getContType();
-    std::cout << "_headers.size() - " << _headers.size() << "\n";
+    // std::cout << RED << getContType() << "\n";
+    // std::cout << "_headers.size() - " << _headers.size() << "\n";
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (; it != _headers.end(); it++) {
     //     std::cout << GREEN << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
@@ -250,20 +250,40 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
     for ( ; it != fMap.end(); it++) {
         if ((*it).first == checked) {
             header = (*it).second;
-            std::cout << CYAN << "checkHeaders - " << checked << " header " << header << " found\n" << RESET;
+            // std::cout << CYAN << "checkHeaders - " << checked << " header " << header << " found\n" << RESET;
             return 1;
         }
     }
-    std::cout << CYAN << "checkHeaders - not found\n";
+    // std::cout << CYAN << "checkHeaders - not found\n";
     return 0;
 }
 
-void Request::parseBody(std::string body) {
-    // std::cout << CYAN << "parseBody" << RESET << "\n";
-    // for (int i = 0; i < body.length(); i++) {
-    //     this->_body.push_back(body[i]);
+void Request::parseEnvpFromBody(std::map<std::string, std::string>&map) {
+    std::vector<std::string> vec;
+    std::istringstream strs(_body);
+	std::string s, key, val = "none";
+	size_t pos = 0;
+	while (std::getline(strs, s, '&'))
+        vec.push_back(s);
+	for (int i = 0; i < vec.size(); i++) {
+		pos = vec[i].find("=");
+		key = vec[i].substr(0, pos);
+		val = vec[i].substr(pos + 1);
+		map.insert(std::make_pair(key, val));
+        // std::cout << BLUE << "key&val " << key << " " << val << "\n" << RESET;
+        // std::cout << CYAN << "map     " << key << " " << map[key] << "\n" << RESET;
+	}
+    // std::cout << YELLOW << "map.size() - " << map.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = map.begin();
+    // for (; it != map.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it).first << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
     // }
+}
+
+void Request::parseBody(std::string body, std::map<std::string, std::string>&map) {
     _body = body;
+    if (getContType() == "application/x-www-form-urlencoded")        
+		parseEnvpFromBody(map);
 }
 
 void Request::splitLocation(std::string loc) {

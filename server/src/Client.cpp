@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include "Utils.hpp"
 #include <errno.h>
-#define BUF 2048   //можно заменить на общий buff
+#define BUF 256   //можно заменить на общий buff
 
 
 void Client::checkMessageEnd(void)
@@ -21,7 +21,7 @@ void Client::checkMessageEnd(void)
 		else if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
-			// std::cout << "message.size = " << message.size() << " " << "len = " << len << "\n";
+			// std::cout <<  CYAN << "message.size = " << message.size() << " " << "len = " << len << RESET << "\n";
 			if (message.size() == len)
 				fullpart = true;
 			else
@@ -55,8 +55,8 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY)
 	{
-		std::cout << "PARSE BODY\n";
-		req.parseBody(message);
+		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
+		req.parseBody(message, envpMap);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -70,7 +70,11 @@ void Client::handleRequest(char **envp)
 			status |= IS_BODY;
 			checkMessageEnd();
 			if (fullpart)
+			{
+				std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
+				req.parseBody(message, envpMap);
 				status |= REQ_DONE;
+			}
 		}
 		else
 		{
@@ -518,12 +522,18 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-	std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
-	if (req.getContType() == "application/x-www-form-urlencoded") {
-		std::cout << "content type if it's equal- " << req.getContType() << "\n";
-		parseEnvpFromBody();
-	} else
-		std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
+	// std::cout << PURPLE << "envpMap.size() - " << envpMap.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = envpMap.begin();
+    // for (; it != envpMap.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
+    //     it++;
+    // }
+	// std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
+	// if (req.getContType() == "application/x-www-form-urlencoded")// {
+	// 	// std::cout << "content type if it's equal- " << req.getContType() << "\n";
+	// 	parseEnvpFromBody();
+	// } else
+		// std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -619,27 +629,26 @@ int Client::makeRedirect(int code, std::string loc){
 	return 1;
 }
 
-void Client::parseEnvpFromBody() {
-	std::vector<std::string> vec;
-    std::istringstream strs(req.getBody());
-	std::string s, key, val = "none";
-	std::string body = req.getBody();
-	size_t count = 0;
-	size_t pos = 0;
-	std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
-	while (std::getline(strs, s, '&'))
-        vec.push_back(s);
-	std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
-	for (int i = 0; i < vec.size(); i++) {
-		pos = vec[i].find("=");
-		key = vec[i].substr(0, pos);
-		val = vec[i].substr(pos + 1);
-		envpMap.insert(std::make_pair(key, val));
-	}
-	std::cout << "envpMap.size() - " << envpMap.size() << "\n";
-    std::map<std::string, std::string>::iterator it = envpMap.begin();
-    for (; it != envpMap.end(); it++) {
-        std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
-        // it++;
-    }
-}
+// void Client::parseEnvpFromBody() {
+// 	std::vector<std::string> vec;
+//     std::istringstream strs(req.getBody());
+// 	std::string s, key, val = "none";
+// 	std::string body = req.getBody();
+// 	size_t pos = 0;
+// 	// std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
+// 	while (std::getline(strs, s, '&'))
+//         vec.push_back(s);
+// 	// std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
+// 	for (int i = 0; i < vec.size(); i++) {
+// 		pos = vec[i].find("=");
+// 		key = vec[i].substr(0, pos);
+// 		val = vec[i].substr(pos + 1);
+// 		envpMap.insert(std::make_pair(key, val));
+// 	}
+// 	// std::cout << "envpMap.size() - " << envpMap.size() << "\n";
+//     // std::map<std::string, std::string>::iterator it = envpMap.begin();
+//     // for (; it != envpMap.end(); it++) {
+//     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
+//     //     // it++;
+//     // }
+// }

@@ -75,7 +75,8 @@ std::string	getCurTime()
 	strftime(buf, sizeof buf, "%a %d %b %Y %H:%M:%S %Z", &tm);
 	// sprintf("Time is: [%s]\n", buf);
 	return buf;
-};
+}
+
 void						clearStrStream(std::stringstream &strstring)
 {
 	strstring.str("");
