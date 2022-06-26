@@ -44,7 +44,7 @@ void Client::checkMessageEnd(void)
 				pos--;								  // Удаляем символ возврата карретки
 			}
 			fullpart = true;
-			tail = message.substr(pos + 4);
+			tail = message.substr(pos + 4); //ЗДЕСЬ
 		}
 		else
 			fullpart = false;
@@ -269,13 +269,11 @@ void Client::makeGetResponse()
 void Client::extractCgiHeader( char * buff )
 {
 	clearStrStream(res.getStrStream());
-	// res.getStrStream().str(""); //заменила функцией выше
-	// res.getStrStream().clear();
 
 	std::string					tmp, tmp2;
 	std::vector<std::string>	headerAndBody;
 	std::vector<std::string>	headerStrs;
-	// int							code;
+	// int						code;
 
 	tmp = buff;
 	headerAndBody = split(tmp, "\r\n\r\n", "");
@@ -294,7 +292,8 @@ void Client::extractCgiHeader( char * buff )
 	// res.make_response_header(req, code, resCode[code]);
 
 	//отправка body оставшаяся в буффере после первого прочтения из пайпа
-	res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
+	if (headerAndBody.size() > 1)
+		res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
 	
 	// res.sendResponse_stream(socket); //не тут должно быть 
 }
@@ -326,8 +325,7 @@ void Client::makePostResponse(char **envp)
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
 		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
-		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
-		readRet = read(pipe2[PIPE_OUT], buff, BUF);  // ret -1
+		readRet = read(pipe2[PIPE_OUT], buff, BUF);						//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 
 		if (!(status & HEAD_SENT))
 		{
