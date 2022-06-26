@@ -272,12 +272,11 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
     return 0;
 }
 
-void Request::parseBody(std::string body) {
+void Request::parseBody(std::stringstream & reader) {
     // std::cout << CYAN << "parseBody" << RESET << "\n";
     // for (int i = 0; i < body.length(); i++) {
     //     this->_body.push_back(body[i]);
     // }
-    _body = body;
 }
 
 void Request::splitLocation(std::string loc) {

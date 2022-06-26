@@ -6,7 +6,7 @@
 #include "config/Server_block.hpp"
 #include <sys/socket.h>
 #include <cstdlib>
-// #include <filesystem> C++17 !!!
+#include <sstream>
 #include <fstream>
 #include <fcntl.h>
 #include <map>
@@ -32,8 +32,9 @@ class Client
 
 		bool								fullpart;
 		size_t								socket;
-		std::string							message;
-		std::string							tail;
+		size_t								reader_size;
+		std::stringstream					reader;
+		std::string							header;
 
 		std::map<int, std::string>			resCode;
 		int									statusCode;
@@ -55,6 +56,7 @@ class Client
 		bool		cgiWriteFlag;
 
 		void 						checkMessageEnd( void );
+		void						savePartOfStream( size_t pos );
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
 		int							parseLocation( );
@@ -72,7 +74,7 @@ class Client
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
 
-		void						setMessage( const std::string & mess );
+		void						setStream( const std::stringstream & mess, const size_t size);
 		void						setServer( Server_block * s );
 
 		bool 						readComplete( void ) const;
@@ -81,7 +83,9 @@ class Client
 		Response &					getResponse( void );
 		Request &					getRequest( void );
 		Server_block * 				getServer( void );
-		std::string 				getMessage( void ) const;
+		std::stringstream &			getStream( void );
+		std::string &				getHeader( void );
+		size_t						getStreamSize( void );
 		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
 		int *						getPipe1();
 		int *						getPipe2();

@@ -46,7 +46,7 @@ public:
 	void									cleaner();
 	void									setMIMEType(std::string);									
 	int										checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header);
-	void									parseBody(std::string );
+	void									parseBody( std::stringstream & reader );
 	void									splitLocation(std::string);
 	void									clearHeaders();
 

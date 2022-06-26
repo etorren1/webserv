@@ -3,26 +3,41 @@
 #include <errno.h>
 #define BUF 256   //можно заменить на общий buff
 
+void Client::savePartOfStream( size_t pos ) {
+	std::cout << RED << pos + 4 << " != " << reader_size << " tail detected" << RESET << "\n";
+	char buf[reader_size - pos - 3];
+	bzero(buf, reader_size - pos - 3);
+	reader.seekg(pos + 4);
+	reader.read(buf, reader_size - pos - 4);
+	buf[reader_size - pos - 3] = 0;
+	std::cout << "readed: "<< reader.gcount() << "\n";
+	reader_size = reader.gcount();
+	reader.str(std::string()); // clearing content in stream
+	reader.clear();
+	reader << buf;
+	// std::cout << YELLOW << header.substr(pos + 4) << RESET << "\n";
+	// std::cout << GREEN << buf << RESET << "\n";
+}
 
-void Client::checkMessageEnd(void)
-{
+void Client::checkMessageEnd( void ) {
 	if (status & IS_BODY)
 	{
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
 		// std::cout << BLUE << "Content-Length: " << req.getСontentLenght() << RESET << "\n";
 
-		if (req.getTransferEnc() == "chunked")
-		{
-			if (message.find("0\r\n\r\n"))
-				fullpart = true;
-			else
-				fullpart = false;
-		}
-		else if (req.getContentLenght().size())
+		// if (req.getTransferEnc() == "chunked")
+		// {
+		// 	if (message.find("0\r\n\r\n"))
+		// 		fullpart = true;
+		// 	else
+		// 		fullpart = false;
+		// }
+		// else if (req.getContentLenght().size())
+		if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
-			std::cout <<  CYAN << "message.size = " << message.size() << " " << "len = " << len << RESET << "\n";
-			if (message.size() == len)
+			std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
+			if (reader_size == len)
 				fullpart = true;
 			else
 				fullpart = false;
@@ -35,16 +50,17 @@ void Client::checkMessageEnd(void)
 	}
 	else
 	{
-		size_t pos = message.rfind("\r\n\r\n");
-		if (pos != std::string::npos)
-		{
-			while (message.find("\r") != std::string::npos)
-			{
-				message.erase(message.find("\r"), 1); // из комбинации CRLF
-				pos--;								  // Удаляем символ возврата карретки
+		header = reader.str();
+		size_t pos = header.find("\r\n\r\n");
+		if (pos != std::string::npos) {
+			if (pos + 4 != reader_size) // part of body request got into the header
+				savePartOfStream(pos);
+			header.erase(pos + 4);
+			while (header.find("\r") != std::string::npos) {
+				header.erase(header.find("\r"), 1); // из комбинации CRLF
+				pos--;								// Удаляем символ возврата карретки
 			}
 			fullpart = true;
-			tail = message.substr(pos + 4);
 		}
 		else
 			fullpart = false;
@@ -53,31 +69,27 @@ void Client::checkMessageEnd(void)
 
 void Client::handleRequest(char **envp)
 {
-	if (status & IS_BODY)
-	{
+	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
-		req.parseBody(message);
+		req.parseBody(reader);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
 	else
 	{
-		bool rd = req.parseText(message);
-		if (rd == true)
+		bool rd = req.parseText(header);
+		if (rd == true) // exist body
 		{
 			// std::cout << PURPLE << "IS_BODY" << RESET << "\n";
-			message = tail;
 			status |= IS_BODY;
 			checkMessageEnd();
-			if (fullpart)
-			{
+			if (fullpart) {
 				std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
-				req.parseBody(message);
+				req.parseBody(reader);
 				status |= REQ_DONE;
 			}
 		}
-		else
-		{
+		else {
 			// std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
 			status |= REQ_DONE;
 		}
@@ -88,25 +100,20 @@ int Client::searchErrorPages()
 {
 	size_t pos;
 	std::string tmp;
-	while ((pos = location.find_last_of("/")) != std::string::npos)
-	{
+	while ((pos = location.find_last_of("/")) != std::string::npos) {
 		location = location.substr(0, pos);
 		tmp = location + loc->get_error_page().second;
 		res.setFileLoc(tmp);
 		if (res.openFile())
-		{
-			// std::cout << CYAN << tmp << RESET << "\n";
 			return 1;
-		}
-		// std::cout << PURPLE << tmp << RESET << "\n";
 	}
 	return 0;
 }
 
-void Client::handleError(const int code)	{
+void Client::handleError( const int code ) {
 	int file = 0;
 	if (loc && loc->get_error_page().first == code)	{
-		if ((file = searchErrorPages()) == 1)		{
+		if ((file = searchErrorPages()) == 1) {
 			req.setMIMEType(loc->get_error_page().second);
 			res.setContentType(req.getContentType());
 			res.make_response_header(req, code, resCode[code]);
@@ -134,7 +141,7 @@ void Client::initResponse(char **envp)	{
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], req.getHost() + req.getReqURI()); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
-	else	{
+	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
@@ -294,27 +301,27 @@ void Client::extractCgiHeader( char * buff )
 
 void Client::makePostResponse(char **envp)
 {
-	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	//std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
-	std::cout << "iter = " << iter << "\n";
-	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+	//std::cout << "iter = " << iter << "\n";
+	//std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
 	char				buff[BUF];
 	int					wrtRet = 0;
 	int					readRet = 0;
 	int					code;
 
-	if (cgiWriteFlag == false)		// флаг cgi записан == false 
-	{
-		std::cout << "BODY: " << message << "\n";
+	// if (cgiWriteFlag == false)		// флаг cgi записан == false 
+	// {
+	// 	std::cout << "BODY: " << message << "\n";
 
-		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
-		totalSent += wrtRet;
-		if (totalSent == message.length()) //SIGPIPE
-		{
-			close(pipe1[PIPE_IN]);
-			cgiWriteFlag = true;
-		}
-	}
+	// 	wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
+	// 	totalSent += wrtRet;
+	// 	if (totalSent == message.length()) //SIGPIPE
+	// 	{
+	// 		close(pipe1[PIPE_IN]);
+	// 		cgiWriteFlag = true;
+	// 	}
+	// }
 
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
@@ -394,9 +401,11 @@ void Client::cleaner()
 		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	else
 		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	message.clear();
-	tail.clear();
+	reader.str(std::string()); // clear content in stream
+	reader.clear();
+	reader_size = 0;
 	location.clear();
+	header.clear();
 	req.cleaner();
 	res.cleaner();
 	statusCode = 0;
@@ -405,7 +414,12 @@ void Client::cleaner()
 	srv = NULL;
 }
 
-void Client::setMessage(const std::string &mess) { message = mess; }
+void Client::setStream( const std::stringstream & mess, const size_t size ) {
+	reader.str(std::string());
+	reader.clear();
+	reader << mess.rdbuf();
+	reader_size = size;	
+}
 void Client::setServer(Server_block *s)
 {
 	srv = s;
@@ -422,7 +436,9 @@ Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
 size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
 std::string		Client::getHost() const { return req.getHost(); }
-std::string		Client::getMessage() const { return message; }
+std::string &	Client::getHeader( void ) { return header; }
+size_t			Client::getStreamSize( void ) { return reader_size; }
+std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
 int *			Client::getPipe1() { return pipe1; };
 int *			Client::getPipe2() { return pipe2; };
@@ -459,7 +475,8 @@ Client::Client(size_t nwsock)
 {
 	fullpart = false;
 	location.clear();
-	message.clear();
+	header.clear();
+	reader_size = 0;
 	socket = nwsock;
 	status = 0;
 	statusCode = 0;
