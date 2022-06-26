@@ -20,13 +20,14 @@ private:
 	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_host;
-	std::string								_contentLenght;
+	std::string								_contentLength;
 	std::string								_contentType;
 	std::string								_transferEnc;
 	std::vector<std::string>				_dirs;
 	// std::vector<char>					_body;
 	int										_reqSize;
 	bool									_bodyExist;
+	std::string								_cgiStatusCode;
 
 	//data for response
 	std::string								_responseContentType;
@@ -47,7 +48,7 @@ public:
 	int										checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header);
 	void									parseBody(std::string );
 	void									splitLocation(std::string);
-
+	void									clearHeaders();
 
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
@@ -62,10 +63,12 @@ public:
 	std::string								getTransferEnc() const;
 	std::vector<std::string>				getDirs() const;
 	int										getReqSize() const;
+	std::string								getCgiStatusCode() const;
 
 	void									setHost(std::string);
 	void									setReqSize();
 	void									setReqURI(std::string);
+	void									setCgiStatusCode(std::string);
 };
 
 

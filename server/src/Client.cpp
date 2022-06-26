@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include "Utils.hpp"
 #include <errno.h>
-
+#define BUF 2048   //можно заменить на общий buff
 
 
 void Client::checkMessageEnd(void)
@@ -128,7 +128,7 @@ void Client::initResponse(char **envp)	{
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
-		res.make_response_html(statusCode, resCode[statusCode], req.getHost() + req.getReqURI()); //TODO: 
+		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
 	else	{
 		res.setFileLoc(location);
@@ -151,8 +151,9 @@ void Client::initResponse(char **envp)	{
 
 		// if (cgi used)
 		// {
-			res.getStrStream().str(""); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
-			res.getStrStream().clear();
+			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
+			// res.getStrStream().str(""); //заменила функцией выше
+			// res.getStrStream().clear();
 			if ((pid = fork()) < 0)
 				throw(codeException(500));
 			if (pid == 0) //child - process for CGI programm
@@ -254,71 +255,110 @@ void Client::makeGetResponse()
 	}
 }
 
+void Client::extractCgiHeader( char * buff )
+{
+	clearStrStream(res.getStrStream());
+	// res.getStrStream().str(""); //заменила функцией выше
+	// res.getStrStream().clear();
+
+	std::string					tmp, tmp2;
+	std::vector<std::string>	headerAndBody;
+	std::vector<std::string>	headerStrs;
+	// int							code;
+
+	tmp = buff;
+	headerAndBody = split(tmp, "\r\n\r\n", "");
+	headerStrs = split(headerAndBody.at(0), "\r\n", "");
+
+	req.clearHeaders();
+	req.parseMapHeaders(headerStrs, headerStrs.size());
+	tmp.clear();
+	tmp = req.getCgiStatusCode();
+	tmp2 = tmp.substr(0, 3);
+	req.setCgiStatusCode(tmp2);
+	res.setStatusCode(tmp2);
+	res.setContentType(req.getContType());
+
+	// code = std::atoi(req.getCgiStatusCode().c_str());
+	// res.make_response_header(req, code, resCode[code]);
+
+	//отправка body оставшаяся в буффере после первого прочтения из пайпа
+	res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
+	
+	// res.sendResponse_stream(socket); //не тут должно быть 
+}
+
 void Client::makePostResponse(char **envp)
 {
 	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
 	std::cout << "iter = " << iter << "\n";
 	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
-	char				buff[2048];
-	int					wrtRet;
-	int					readRet;
+	char				buff[BUF];
+	int					wrtRet = 0;
+	int					readRet = 0;
+	int					code;
 
-	if (cgiWriteFlag == false) // флаг cgi записан == false 
+	if (cgiWriteFlag == false)		// флаг cgi записан == false 
 	{
-		// std::cout << "BODY: " << req.getBody() << "\n";
-		
-		// wrtRet = write(pipe1[PIPE_IN], req.getBody().c_str(), req.getBody().length());
 		std::cout << "BODY: " << message << "\n";
-		
+
 		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
 		totalSent += wrtRet;
-		// if (totalSent == req.getBody().length()) //SIGPIPE
 		if (totalSent == message.length()) //SIGPIPE
 		{
 			close(pipe1[PIPE_IN]);
 			cgiWriteFlag = true;
 		}
 	}
-	// if write < req.getBody().length()
-	//	закрыть stdin в cgi процессе и флаг cgi записан = true
-	if (cgiWriteFlag == true)//если флаг cgi записан == true
+
+	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
 		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
-		//читаем из cgi порцию даты
-		//прочитанный кусок из cgi пишем клиенту в сокет
-		readRet = read(pipe2[PIPE_OUT], buff, 2048);  // ret -1
-		std::cout << "readRet " << readRet << "\n";
-		if (readRet == -1)
-			throw(codeException(500));
-		if (readRet == 0)
+		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
+		readRet = read(pipe2[PIPE_OUT], buff, BUF);  // ret -1
+
+		if (!(status & HEAD_SENT))
 		{
-			std::cout << BLUE << "READ STOPED" << "\n" << RESET;
-			status |= RESP_DONE; //все прочитали из cgi
-			// res.getStrStream() << buff;
+			extractCgiHeader(buff);
+			status |= HEAD_SENT;
 		}
 		else
 		{
-			// res.make_response_header(req, 200, "OK", 500); //заменить!!!
-			res.sendResponse_stream(socket);
-			buff[readRet] = '\0';
-			res.getStrStream().write(buff, readRet);
-			std::cout << "sendResponse ret" << res.sendResponse_stream(socket) << "\n";
+			// std::cout << "readRet " << readRet << "\n";
+			if (readRet == -1)
+				throw(codeException(500));
+			if(status & STRM_READY)										//весь body уже записан в поток, отпавляем его частями клиенту, в нижние условия больше не заходим до конца response
+			{
+				if (res.sendResponse_stream(socket))
+					status |= RESP_DONE;
+			}
+			else if (readRet == 0)										//0 запишется в readRet один раз и больше не будет меняться до конца response
+			{
+				// std::cout << BLUE << "READ STOPED" << "\n" << RESET;
+				std::stringstream tmp;									//нужен, чтобы хедер записать в начало основного потока
+				status |= STRM_READY;									//все прочитали из cgi
+				code = std::atoi(req.getCgiStatusCode().c_str());
+				tmp << res.getStrStream().rdbuf();						//временyо перекладываем записанный в _strstream body в другой поток
+				clearStrStream(res.getStrStream());						//очищаем _stream
+				res.make_response_header(req, code, resCode[code], getStrStreamSize(tmp));
+				res.getStrStream() << tmp.str();						//!!! Возможно все не влезет в объет строки
+				/*	The buffer of a std::stringstream object is a wrapper around a std::string object.
+					As such, the maximum size is std::string::max_size().
+					https://stackoverflow.com/questions/22025324/what-is-the-maximum-size-of-stdostringstream-buffer */
+			}
+			else														//записываем из буффера часть данных в поток
+			{
+				buff[readRet] = '\0';
+				res.getStrStream().write(buff, readRet);
+			}
 		}
 	}
-
-	//если мы закончили всё читать из cgi то 
-	//waitpid cgi 
-	//close all fds
-
-	// if (???)
-	// 	status |= RESP_DONE;
 	if (status & RESP_DONE)
 	{
 		// close(pipe1[PIPE_IN]);
 		waitpid(pid, &status, 0); // ???
 		cleaner();
-		// closeAllFds();
 		close(pipe2[PIPE_OUT]);
 		std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
@@ -464,8 +504,7 @@ Client::~Client() {
 	res.setCookie("");
 }
 
-int Client::parseLocation()
-{
+int Client::parseLocation()	{
 	statusCode = 200;
 	if (req.getMIMEType() == "none")
 		status |= IS_DIR;
@@ -474,6 +513,8 @@ int Client::parseLocation()
 	if (req.getMethod() != "DELETE" && loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			std::cout << CYAN << "REDIRECT" << RESET << "\n";
+			location = req.getReqURI();
+			// std::cout << "location after makeRedirect - " << location << "\n";
 			return 0;
 		}
 	}
@@ -495,10 +536,12 @@ int Client::parseLocation()
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
-	location = root + locn + req.getReqURI().substr(subpos);
-
+	// if (req.getReqURI().find("http") == std::string::npos) {
+		location = root + locn + req.getReqURI().substr(subpos);
+	// else 
+		// location = req.getReqURI();
 	// FOR INTRA TESTER
-	// std::cout << location << "\n";
+	// std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
 	// if (location.find("directory") != std::string::npos) {
 	// 	location.erase(location.find("directory"), 10);
 	// 	std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
@@ -510,46 +553,35 @@ int Client::parseLocation()
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
-	if (status & IS_DIR)
-	{
-		if (location.size() && location[location.size() - 1] != '/')
-		{
+	if (status & IS_DIR)	{
+		if (location.size() && location[location.size() - 1] != '/')	{
 			statusCode = 301; // COMMENT IT FOR TESTER
 			location.push_back('/');
-			if (access(location.c_str(), 0) == -1)
-			{
+			if (access(location.c_str(), 0) == -1)	{
 				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
 				throw codeException(404);
 			}
 			status |= REDIRECT;
 			return 0;
-		}
-		else
-		{ // COMMENT IT FOR TESTER
+		}	else	{ // COMMENT IT FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
-			if (!loc->get_autoindex())
-			{
-				while (++i < indexes.size())
-				{
+			if (!loc->get_autoindex())	{
+				while (++i < indexes.size())	{
 					std::string tmp = location + indexes[i];
-					if (access(tmp.c_str(), 0) != -1)
-					{
+					if (access(tmp.c_str(), 0) != -1)	{
 						location = tmp;
 						req.setMIMEType(indexes[i]);
 						break;
 					}
 				}
-				if (i == indexes.size())
-				{
+				if (i == indexes.size())	{
 					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 			}
-			else
-			{
-				if (access(location.c_str(), 0) == -1)
-				{
+			else	{
+				if (access(location.c_str(), 0) == -1)		{
 					std::cout << RED << "No such directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
@@ -557,27 +589,23 @@ int Client::parseLocation()
 			}
 		} // COMMENT IT FOR TESTER
 	}
-	else if (status & IS_FILE)
-	{ // FILE
-		if (access(location.c_str(), 0) == -1)
-		{
+	else if (status & IS_FILE)	{ // FILE
+		if (access(location.c_str(), 0) == -1)	{
 			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
 	}
-	if (access(location.c_str(), 4) == -1)
-	{
+	if (access(location.c_str(), 4) == -1)	{
 		std::cout << RED << "Permisson denied: " << location << RESET << "\n";
 		throw codeException(403);
 	}
-	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
+	std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 
-int Client::makeRedirect(int code, std::string loc)
-{
+int Client::makeRedirect(int code, std::string loc){
 	status |= REDIRECT;
-	std::cout << "code - " << code << ", loc - " << loc << "\n";
+	// std::cout << "code - " << code << ", loc - " << loc << "\n";
 	statusCode = code;
 	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
 	req.splitLocation(loc);
