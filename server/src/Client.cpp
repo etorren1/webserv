@@ -27,24 +27,28 @@ void Client::checkMessageEnd( void ) {
 
 		// if (req.getTransferEnc() == "chunked")
 		// {
+		// 	char buf[6];
+			
 		// 	if (message.find("0\r\n\r\n"))
 		// 		fullpart = true;
 		// 	else
 		// 		fullpart = false;
 		// }
-		// else if (req.getContentLenght().size())
 		if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
 			std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
-			if (reader_size == len)
+			if (reader_size >= len)
 				fullpart = true;
+			// else if (reader_size > len)
+			// 	throw codeException(400);
 			else
 				fullpart = false;
 		}
-		else
+		else {
 			std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
-		// fullpart = true;
+			throw codeException(400);
+		}
 		// ЕСЛИ Transfer-Encoding ждем 0
 		// ECЛИ Content-length ждем контент лен
 	}
@@ -71,7 +75,7 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
-		req.parseBody(reader);
+		req.parseBody(reader, envpMap);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -85,7 +89,7 @@ void Client::handleRequest(char **envp)
 			checkMessageEnd();
 			if (fullpart) {
 				std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
-				req.parseBody(reader);
+				req.parseBody(reader, envpMap);
 				status |= REQ_DONE;
 			}
 		}
@@ -139,7 +143,7 @@ void Client::initResponse(char **envp)	{
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
-		res.make_response_html(statusCode, resCode[statusCode], req.getHost() + req.getReqURI()); //TODO: 
+		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
 	else {
 		res.setFileLoc(location);
@@ -301,10 +305,10 @@ void Client::extractCgiHeader( char * buff )
 
 void Client::makePostResponse(char **envp)
 {
-	//std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	// std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
-	//std::cout << "iter = " << iter << "\n";
-	//std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+	// std::cout << "iter = " << iter << "\n";
+	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
 	char				buff[BUF];
 	int					wrtRet = 0;
 	int					readRet = 0;
@@ -325,7 +329,7 @@ void Client::makePostResponse(char **envp)
 
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
-		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
+		// std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
 		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 		readRet = read(pipe2[PIPE_OUT], buff, BUF);  // ret -1
 
@@ -371,7 +375,7 @@ void Client::makePostResponse(char **envp)
 		waitpid(pid, &status, 0); // ???
 		cleaner();
 		close(pipe2[PIPE_OUT]);
-		std::cout << "COMPLEATING POST RESPONSE2\n"; 
+		// std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
 }
 
@@ -482,7 +486,6 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
-	res.setTime(getCurTime());
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -522,10 +525,11 @@ Client::Client(size_t nwsock)
 	this->resCode.insert(std::make_pair(504, "Gateway Timeout"));
 }
 
-Client::~Client() {}
+Client::~Client() {
+	res.setCookie("");
+}
 
-int Client::parseLocation()
-{
+int Client::parseLocation()	{
 	statusCode = 200;
 	if (req.getMIMEType() == "none")
 		status |= IS_DIR;
@@ -534,9 +538,23 @@ int Client::parseLocation()
 	if (req.getMethod() != "DELETE" && loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			std::cout << CYAN << "REDIRECT" << RESET << "\n";
+			location = req.getReqURI();
+			// std::cout << "location after makeRedirect - " << location << "\n";
 			return 0;
 		}
 	}
+	// std::cout << PURPLE << "envpMap.size() - " << envpMap.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = envpMap.begin();
+    // for (; it != envpMap.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
+    //     it++;
+    // }
+	// std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
+	// if (req.getContType() == "application/x-www-form-urlencoded")// {
+	// 	// std::cout << "content type if it's equal- " << req.getContType() << "\n";
+	// 	parseEnvpFromBody();
+	// } else
+		// std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -555,89 +573,76 @@ int Client::parseLocation()
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
-	location = root + locn + req.getReqURI().substr(subpos);
-
+	// if (req.getReqURI().find("http") == std::string::npos) {
+		location = root + locn + req.getReqURI().substr(subpos);
+	// else 
+		// location = req.getReqURI();
 	// FOR INTRA TESTER
-	// std::cout << location << "\n";
-	// if (location.find("directory") != std::string::npos) {
-	// 	location.erase(location.find("directory"), 10);
-	// 	std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
-	// }
-	// std::cout << location << '\n';
+	std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
+	if (location.find("directory") != std::string::npos) {
+		location.erase(location.find("directory"), 10);
+		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+	}
+	std::cout << location << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
-	if (status & IS_DIR)
-	{
-		if (location.size() && location[location.size() - 1] != '/')
-		{
-			statusCode = 301; // COMMENT IT FOR TESTER
+	if (status & IS_DIR)	{
+		if (location.size() && location[location.size() - 1] != '/')	{
+			// statusCode = 301; // COMMENT IT FOR TESTER
 			location.push_back('/');
-			if (access(location.c_str(), 0) == -1)
-			{
+			if (access(location.c_str(), 0) == -1)	{
 				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
 				throw codeException(404);
 			}
 			status |= REDIRECT;
-			return 0;
-		}
-		else
-		{ // COMMENT IT FOR TESTER
+			// return 0; // COMMENT IT FOR TESTER
+		} //	else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
-			if (!loc->get_autoindex())
-			{
-				while (++i < indexes.size())
-				{
+			if (!loc->get_autoindex())	{
+				while (++i < indexes.size())	{
 					std::string tmp = location + indexes[i];
-					if (access(tmp.c_str(), 0) != -1)
-					{
+					if (access(tmp.c_str(), 0) != -1)	{
 						location = tmp;
 						req.setMIMEType(indexes[i]);
 						break;
 					}
 				}
-				if (i == indexes.size())
-				{
+				if (i == indexes.size())	{
 					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 			}
-			else
-			{
-				if (access(location.c_str(), 0) == -1)
-				{
+			else	{
+				if (access(location.c_str(), 0) == -1)		{
 					std::cout << RED << "No such directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 				status |= AUTOIDX;
 			}
-		} // COMMENT IT FOR TESTER
+		// } // COMMENT IT FOR TESTER
 	}
-	else if (status & IS_FILE)
-	{ // FILE
-		if (access(location.c_str(), 0) == -1)
-		{
+	else if (status & IS_FILE)	{ // FILE
+		if (access(location.c_str(), 0) == -1)	{
 			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
 	}
-	if (access(location.c_str(), 4) == -1)
-	{
+	if (access(location.c_str(), 4) == -1)	{
 		std::cout << RED << "Permisson denied: " << location << RESET << "\n";
 		throw codeException(403);
 	}
-	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
+	std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 
-int Client::makeRedirect(int code, std::string loc)
-{
+int Client::makeRedirect(int code, std::string loc){
 	status |= REDIRECT;
-	std::cout << "code - " << code << ", loc - " << loc << "\n";
+	// std::cout << "code - " << code << ", loc - " << loc << "\n";
 	statusCode = code;
 	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
 	req.splitLocation(loc);
@@ -645,7 +650,26 @@ int Client::makeRedirect(int code, std::string loc)
 	return 1;
 }
 
-// cookie: _ga=GA1.2.2120095365.1653411668; _gid=GA1.2.1298615499.1655479922
-void Client::createCookie() {
-	
-}
+// void Client::parseEnvpFromBody() {
+// 	std::vector<std::string> vec;
+//     std::istringstream strs(req.getBody());
+// 	std::string s, key, val = "none";
+// 	std::string body = req.getBody();
+// 	size_t pos = 0;
+// 	// std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
+// 	while (std::getline(strs, s, '&'))
+//         vec.push_back(s);
+// 	// std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
+// 	for (int i = 0; i < vec.size(); i++) {
+// 		pos = vec[i].find("=");
+// 		key = vec[i].substr(0, pos);
+// 		val = vec[i].substr(pos + 1);
+// 		envpMap.insert(std::make_pair(key, val));
+// 	}
+// 	// std::cout << "envpMap.size() - " << envpMap.size() << "\n";
+//     // std::map<std::string, std::string>::iterator it = envpMap.begin();
+//     // for (; it != envpMap.end(); it++) {
+//     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
+//     //     // it++;
+//     // }
+// }

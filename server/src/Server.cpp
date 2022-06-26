@@ -113,7 +113,7 @@ void Server::consoleCommands( void ) {
             closeServer(STOP);
         }
         else if (text == "RESTART") {
-            std::cout << YELLOW << "Restarting server ... " << RESET;
+            std::cout << YELLOW << "Restarting server ... \n" << RESET;
             closeServer(RESTART);
             int fd = open(cfg_path.c_str(), O_RDONLY);
             config(fd);
@@ -259,6 +259,7 @@ int     Server::readRequest( const size_t socket ) {
     if (client[socket]->status & IS_BODY)
         std::cout << GREEN << "Readed " << bytesRead << " bytes of body." << RESET << "\n";
     client[socket]->setStream(text, bytesRead);
+    writeLog("logs/bad.log", "Client " + itos(socket) + " body:", client[socket]->getStream().str());
     client[socket]->checkMessageEnd();
     //std::cout << CYAN << "bytes = " << bytesRead << " End read" << RESET << "\n";
     return (bytesRead);
