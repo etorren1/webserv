@@ -282,8 +282,8 @@ void Request::parseEnvpFromBody(std::map<std::string, std::string>&map) {
     // }
 }
 
-void Request::parseBody(std::string body, std::map<std::string, std::string>&map) {
-    _body = body;
+void Request::parseBody(std::stringstream & reader, std::map<std::string, std::string>&map) {
+    _body = reader.str();
     if (getContType() == "application/x-www-form-urlencoded")        
 		parseEnvpFromBody(map);
     else if (getContType().find("multipart/form-data") != std::string::npos) {

@@ -115,7 +115,7 @@ int Response::sendResponse_stream(const size_t socket)
 	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-		_stream.str("");
+		_stream.str(std::string()); // clear content in stream
 		_stream.clear();
 		return (1);
 	}

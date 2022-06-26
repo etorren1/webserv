@@ -161,11 +161,10 @@ void Server::connectClients( const int & fd ) {
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
 
-        writeLog(client[socket]->getServer()->get_access_log(), "" , client[socket]->getMessage());
+        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
         std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-        std::cout << client[socket]->getMessage();
-
-        // std::cout << PURPLE << "end HEADER." << RESET << "\n";
+        // std::cout << client[socket]->getStream().str();
+        std::cout << PURPLE << "end BODY." << RESET << "\n";
 
         client[socket]->handleRequest(envp);
         client[socket]->parseLocation();
@@ -173,20 +172,25 @@ void Server::clientRequest(const int socket) {
     } else {
 
         std::cout << YELLOW << "Client " << socket << " send HEADER: " << RESET << "\n";
-        std::cout << client[socket]->getMessage();
-
-        // std::cout << PURPLE << "end HEADER." << RESET << "\n";
+        std::cout << client[socket]->getHeader();
+        std::cout << PURPLE << "end HEADER." << RESET << "\n";
 
         client[socket]->handleRequest(envp);
-        //client[socket]->status |= IS_BODY;
         Server_block * srv = getServerBlock( client[socket]->getHost() );
         if (srv == NULL) {
             std::cout << RED << "No such server with this host: has 400 exception \n" << RESET << "\n";
             throw codeException(400);
         }
         client[socket]->setServer(srv);
-        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket), client[socket]->getMessage());
+        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
+            if (client[socket]->status & IS_BODY) {
+                writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+                std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
+                // std::cout << client[socket]->getStream().str();
+                std::cout << PURPLE << "end BODY." << RESET << "\n";
+            }
+
             client[socket]->parseLocation();
             //std::cout << "status after location - " << client[socket]->status << "\n";
             client[socket]->initResponse(envp);
@@ -223,30 +227,38 @@ void Server::mainHandler( void ) {
     }
 }
 
+static int find_2xCRLN( char* buf, size_t size ) {
+    for (size_t i = 0; i < size - 3; i++)
+        if (buf[i] == '\r' && buf[i + 1] == '\n'
+            && buf[i + 2] == '\r' && buf[i + 3] == '\n')
+            return (i);
+    return (0);
+}
+
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
     long bytesRead = 0;
     int rd;
-    std::string text;
+    std::stringstream text;
 
-    if (client[socket]->getMessage().size() > 0) {
-		text = client[socket]->getMessage();
-        bytesRead = text.size();
+    if (client[socket]->getStreamSize() > 0) {
+		text << client[socket]->getStream().rdbuf();
+        bytesRead = client[socket]->getStreamSize();
     }
     if (client[socket]->status & IS_BODY)
         std::cout << RED << "Try read BODY\n";
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
-        text += buf;
+        text << buf;
         if (client[socket]->status & IS_BODY)
-            checkBodySize(socket, text);
-        else if (text.rfind("\r\n\r\n") != std::string::npos)
+           checkBodySize(socket, bytesRead);
+        else if (find_2xCRLN(buf, BUF_SIZE))
             break;
     }
     if (client[socket]->status & IS_BODY)
-        std::cout << "Readed " << bytesRead << " bytes." << RESET << "\n";
-    client[socket]->setMessage(text);
+        std::cout << GREEN << "Readed " << bytesRead << " bytes of body." << RESET << "\n";
+    client[socket]->setStream(text, bytesRead);
     client[socket]->checkMessageEnd();
     //std::cout << CYAN << "bytes = " << bytesRead << " End read" << RESET << "\n";
     return (bytesRead);
