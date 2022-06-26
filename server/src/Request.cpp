@@ -210,6 +210,7 @@ void Request::cleaner() {
     _body.clear();
     _reqSize = 0;
     _bodyExist = false;
+    _boundary.clear();
 }
 
 std::string Request::getMethod() const { return this->_method; }
@@ -226,6 +227,7 @@ std::string Request::getTransferEnc() const { return this->_transferEnc; }
 std::string	Request::getCgiStatusCode() const { return this->_cgiStatusCode; };
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 int Request::getReqSize() const { return _reqSize; }
+std::string Request::getBoundary() const { return _boundary; }
 
 void Request::setHost(std::string host) { _host = host; }
 void Request::setReqSize() { _reqSize = _body.size(); }
@@ -284,6 +286,9 @@ void Request::parseBody(std::string body, std::map<std::string, std::string>&map
     _body = body;
     if (getContType() == "application/x-www-form-urlencoded")        
 		parseEnvpFromBody(map);
+    else if (getContType().find("multipart/form-data") != std::string::npos) {
+        findBoundary();
+    }
 }
 
 void Request::splitLocation(std::string loc) {
@@ -303,4 +308,12 @@ void Request::splitLocation(std::string loc) {
 
 void Request::clearHeaders(){
     _headers.clear();
+}
+
+void Request::findBoundary() {
+    size_t pos = _contentType.find("boundary=");
+    if (pos != std::string::npos) {
+        _boundary = _contentType.substr(pos);
+    }
+    std::cout << "this is boundary - " << _boundary << "\n";
 }

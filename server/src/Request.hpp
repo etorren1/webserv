@@ -24,10 +24,10 @@ private:
 	std::string								_contentType;
 	std::string								_transferEnc;
 	std::vector<std::string>				_dirs;
-	// std::vector<char>					_body;
 	int										_reqSize;
 	bool									_bodyExist;
 	std::string								_cgiStatusCode;
+	std::string								_boundary;
 
 	//data for response
 	std::string								_responseContentType;
@@ -40,7 +40,7 @@ public:
 	void									parseMapHeaders( std::vector<std::string> , size_t );
 	size_t          						findHeadersEnd( std::vector<std::string> );
 	void									parseMIMEType();
-	// void									findType();
+	void									findBoundary();
 	void									findHost();
 	void									splitDirectories();
 	void									cleaner();
@@ -65,6 +65,7 @@ public:
 	std::vector<std::string>				getDirs() const;
 	int										getReqSize() const;
 	std::string								getCgiStatusCode() const;
+	std::string								getBoundary() const;
 
 	void									setHost(std::string);
 	void									setReqSize();
