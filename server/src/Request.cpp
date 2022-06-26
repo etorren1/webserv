@@ -43,19 +43,22 @@ bool Request::parseText(std::string text) {
     std::vector<std::string> vec;
     std::istringstream strs(text);
     std::string s;
-    std::vector<std::string>::size_type posN = 0;
+    size_t pos;
+
     while (std::getline(strs, s, '\n'))
         vec.push_back(s);
     this->parseStartLine(vec[0]);
     vec.erase(vec.begin());
     // std::cout << "vec.size() = " << vec.size() << "\n";
-    size_t pos = this->findHeadersEnd(vec);
-    if (pos == 0) {
-        for (size_t i = 0; i < vec.size(); i++) {
-            // std::cout << "vec[" << i << "].length() - " << vec[i].length() << "\n";
-            if (vec[i].length() == 0 || (i == vec.size() - 1 && vec[i].length() != 0))
-                pos = vec.size() - 1;
-        }
+    // size_t pos = this->findHeadersEnd(vec);
+    std::vector<std::string>::iterator it = std::find(vec.begin(), vec.end(), "");
+    if (it != vec.end()) {
+        pos = std::distance(vec.begin(), it);
+        // for (size_t i = 0; i < vec.size(); i++) {
+        //     // std::cout << "vec[" << i << "].length() - " << vec[i].length() << "\n";
+        //     if (vec[i].length() == 0 || (i == vec.size() - 1 && vec[i].length() != 0))
+        //         pos = vec.size() - 1;
+        // }
     }
     // std::cout << "pos = " << pos << "\n";
     parseMapHeaders(vec, pos);
