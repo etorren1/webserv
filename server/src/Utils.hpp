@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 #define RESET "\e[0m"
 #define RED "\e[31m"
