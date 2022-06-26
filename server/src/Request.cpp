@@ -131,12 +131,16 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         _bodyExist = true;
         std::cout << "body exist\n";
         }
-    else _bodyExist = false;
+    else  {
+        _bodyExist = false;
+        std::cout << "body not exist\n";
+    }
     checkHeaders(_headers, "Status", _cgiStatusCode);
-    // std::cout << "_headers.size() - " << _headers.size() << "\n";
+    std::cout << RED << getContType();
+    std::cout << "_headers.size() - " << _headers.size() << "\n";
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (; it != _headers.end(); it++) {
-    //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
+    //     std::cout << GREEN << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
     //     // it++;
     // }
 }
@@ -246,9 +250,11 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
     for ( ; it != fMap.end(); it++) {
         if ((*it).first == checked) {
             header = (*it).second;
+            std::cout << CYAN << "checkHeaders - " << checked << " header " << header << " found\n" << RESET;
             return 1;
         }
     }
+    std::cout << CYAN << "checkHeaders - not found\n";
     return 0;
 }
 

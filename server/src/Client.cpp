@@ -290,10 +290,10 @@ void Client::extractCgiHeader( char * buff )
 
 void Client::makePostResponse(char **envp)
 {
-	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	// std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
-	std::cout << "iter = " << iter << "\n";
-	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+	// std::cout << "iter = " << iter << "\n";
+	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
 	char				buff[BUF];
 	int					wrtRet = 0;
 	int					readRet = 0;
@@ -314,7 +314,7 @@ void Client::makePostResponse(char **envp)
 
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
-		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
+		// std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
 		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 		readRet = read(pipe2[PIPE_OUT], buff, BUF);  // ret -1
 
@@ -360,7 +360,7 @@ void Client::makePostResponse(char **envp)
 		waitpid(pid, &status, 0); // ???
 		cleaner();
 		close(pipe2[PIPE_OUT]);
-		std::cout << "COMPLEATING POST RESPONSE2\n"; 
+		// std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
 }
 
@@ -518,6 +518,12 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
+	std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
+	if (req.getContType() == "application/x-www-form-urlencoded") {
+		std::cout << "content type if it's equal- " << req.getContType() << "\n";
+		parseEnvpFromBody();
+	} else
+		std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -611,4 +617,29 @@ int Client::makeRedirect(int code, std::string loc){
 	req.splitLocation(loc);
 	req.splitDirectories();
 	return 1;
+}
+
+void Client::parseEnvpFromBody() {
+	std::vector<std::string> vec;
+    std::istringstream strs(req.getBody());
+	std::string s, key, val = "none";
+	std::string body = req.getBody();
+	size_t count = 0;
+	size_t pos = 0;
+	std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
+	while (std::getline(strs, s, '&'))
+        vec.push_back(s);
+	std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
+	for (int i = 0; i < vec.size(); i++) {
+		pos = vec[i].find("=");
+		key = vec[i].substr(0, pos);
+		val = vec[i].substr(pos + 1);
+		envpMap.insert(std::make_pair(key, val));
+	}
+	std::cout << "envpMap.size() - " << envpMap.size() << "\n";
+    std::map<std::string, std::string>::iterator it = envpMap.begin();
+    for (; it != envpMap.end(); it++) {
+        std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
+        // it++;
+    }
 }

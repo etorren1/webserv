@@ -36,6 +36,7 @@ class Client
 		std::string							tail;
 
 		std::map<int, std::string>			resCode;
+		std::map<std::string, std::string>	envpMap;
 		int									statusCode;
 		std::string							location;
 
@@ -70,6 +71,7 @@ class Client
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
+		void						parseEnvpFromBody( );
 
 		void						setMessage( const std::string & mess );
 		void						setServer( Server_block * s );
