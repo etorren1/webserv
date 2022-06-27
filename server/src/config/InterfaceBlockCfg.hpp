@@ -77,7 +77,7 @@ class Block
 
         Block() {
             root = "/";
-            client_max_body_size = 1024;
+            client_max_body_size = 0;
             error_log = "logs/error.log";
             access_log = "logs/access.log";
             accepted_methods.clear();

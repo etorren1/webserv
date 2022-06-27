@@ -42,21 +42,21 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 {
 	FILE *file;
 	struct stat buff;
-	if (!(file = fopen(fileLoc, "r")))
+	if (!(file = fopen(fileLoc, "r"))) {
+		std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
 		throw codeException(404);
+	}
 	fstat (fileno (file), &buff);
 	fclose (file);
 	return (buff.st_size);
 }
 
-// long						getStrStreamSize(std::stringstream &strstring) //http://www.c-cpp.ru/content/fstat
-// {
-// 	std::stringstream oss("Foo");
-// 	oss.seekg(0, std::ios::end);
-// 	long size = oss.tellg();
-// 	oss.seekg(0, std::ios::beg);
-// 	return (size);
-// }
+size_t 						find_CRLN( char* buf, size_t size, size_t indent ) {
+    for (size_t i = 0; i < size - 1; i++)
+        if (buf[i] == '\r' && buf[i + 1] == '\n')
+            return (i + indent);
+    return (0);
+}
 
 long						getStrStreamSize(std::stringstream &strm)
 {
@@ -71,16 +71,17 @@ std::string	getCurTime()
 {
 	char buf[1000];
 	time_t now = time(0);
-	struct tm tm = *gmtime(&now);
-	strftime(buf, sizeof buf, "%a_%d_%b_%Y_%H:%M:%S_%Z", &tm);
+	struct tm tm = *localtime(&now);
+	strftime(buf, sizeof buf, "%a %d %b %Y %H:%M:%S %Z", &tm);
 	// sprintf("Time is: [%s]\n", buf);
 	return buf;
 }
 
-void						clearStrStream(std::stringstream &strstring)
+void						clearStrStream(std::stringstream &strstream)
 {
-	strstring.str("");
-	strstring.clear();
+	strstream.seekg(0);
+	strstream.str(std::string());
+	strstream.clear();
 }
 
 

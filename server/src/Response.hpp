@@ -25,7 +25,6 @@ class Response
 		std::string								_reasonPhrase;
 		std::string								_connection;
 
-		std::string								_time;
 		std::string								_cookie;
 		// std::string								_date;
 
@@ -67,14 +66,12 @@ class Response
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
 		std::string		getCookie();
-		std::string		getTime();
 		// std::ifstream 	getFileStream();
 		std::stringstream &	getStrStream();
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
 		void			setCookie(std::string cookie);
-		void			setTime(std::string time);
 		void			setStatusCode(std::string code);							//убрать
 		// void			setInput(std::ifstream &_file);
 		// void			setStrStream(std::stringstream stream);

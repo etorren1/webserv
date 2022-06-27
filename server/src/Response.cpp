@@ -47,7 +47,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 	_header = statusLine + generalHeader + _cookie;
 	_stream << _header;
 	
-	// std::cout << RED << _header << RESET;
+	//std::cout << RED << _header << RESET;
 }
 
 void Response::addCookie(std::string cookie) {
@@ -58,8 +58,10 @@ int Response::sendResponse_file(const size_t socket)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(!_file.is_open())
+	if(!_file.is_open()) {
+		std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
 		throw(codeException(404));
+	}
 	
 	_file.read (buffer, RES_BUF_SIZE);
 		_bytesRead = _file.gcount();
@@ -83,7 +85,7 @@ int Response::sendResponse_file(const size_t socket)
 	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 		_file.close();
-		
+		_file.clear();
 		return (1);
 	}
 	return (0);
@@ -99,7 +101,7 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	//std::cout << buffer <<"\n";
+	// std::cout << buffer <<"\n";
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -115,7 +117,7 @@ int Response::sendResponse_stream(const size_t socket)
 	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-		_stream.str("");
+		_stream.str(std::string()); // clear content in stream
 		_stream.clear();
 		return (1);
 	}
@@ -154,6 +156,8 @@ void Response::addCgiVar(char ***envp, Request req)
 
 void Response::cleaner()
 {
+	_file.close();
+	_file.clear();
 	_header.clear();
 	_contentType.clear();
 	_contentLength.clear();
@@ -181,7 +185,6 @@ std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
 std::string		Response::getCookie() { return(_cookie); }
-std::string		Response::getTime() { return(_time); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
 std::stringstream &	Response::getStrStream() { return(_stream); } 
 
@@ -189,6 +192,5 @@ void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
 void			Response::setStatusCode(std::string code) { _statusCode = code; };
 void			Response::setCookie(std::string cookie) { _cookie = cookie; }
-void			Response::setTime(std::string time) { _time = time; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

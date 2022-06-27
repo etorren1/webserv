@@ -24,10 +24,10 @@ private:
 	std::string								_contentType;
 	std::string								_transferEnc;
 	std::vector<std::string>				_dirs;
-	// std::vector<char>					_body;
 	int										_reqSize;
 	bool									_bodyExist;
 	std::string								_cgiStatusCode;
+	std::string								_boundary;
 
 	//data for response
 	std::string								_responseContentType;
@@ -40,14 +40,15 @@ public:
 	void									parseMapHeaders( std::vector<std::string> , size_t );
 	size_t          						findHeadersEnd( std::vector<std::string> );
 	void									parseMIMEType();
-	// void									findType();
+	void									findBoundary();
 	void									findHost();
 	void									splitDirectories();
 	void									cleaner();
-	void									setMIMEType(std::string);									
-	int										checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header);
-	void									parseBody(std::string );
-	void									splitLocation(std::string);
+	void									setMIMEType( std::string );									
+	int										checkHeaders( std::map<std::string, std::string> fMap, std::string checked, std::string &header);
+	void									parseBody( std::stringstream &, size_t, std::vector<std::string>&);
+	void									splitLocation( std::string );
+	void 									parseEnvpFromBody( std::vector<std::string>& );
 	void									clearHeaders();
 
 	std::string								getMethod() const;
@@ -64,6 +65,7 @@ public:
 	std::vector<std::string>				getDirs() const;
 	int										getReqSize() const;
 	std::string								getCgiStatusCode() const;
+	std::string								getBoundary() const;
 
 	void									setHost(std::string);
 	void									setReqSize();

@@ -3,9 +3,30 @@
 #include <errno.h>
 #define BUF 256   //можно заменить на общий buff
 
+void Client::clearStream( void ) {
+	reader.seekg(0);
+	reader.str(std::string());
+	reader.clear();
+	reader_size = 0;
+}
 
-void Client::checkMessageEnd(void)
-{
+void Client::savePartOfStream( size_t pos ) {
+	std::cout << RED << pos + 4 << " != " << reader_size << " tail detected" << RESET << "\n";
+	char buf[reader_size - pos - 3];
+	bzero(buf, reader_size - pos - 3);
+	reader.seekg(pos + 4);
+	reader.read(buf, reader_size - pos - 4);
+	buf[reader_size - pos - 3] = 0;
+	std::cout << "readed: "<< reader.gcount() << "\n";
+	reader_size = reader.gcount();
+	reader.str(std::string()); // clearing content in stream
+	reader.clear();
+	reader << buf;
+	// std::cout << YELLOW << header.substr(pos + 4) << RESET << "\n";
+	// std::cout << GREEN << buf << RESET << "\n";
+}
+
+void Client::checkMessageEnd( void ) {
 	if (status & IS_BODY)
 	{
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
@@ -13,7 +34,22 @@ void Client::checkMessageEnd(void)
 
 		if (req.getTransferEnc() == "chunked")
 		{
-			if (message.find("0\r\n\r\n"))
+			char buf[6];
+			bzero(buf, 5);
+			reader.seekg(reader_size - 5);
+			reader.read(buf, 5);
+			reader.seekg(0);
+			std::cout << "reader_size = " << reader_size << "\n";
+			// std::cout << "start bytes print: " << "\n";
+			// for (size_t i = 0; i < 5; i++)
+			// {
+			// 	printf("%d ", buf[i]);
+			// }
+			// std::cout << "\n";
+			// std::cout << "end bytes print\n";
+
+			if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
+				&& buf[3] == '\r' && buf[4] == '\n')
 				fullpart = true;
 			else
 				fullpart = false;
@@ -21,30 +57,37 @@ void Client::checkMessageEnd(void)
 		else if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
-			std::cout <<  CYAN << "message.size = " << message.size() << " " << "len = " << len << RESET << "\n";
-			if (message.size() == len)
+			std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
+			if (reader_size >= len)
 				fullpart = true;
+			// else if (reader_size > len)
+			// 	throw codeException(400);
 			else
 				fullpart = false;
 		}
-		else
+		else {
 			std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
-		// fullpart = true;
+			fullpart = true;
+			//throw codeException(400);
+		}
 		// ЕСЛИ Transfer-Encoding ждем 0
 		// ECЛИ Content-length ждем контент лен
 	}
 	else
 	{
-		size_t pos = message.rfind("\r\n\r\n");
-		if (pos != std::string::npos)
-		{
-			while (message.find("\r") != std::string::npos)
-			{
-				message.erase(message.find("\r"), 1); // из комбинации CRLF
-				pos--;								  // Удаляем символ возврата карретки
+		header = reader.str();
+		size_t pos = header.find("\r\n\r\n");
+		if (pos != std::string::npos) {
+			if (pos + 4 != reader_size) // part of body request got into the header
+				savePartOfStream(pos);
+			else
+				clearStream();
+			header.erase(pos + 4);
+			while (header.find("\r") != std::string::npos) {
+				header.erase(header.find("\r"), 1); // из комбинации CRLF
+				pos--;								// Удаляем символ возврата карретки
 			}
 			fullpart = true;
-			tail = message.substr(pos + 4);
 		}
 		else
 			fullpart = false;
@@ -53,31 +96,31 @@ void Client::checkMessageEnd(void)
 
 void Client::handleRequest(char **envp)
 {
-	if (status & IS_BODY)
-	{
+	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
-		req.parseBody(message);
+		req.parseBody(reader, reader_size, envpVector);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
 	else
 	{
-		bool rd = req.parseText(message);
-		if (rd == true)
+		bool rd = req.parseText(header);
+		if (rd == true) // exist body
 		{
 			// std::cout << PURPLE << "IS_BODY" << RESET << "\n";
-			message = tail;
 			status |= IS_BODY;
-			checkMessageEnd();
-			if (fullpart)
-			{
-				std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
-				req.parseBody(message);
-				status |= REQ_DONE;
+			if (reader_size) {
+				checkMessageEnd();
+				if (fullpart) {
+					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
+					req.parseBody(reader, reader_size, envpVector);
+					status |= REQ_DONE;
+				}
 			}
+			else
+				fullpart = false;
 		}
-		else
-		{
+		else {
 			// std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
 			status |= REQ_DONE;
 		}
@@ -88,25 +131,20 @@ int Client::searchErrorPages()
 {
 	size_t pos;
 	std::string tmp;
-	while ((pos = location.find_last_of("/")) != std::string::npos)
-	{
+	while ((pos = location.find_last_of("/")) != std::string::npos) {
 		location = location.substr(0, pos);
 		tmp = location + loc->get_error_page().second;
 		res.setFileLoc(tmp);
 		if (res.openFile())
-		{
-			// std::cout << CYAN << tmp << RESET << "\n";
 			return 1;
-		}
-		// std::cout << PURPLE << tmp << RESET << "\n";
 	}
 	return 0;
 }
 
-void Client::handleError(const int code)	{
+void Client::handleError( const int code ) {
 	int file = 0;
 	if (loc && loc->get_error_page().first == code)	{
-		if ((file = searchErrorPages()) == 1)		{
+		if ((file = searchErrorPages()) == 1) {
 			req.setMIMEType(loc->get_error_page().second);
 			res.setContentType(req.getContentType());
 			res.make_response_header(req, code, resCode[code]);
@@ -132,9 +170,11 @@ void Client::initResponse(char **envp)	{
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
-		res.make_response_html(statusCode, resCode[statusCode], req.getHost() + req.getReqURI()); //TODO: 
+		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
-	else	{
+	else if (req.getMethod() == "PUT")
+		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
+	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
@@ -195,6 +235,8 @@ void Client::makeResponse(char **envp)
 		makePostResponse(envp);
 	else if (req.getMethod() == "DELETE")
 		makeDeleteResponse(envp);
+	else if (req.getMethod() == "PUT")
+		makePutResponse(envp);
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
@@ -253,9 +295,9 @@ void Client::makeGetResponse()
 	}
 	if (status & RESP_DONE)
 	{
+		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 		// std::cout << "GET cleaner() must be ending\n";
-		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
 	}
 }
 
@@ -294,31 +336,31 @@ void Client::extractCgiHeader( char * buff )
 
 void Client::makePostResponse(char **envp)
 {
-	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	// std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
-	std::cout << "iter = " << iter << "\n";
-	std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+	// std::cout << "iter = " << iter << "\n";
+	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
 	char				buff[BUF];
 	int					wrtRet = 0;
 	int					readRet = 0;
 	int					code;
 
-	if (cgiWriteFlag == false)		// флаг cgi записан == false 
-	{
-		std::cout << "BODY: " << message << "\n";
+	// if (cgiWriteFlag == false)		// флаг cgi записан == false 
+	// {
+	// 	std::cout << "BODY: " << message << "\n";
 
-		wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
-		totalSent += wrtRet;
-		if (totalSent == message.length()) //SIGPIPE
-		{
-			close(pipe1[PIPE_IN]);
-			cgiWriteFlag = true;
-		}
-	}
+	// 	wrtRet = write(pipe1[PIPE_IN], message.c_str(), message.length());
+	// 	totalSent += wrtRet;
+	// 	if (totalSent == message.length()) //SIGPIPE
+	// 	{
+	// 		close(pipe1[PIPE_IN]);
+	// 		cgiWriteFlag = true;
+	// 	}
+	// }
 
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
-		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
+		// std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
 		//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
 		readRet = read(pipe2[PIPE_OUT], buff, BUF);  // ret -1
 
@@ -364,7 +406,7 @@ void Client::makePostResponse(char **envp)
 		waitpid(pid, &status, 0); // ???
 		cleaner();
 		close(pipe2[PIPE_OUT]);
-		std::cout << "COMPLEATING POST RESPONSE2\n"; 
+		// std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
 }
 
@@ -376,8 +418,7 @@ void Client:: makeDeleteResponse(char **envp)	{
 		statusCode = 204;
 		// initResponse(envp);
 		res.setFileLoc(location);
-		res.getStrStream().str("");
-		res.getStrStream().clear();
+		clearStrStream(res.getStrStream());
 		res.make_response_html(204, resCode[204]);
 
 		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
@@ -388,15 +429,36 @@ void Client:: makeDeleteResponse(char **envp)	{
 	}
 }
 
+void Client:: makePutResponse(char **envp)	{
+	std::cout << RED << "PUT\n" << RESET;
+	std::ofstream file(location);
+	std::cout << GREEN << location << "\n" << RESET;
+	if (file.is_open()) {
+		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
+		file << reader.str();
+		file.close();
+	}
+	statusCode = 201;
+	res.setFileLoc(location);
+	clearStrStream(res.getStrStream());
+	res.make_response_html(201, resCode[201]);
+	if (res.sendResponse_stream(socket))  {
+		status |= RESP_DONE;
+		cleaner();
+	}
+	// exit(1);
+}
+
 void Client::cleaner()
 {
 	if (status & ERROR)
 		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	else
 		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	message.clear();
-	tail.clear();
+	clearStream();
 	location.clear();
+	header.clear();
+	envpVector.clear();
 	req.cleaner();
 	res.cleaner();
 	statusCode = 0;
@@ -405,7 +467,12 @@ void Client::cleaner()
 	srv = NULL;
 }
 
-void Client::setMessage(const std::string &mess) { message = mess; }
+void Client::setStream( const std::stringstream & mess, const size_t size ) {
+	reader.str(std::string());
+	reader.clear();
+	reader << mess.rdbuf();
+	reader_size = size;	
+}
 void Client::setServer(Server_block *s)
 {
 	srv = s;
@@ -422,7 +489,9 @@ Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
 size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
 std::string		Client::getHost() const { return req.getHost(); }
-std::string		Client::getMessage() const { return message; }
+std::string &	Client::getHeader( void ) { return header; }
+size_t			Client::getStreamSize( void ) { return reader_size; }
+std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
 int *			Client::getPipe1() { return pipe1; };
 int *			Client::getPipe2() { return pipe2; };
@@ -459,13 +528,14 @@ Client::Client(size_t nwsock)
 {
 	fullpart = false;
 	location.clear();
-	message.clear();
+	header.clear();
+	reader_size = 0;
 	socket = nwsock;
 	status = 0;
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
-	res.setTime(getCurTime());
+	envpVector.clear();
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -505,10 +575,11 @@ Client::Client(size_t nwsock)
 	this->resCode.insert(std::make_pair(504, "Gateway Timeout"));
 }
 
-Client::~Client() {}
+Client::~Client() {
+	res.setCookie("");
+}
 
-int Client::parseLocation()
-{
+int Client::parseLocation()	{
 	statusCode = 200;
 	if (req.getMIMEType() == "none")
 		status |= IS_DIR;
@@ -517,9 +588,23 @@ int Client::parseLocation()
 	if (req.getMethod() != "DELETE" && loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
 			std::cout << CYAN << "REDIRECT" << RESET << "\n";
+			location = req.getReqURI();
+			// std::cout << "location after makeRedirect - " << location << "\n";
 			return 0;
 		}
 	}
+	// std::cout << PURPLE << "envpVector.size() - " << envpVector.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = envpVector.begin();
+    // for (; it != envpVector.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
+    //     it++;
+    // }
+	// std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
+	// if (req.getContType() == "application/x-www-form-urlencoded")// {
+	// 	// std::cout << "content type if it's equal- " << req.getContType() << "\n";
+	// 	parseEnvpFromBody();
+	// } else
+		// std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -538,89 +623,78 @@ int Client::parseLocation()
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
-	location = root + locn + req.getReqURI().substr(subpos);
-
+	// if (req.getReqURI().find("http") == std::string::npos) {
+		location = root + locn + req.getReqURI().substr(subpos);
+	// else 
+		// location = req.getReqURI();
 	// FOR INTRA TESTER
-	// std::cout << location << "\n";
-	// if (location.find("directory") != std::string::npos) {
-	// 	location.erase(location.find("directory"), 10);
-	// 	std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
-	// }
-	// std::cout << location << '\n';
+	std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
+	if (location.find("directory") != std::string::npos) {
+		location.erase(location.find("directory"), 10);
+		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+	}
+	std::cout << location << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
-	if (status & IS_DIR)
-	{
-		if (location.size() && location[location.size() - 1] != '/')
-		{
-			statusCode = 301; // COMMENT IT FOR TESTER
+	if (req.getMethod() == "PUT")
+		return 1;
+	if (status & IS_DIR)	{
+		if (location.size() && location[location.size() - 1] != '/')	{
+			// statusCode = 301; // COMMENT IT FOR TESTER
 			location.push_back('/');
-			if (access(location.c_str(), 0) == -1)
-			{
+			if (access(location.c_str(), 0) == -1)	{
 				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
 				throw codeException(404);
 			}
 			status |= REDIRECT;
-			return 0;
-		}
-		else
-		{ // COMMENT IT FOR TESTER
+			// return 0; // COMMENT IT FOR TESTER
+		} //	else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
-			if (!loc->get_autoindex())
-			{
-				while (++i < indexes.size())
-				{
+			if (!loc->get_autoindex())	{
+				while (++i < indexes.size())	{
 					std::string tmp = location + indexes[i];
-					if (access(tmp.c_str(), 0) != -1)
-					{
+					if (access(tmp.c_str(), 0) != -1)	{
 						location = tmp;
 						req.setMIMEType(indexes[i]);
 						break;
 					}
 				}
-				if (i == indexes.size())
-				{
+				if (i == indexes.size())	{
 					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 			}
-			else
-			{
-				if (access(location.c_str(), 0) == -1)
-				{
+			else	{
+				if (access(location.c_str(), 0) == -1)		{
 					std::cout << RED << "No such directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 				status |= AUTOIDX;
 			}
-		} // COMMENT IT FOR TESTER
+		// } // COMMENT IT FOR TESTER
 	}
-	else if (status & IS_FILE)
-	{ // FILE
-		if (access(location.c_str(), 0) == -1)
-		{
+	else if (status & IS_FILE)	{ // FILE
+		if (access(location.c_str(), 0) == -1)	{
 			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
 	}
-	if (access(location.c_str(), 4) == -1)
-	{
+	if (access(location.c_str(), 4) == -1)	{
 		std::cout << RED << "Permisson denied: " << location << RESET << "\n";
 		throw codeException(403);
 	}
-	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
+	std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 
-int Client::makeRedirect(int code, std::string loc)
-{
+int Client::makeRedirect(int code, std::string loc){
 	status |= REDIRECT;
-	std::cout << "code - " << code << ", loc - " << loc << "\n";
+	// std::cout << "code - " << code << ", loc - " << loc << "\n";
 	statusCode = code;
 	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
 	req.splitLocation(loc);
@@ -628,7 +702,26 @@ int Client::makeRedirect(int code, std::string loc)
 	return 1;
 }
 
-// cookie: _ga=GA1.2.2120095365.1653411668; _gid=GA1.2.1298615499.1655479922
-void Client::createCookie() {
-	
-}
+// void Client::parseEnvpFromBody() {
+// 	std::vector<std::string> vec;
+//     std::istringstream strs(req.getBody());
+// 	std::string s, key, val = "none";
+// 	std::string body = req.getBody();
+// 	size_t pos = 0;
+// 	// std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
+// 	while (std::getline(strs, s, '&'))
+//         vec.push_back(s);
+// 	// std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
+// 	for (int i = 0; i < vec.size(); i++) {
+// 		pos = vec[i].find("=");
+// 		key = vec[i].substr(0, pos);
+// 		val = vec[i].substr(pos + 1);
+// 		envpVector.insert(std::make_pair(key, val));
+// 	}
+// 	// std::cout << "envpVector.size() - " << envpVector.size() << "\n";
+//     // std::map<std::string, std::string>::iterator it = envpVector.begin();
+//     // for (; it != envpVector.end(); it++) {
+//     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
+//     //     // it++;
+//     // }
+// }

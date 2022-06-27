@@ -3,7 +3,6 @@
 webserv
 a.out
 /.vscode/
-/YoupiBanane/
 /logs/
 /site/gds/
 nginx.conf
