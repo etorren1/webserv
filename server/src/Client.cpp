@@ -418,8 +418,7 @@ void Client:: makeDeleteResponse(char **envp)	{
 		statusCode = 204;
 		// initResponse(envp);
 		res.setFileLoc(location);
-		res.getStrStream().str("");
-		res.getStrStream().clear();
+		clearStrStream(res.getStrStream());
 		res.make_response_html(204, resCode[204]);
 
 		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
@@ -432,8 +431,8 @@ void Client:: makeDeleteResponse(char **envp)	{
 
 void Client:: makePutResponse(char **envp)	{
 	std::cout << RED << "PUT\n" << RESET;
-	std::ofstream file(req.getReqURI());
-	std::cout << GREEN << req.getReqURI() << "\n" << RESET;
+	std::ofstream file(location);
+	std::cout << GREEN << location << "\n" << RESET;
 	if (file.is_open()) {
 		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
 		file << reader.str();
@@ -441,9 +440,12 @@ void Client:: makePutResponse(char **envp)	{
 	}
 	statusCode = 201;
 	res.setFileLoc(location);
-	res.getStrStream().str("");
-	res.getStrStream().clear();
+	clearStrStream(res.getStrStream());
 	res.make_response_html(201, resCode[201]);
+	if (res.sendResponse_stream(socket))  {
+		status |= RESP_DONE;
+		cleaner();
+	}
 	// exit(1);
 }
 
@@ -618,8 +620,6 @@ int Client::parseLocation()	{
 			std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
 			throw codeException(405);
 		}
-		if (method == "PUT")
-			return 1;
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
@@ -640,6 +640,8 @@ int Client::parseLocation()	{
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
+	if (req.getMethod() == "PUT")
+		return 1;
 	if (status & IS_DIR)	{
 		if (location.size() && location[location.size() - 1] != '/')	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
