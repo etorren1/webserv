@@ -58,8 +58,10 @@ int Response::sendResponse_file(const size_t socket)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(!_file.is_open())
+	if(!_file.is_open()) {
+		std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
 		throw(codeException(404));
+	}
 	
 	_file.read (buffer, RES_BUF_SIZE);
 		_bytesRead = _file.gcount();
@@ -83,7 +85,7 @@ int Response::sendResponse_file(const size_t socket)
 	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 		_file.close();
-		
+		_file.clear();
 		return (1);
 	}
 	return (0);
@@ -123,12 +125,16 @@ int Response::sendResponse_stream(const size_t socket)
 }
 
 
-void Response::addCgiVar(char ***envp, Request req)
+void Response::addCgiVar(char ***envp, Request req, std::map<std::string, std::string> & envpMap)
 {
 	char **tmp;
 	size_t numOfLines = 0;
 	size_t i = 0;
+	size_t startIndx;
+	std::map<std::string, std::string>::iterator begin;
+	std::map<std::string, std::string>::iterator end;
 
+	begin = envpMap.begin();
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
@@ -136,7 +142,7 @@ void Response::addCgiVar(char ***envp, Request req)
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4)); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpMap.size())); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)
 	{
@@ -147,13 +153,25 @@ void Response::addCgiVar(char ***envp, Request req)
 	tmp[numOfLines] = strdup(req_metod.c_str());
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
 	tmp[numOfLines + 2] = strdup(path_info.c_str());
-	tmp[numOfLines + 3] = NULL;
+
+	startIndx = numOfLines + 3;
+
+	while (begin != end)
+	{
+		// tmp[startIndx] = strdup(*begin);
+		startIndx++;
+		begin++;
+	}
+	tmp[startIndx] = NULL;
+
 
 	*envp = tmp;
 }
 
 void Response::cleaner()
 {
+	_file.close();
+	_file.clear();
 	_header.clear();
 	_contentType.clear();
 	_contentLength.clear();

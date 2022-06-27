@@ -73,6 +73,7 @@ bool Request::parseText(std::string text) {
     // if (!(checkHeaders(_headers, "Host", _host)))
     //     throw codeException(400);
     findHost();
+    findBoundary();
     return _bodyExist;
 }
 
@@ -90,6 +91,7 @@ void Request::parseStartLine(std::string str) {
     }
     if (_method != "GET" && _method != "POST" && \
      _method != "PUT" && _method != "DELETE") {
+        std::cout << RED << "Method " << _method << " not allowed: has 405 exception " << RESET << "\n";
         throw codeException(405);
     }
     // std::cout << GREEN << "_method = |" << _method << "|\n";
@@ -166,8 +168,10 @@ void Request::parseMIMEType() {
 }
 
 void Request::findHost() {
-    if (!(checkHeaders(_headers, "Host", _host)))
+    if (!(checkHeaders(_headers, "Host", _host))) {
+        std::cout << RED << "Host not found: has 400 exception " << RESET << "\n";
         throw codeException(400);
+    }
     if (_host.find("localhost") != std::string::npos) {
         std::string ip = "127.0.0.1" + _host.substr(9);
         _host = ip;
@@ -281,13 +285,57 @@ void Request::parseEnvpFromBody(std::map<std::string, std::string>&map) {
     //     std::cout << PURPLE << "|" << (*it).first << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
     // }
 }
+#include <cstring>
 
-void Request::parseBody(std::stringstream & reader, std::map<std::string, std::string>&map) {
-    _body = reader.str();
-    if (getContType() == "application/x-www-form-urlencoded")        
-		parseEnvpFromBody(map);
-    else if (getContType().find("multipart/form-data") != std::string::npos) {
-        findBoundary();
+static void trimChunks(std::stringstream & reader, size_t size) {
+    char buf[size + 1];
+    bzero(buf, size + 1);
+    reader.read(buf, size);
+    clearStrStream(reader);
+    
+    size_t begin = find_CRLN(buf, size) + 2;
+    size_t end = 0;
+    while (begin && begin < size - 2) {
+        end = find_CRLN(&buf[begin], size - begin, begin) + 2;
+        // std ::cout << "begin = " << begin << " size = " << size << " end = " << end << "\n";
+        // std::cout << "create tmp\n";
+        char tmp[end - begin + 1];
+        bzero(tmp, end - begin + 1);
+        // std::cout << "memcpy\n";
+        memcpy(tmp, &buf[begin], end - begin);
+
+        // std::cout << "show tmp\n";
+        // for (size_t i = 0; i < end - begin; i++)
+        // {
+        //     printf("%d ", tmp[i]);
+        //     if (i % 25 == 0)
+        //         std::cout << "\n";
+        // }
+        // std::cout << "\n";
+
+        reader << tmp;
+        begin = find_CRLN(&buf[end], size - end, end) + 2;
+    }
+    if (!begin)
+        std::cout << RED << "ALERT! something wrong in body chunk" << RESET << "\n";
+
+    // std::cout << CYAN << "size = " << reader.str().size() << "\n" << reader.str() << RESET << "\n";
+}
+
+void Request::parseBody(std::stringstream & reader, size_t reader_size, std::map<std::string, std::string>&map) {
+    if (_transferEnc.size()) {
+        if (_transferEnc == "chunked") {
+            trimChunks(reader, reader_size);
+        }
+    }
+    else if (_contentLength.size()) {
+        if (_boundary.size()) {
+            ;
+        }
+        else if (getContType() == "application/x-www-form-urlencoded") {
+            _body = reader.str();
+            parseEnvpFromBody(map);
+        }
     }
 }
 

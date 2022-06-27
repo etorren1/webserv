@@ -91,7 +91,7 @@ class Response
 		}
 		
 		//for makePostResponse:
-		void addCgiVar(char ***envp, Request req);
+		void addCgiVar(char ***envp, Request req, std::map<std::string, std::string> & envpMap);
 		/*	adds to exported environment variables new three
 			which are CGI environment variables to pass them all
 			to CGI new stream */

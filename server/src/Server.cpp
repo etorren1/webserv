@@ -184,6 +184,7 @@ void Server::clientRequest(const int socket) {
         client[socket]->setServer(srv);
         writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
+
             if (client[socket]->status & IS_BODY) {
                 writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
                 std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
@@ -227,14 +228,6 @@ void Server::mainHandler( void ) {
     }
 }
 
-static int find_2xCRLN( char* buf, size_t size ) {
-    for (size_t i = 0; i < size - 3; i++)
-        if (buf[i] == '\r' && buf[i + 1] == '\n'
-            && buf[i + 2] == '\r' && buf[i + 3] == '\n')
-            return (i);
-    return (0);
-}
-
 int     Server::readRequest( const size_t socket ) {
     char buf[BUF_SIZE + 1];
     long bytesRead = 0;
@@ -253,15 +246,15 @@ int     Server::readRequest( const size_t socket ) {
         text << buf;
         if (client[socket]->status & IS_BODY)
            checkBodySize(socket, bytesRead);
-        else if (find_2xCRLN(buf, BUF_SIZE))
+        else if (find_CRLN(&buf[find_CRLN(buf, BUF_SIZE)] + 1, 2))
             break;
     }
+    // std::cout << "|" << CYAN << text.str() << RESET << "|\n";
+    writeLog("logs/bad.log", "Client " + itos(socket) + " body:", text.str());
     if (client[socket]->status & IS_BODY)
         std::cout << GREEN << "Readed " << bytesRead << " bytes of body." << RESET << "\n";
     client[socket]->setStream(text, bytesRead);
-    writeLog("logs/bad.log", "Client " + itos(socket) + " body:", client[socket]->getStream().str());
     client[socket]->checkMessageEnd();
-    //std::cout << CYAN << "bytes = " << bytesRead << " End read" << RESET << "\n";
     return (bytesRead);
 }
 
