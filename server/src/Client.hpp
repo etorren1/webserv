@@ -49,7 +49,7 @@ class Client
 		int					pipe2[2];
 		pid_t				pid;
 		int					ex;
-		id_t				totalSent;
+		size_t				totalSent;
 
 	public:
 		int			iter; //TEMPORARY - TO DELETE

@@ -1,7 +1,7 @@
 #include "Client.hpp"
 #include "Utils.hpp"
 #include <errno.h>
-#define BUF 256   //можно заменить на общий buff
+#define BUF 2048   //можно заменить на общий buff
 
 void Client::clearStream( void ) {
 	reader.seekg(0);
@@ -333,7 +333,7 @@ void Client::extractCgiHeader( char * buff )
 
 void Client::makePostResponse(char **envp)
 {
-	// std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
 	// std::cout << "iter = " << iter << "\n";
 	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
@@ -345,9 +345,16 @@ void Client::makePostResponse(char **envp)
 	if (cgiWriteFlag == false)		// флаг cgi записан == false 
 	{
 		// std::cout << "BODY: " << reader << "\n";
-
-		wrtRet = write(pipe1[PIPE_IN], reader.str().c_str(), reader.str().length());
-		totalSent += wrtRet;
+		std::cout << "BEFORE WRITE"  << "\n";
+		
+		size_t sss = reader.str().length();
+		while (totalSent < sss)
+		{
+			reader.read(buff, BUF);
+			wrtRet = write(pipe1[PIPE_IN], buff, BUF);
+			totalSent += wrtRet;
+		}
+		std::cout << "AFTER WRITE" << "\n";
 		if (totalSent == reader.str().length()) //SIGPIPE
 		{
 			close(pipe1[PIPE_IN]);

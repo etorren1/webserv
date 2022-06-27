@@ -135,6 +135,7 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	std::vector<std::string>::iterator end;
 
 	begin = envpVector.begin();
+	end = envpVector.end();
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
