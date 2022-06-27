@@ -37,7 +37,7 @@ class Client
 		std::string							header;
 
 		std::map<int, std::string>			resCode;
-		std::map<std::string, std::string>	envpMap;
+		std::vector<std::string>	envpVector;
 		int									statusCode;
 		std::string							location;
 

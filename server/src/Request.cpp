@@ -264,26 +264,26 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
     return 0;
 }
 
-void Request::parseEnvpFromBody(std::map<std::string, std::string>&map) {
-    std::vector<std::string> vec;
+void Request::parseEnvpFromBody(std::vector<std::string>&vec) {
+    // std::vector<std::string> vec;
     std::istringstream strs(_body);
 	std::string s, key, val = "none";
 	size_t pos = 0;
 	while (std::getline(strs, s, '&'))
         vec.push_back(s);
-	for (int i = 0; i < vec.size(); i++) {
-		pos = vec[i].find("=");
-		key = vec[i].substr(0, pos);
-		val = vec[i].substr(pos + 1);
-		map.insert(std::make_pair(key, val));
-        // std::cout << BLUE << "key&val " << key << " " << val << "\n" << RESET;
-        // std::cout << CYAN << "map     " << key << " " << map[key] << "\n" << RESET;
-	}
+	// for (int i = 0; i < vec.size(); i++) {
+	// 	pos = vec[i].find("=");
+	// 	key = vec[i].substr(0, pos);
+	// 	val = vec[i].substr(pos + 1);
+	// 	map.insert(std::make_pair(key, val));
+    //     // std::cout << BLUE << "key&val " << key << " " << val << "\n" << RESET;
+    //     // std::cout << CYAN << "map     " << key << " " << map[key] << "\n" << RESET;
+	// }
     // std::cout << YELLOW << "map.size() - " << map.size() << "\n" << RESET;
-    // std::map<std::string, std::string>::iterator it = map.begin();
-    // for (; it != map.end(); it++) {
-    //     std::cout << PURPLE << "|" << (*it).first << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
-    // }
+    std::vector<std::string>::iterator it = vec.begin();
+    for (; it != vec.end(); it++) {
+        std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
+    }
 }
 #include <cstring>
 
@@ -322,7 +322,7 @@ static void trimChunks(std::stringstream & reader, size_t size) {
     // std::cout << CYAN << "size = " << reader.str().size() << "\n" << reader.str() << RESET << "\n";
 }
 
-void Request::parseBody(std::stringstream & reader, size_t reader_size, std::map<std::string, std::string>&map) {
+void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vector<std::string>&vec) {
     if (_transferEnc.size()) {
         if (_transferEnc == "chunked") {
             trimChunks(reader, reader_size);
@@ -334,7 +334,7 @@ void Request::parseBody(std::stringstream & reader, size_t reader_size, std::map
         }
         else if (getContType() == "application/x-www-form-urlencoded") {
             _body = reader.str();
-            parseEnvpFromBody(map);
+            parseEnvpFromBody(vec);
         }
     }
 }
