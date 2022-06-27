@@ -58,6 +58,7 @@ class Client
 
 		void 						checkMessageEnd( void );
 		void						savePartOfStream( size_t pos );
+		void						clearStream( void );
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
 		int							parseLocation( );

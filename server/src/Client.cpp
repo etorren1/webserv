@@ -3,6 +3,13 @@
 #include <errno.h>
 #define BUF 256   //можно заменить на общий buff
 
+void Client::clearStream( void ) {
+	reader.seekg(0);
+	reader.str(std::string());
+	reader.clear();
+	reader_size = 0;
+}
+
 void Client::savePartOfStream( size_t pos ) {
 	std::cout << RED << pos + 4 << " != " << reader_size << " tail detected" << RESET << "\n";
 	char buf[reader_size - pos - 3];
@@ -25,16 +32,29 @@ void Client::checkMessageEnd( void ) {
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
 		// std::cout << BLUE << "Content-Length: " << req.getСontentLenght() << RESET << "\n";
 
-		// if (req.getTransferEnc() == "chunked")
-		// {
-		// 	char buf[6];
-			
-		// 	if (message.find("0\r\n\r\n"))
-		// 		fullpart = true;
-		// 	else
-		// 		fullpart = false;
-		// }
-		if (req.getContentLenght().size())
+		if (req.getTransferEnc() == "chunked")
+		{
+			char buf[6];
+			bzero(buf, 5);
+			reader.seekg(reader_size - 5);
+			reader.read(buf, 5);
+			reader.seekg(0);
+			std::cout << "reader_size = " << reader_size << "\n";
+			// std::cout << "start bytes print: " << "\n";
+			// for (size_t i = 0; i < 5; i++)
+			// {
+			// 	printf("%d ", buf[i]);
+			// }
+			// std::cout << "\n";
+			// std::cout << "end bytes print\n";
+
+			if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
+				&& buf[3] == '\r' && buf[4] == '\n')
+				fullpart = true;
+			else
+				fullpart = false;
+		}
+		else if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
 			std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
@@ -47,8 +67,8 @@ void Client::checkMessageEnd( void ) {
 		}
 		else {
 			std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
-			// throw codeException(400);
 			fullpart = true;
+			//throw codeException(400);
 		}
 		// ЕСЛИ Transfer-Encoding ждем 0
 		// ECЛИ Content-length ждем контент лен
@@ -60,6 +80,8 @@ void Client::checkMessageEnd( void ) {
 		if (pos != std::string::npos) {
 			if (pos + 4 != reader_size) // part of body request got into the header
 				savePartOfStream(pos);
+			else
+				clearStream();
 			header.erase(pos + 4);
 			while (header.find("\r") != std::string::npos) {
 				header.erase(header.find("\r"), 1); // из комбинации CRLF
@@ -76,7 +98,7 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
-		req.parseBody(reader, envpMap);
+		req.parseBody(reader, reader_size, envpMap);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -87,12 +109,16 @@ void Client::handleRequest(char **envp)
 		{
 			// std::cout << PURPLE << "IS_BODY" << RESET << "\n";
 			status |= IS_BODY;
-			checkMessageEnd();
-			if (fullpart) {
-				std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
-				req.parseBody(reader, envpMap);
-				status |= REQ_DONE;
+			if (reader_size) {
+				checkMessageEnd();
+				if (fullpart) {
+					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
+					req.parseBody(reader, reader_size, envpMap);
+					status |= REQ_DONE;
+				}
 			}
+			else
+				fullpart = false;
 		}
 		else {
 			// std::cout << GREEN << "REQ_DONE without body" << RESET << "\n";
@@ -267,9 +293,9 @@ void Client::makeGetResponse()
 	}
 	if (status & RESP_DONE)
 	{
+		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 		// std::cout << "GET cleaner() must be ending\n";
-		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
 	}
 }
 
@@ -414,22 +440,6 @@ void Client:: makePutResponse(char **envp)	{
 	res.getStrStream().str("");
 	res.getStrStream().clear();
 	res.make_response_html(201, resCode[201]);
-	// if (remove(location.c_str()) != 0) 
-	// 	codeException(403);
-	// else {
-	// 	statusCode = 204;
-	// 	// initResponse(envp);
-	// 	res.setFileLoc(location);
-	// 	res.getStrStream().str("");
-	// 	res.getStrStream().clear();
-	// 	res.make_response_html(204, resCode[204]);
-
-	// 	// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
-	// 	if (res.sendResponse_stream(socket))  {
-	// 		status |= RESP_DONE;
-	// 		cleaner();
-	// 	}
-	// }
 }
 
 void Client::cleaner()
@@ -438,11 +448,10 @@ void Client::cleaner()
 		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	else
 		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	reader.str(std::string()); // clear content in stream
-	reader.clear();
-	reader_size = 0;
+	clearStream();
 	location.clear();
 	header.clear();
+	envpMap.clear();
 	req.cleaner();
 	res.cleaner();
 	statusCode = 0;
@@ -519,6 +528,7 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
+	envpMap.clear();
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
