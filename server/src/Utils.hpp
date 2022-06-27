@@ -23,9 +23,9 @@ class Client;
 
 std::vector<std::string>	split(std::string str, std::string delimiter, std::string trimer = "");
 std::string					trim(std::string str, std::string cut);
-// std::string					itos( int const & num );
 bool 						existDir(const char * name);
 std::string					itos( long long const & num );
+size_t 						find_CRLN( char* buf, size_t size, size_t indent = 0 );
 std::string					getCurTime(); //https://stackoverflow.com/questions/7548759/generate-a-date-string-in-http-response-date-format-in-c
 long long					getFileSize(const char *fileLoc);
 long						getStrStreamSize(std::stringstream &strm);

@@ -58,8 +58,10 @@ int Response::sendResponse_file(const size_t socket)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
-	if(!_file.is_open())
+	if(!_file.is_open()) {
+		std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
 		throw(codeException(404));
+	}
 	
 	_file.read (buffer, RES_BUF_SIZE);
 		_bytesRead = _file.gcount();
@@ -83,7 +85,7 @@ int Response::sendResponse_file(const size_t socket)
 	if (_file.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
 		_file.close();
-		
+		_file.clear();
 		return (1);
 	}
 	return (0);
@@ -154,6 +156,8 @@ void Response::addCgiVar(char ***envp, Request req)
 
 void Response::cleaner()
 {
+	_file.close();
+	_file.clear();
 	_header.clear();
 	_contentType.clear();
 	_contentLength.clear();
