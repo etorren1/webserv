@@ -125,16 +125,16 @@ int Response::sendResponse_stream(const size_t socket)
 }
 
 
-void Response::addCgiVar(char ***envp, Request req, std::map<std::string, std::string> & envpMap)
+void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & envpVector)
 {
 	char **tmp;
 	size_t numOfLines = 0;
 	size_t i = 0;
 	size_t startIndx;
-	std::map<std::string, std::string>::iterator begin;
-	std::map<std::string, std::string>::iterator end;
+	std::vector<std::string>::iterator begin;
+	std::vector<std::string>::iterator end;
 
-	begin = envpMap.begin();
+	begin = envpVector.begin();
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
@@ -142,7 +142,7 @@ void Response::addCgiVar(char ***envp, Request req, std::map<std::string, std::s
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpMap.size())); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpVector.size())); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)
 	{
@@ -163,7 +163,6 @@ void Response::addCgiVar(char ***envp, Request req, std::map<std::string, std::s
 		begin++;
 	}
 	tmp[startIndx] = NULL;
-
 
 	*envp = tmp;
 }

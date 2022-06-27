@@ -98,7 +98,7 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
-		req.parseBody(reader, reader_size, envpMap);
+		req.parseBody(reader, reader_size, envpVector);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -113,7 +113,7 @@ void Client::handleRequest(char **envp)
 				checkMessageEnd();
 				if (fullpart) {
 					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
-					req.parseBody(reader, reader_size, envpMap);
+					req.parseBody(reader, reader_size, envpVector);
 					status |= REQ_DONE;
 				}
 			}
@@ -184,7 +184,7 @@ void Client::initResponse(char **envp)	{
 		iter = 0;
 		cgiWriteFlag = false;
 		totalSent = 0;
-		res.addCgiVar(&envp, req, envpMap);
+		res.addCgiVar(&envp, req, envpVector);
 
 		if (pipe(pipe2))
 			throw(codeException(500));
@@ -410,8 +410,7 @@ void Client:: makeDeleteResponse(char **envp)	{
 		statusCode = 204;
 		// initResponse(envp);
 		res.setFileLoc(location);
-		res.getStrStream().str("");
-		res.getStrStream().clear();
+		clearStrStream(res.getStrStream());
 		res.make_response_html(204, resCode[204]);
 
 		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
@@ -422,12 +421,42 @@ void Client:: makeDeleteResponse(char **envp)	{
 	}
 }
 
+void Client:: makePutResponse(char **envp)	{
+	std::cout << RED << "PUT\n" << RESET;
+	std::ofstream file(location);
+	std::cout << GREEN << location << "\n" << RESET;
+	if (!file.is_open()) {
+		int sep = location.find_last_of("/");
+		if (sep != std::string::npos) {
+			rek_mkdir(location.substr(0, sep));
+		}
+		file.open(location);
+	}
+	if (file.is_open()) {
+		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
+		file << reader.str();
+		file.close();
+	} else {
+		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
+		throw codeException(406);
+	}
+	statusCode = 201;
+	res.setFileLoc(location);
+	clearStrStream(res.getStrStream());
+	res.make_response_html(201, resCode[201]);
+	if (res.sendResponse_stream(socket))  {
+		status |= RESP_DONE;
+		cleaner();
+	}
+	// exit(1);
+}
+
 void Client::cleaner()
 {
 	if (status & ERROR)
 		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	else
-		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
+	else if (status & RESP_DONE)
+		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << " with code " << statusCode << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	clearStream();
 	location.clear();
 	header.clear();
@@ -564,9 +593,9 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-	// std::cout << PURPLE << "envpMap.size() - " << envpMap.size() << "\n" << RESET;
-    // std::map<std::string, std::string>::iterator it = envpMap.begin();
-    // for (; it != envpMap.end(); it++) {
+	// std::cout << PURPLE << "envpVector.size() - " << envpVector.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = envpVector.begin();
+    // for (; it != envpVector.end(); it++) {
     //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
     //     it++;
     // }
@@ -611,6 +640,8 @@ int Client::parseLocation()	{
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
+	if (req.getMethod() == "PUT")
+		return 1;
 	if (status & IS_DIR)	{
 		if (location.size() && location[location.size() - 1] != '/')	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
@@ -685,11 +716,11 @@ int Client::makeRedirect(int code, std::string loc){
 // 		pos = vec[i].find("=");
 // 		key = vec[i].substr(0, pos);
 // 		val = vec[i].substr(pos + 1);
-// 		envpMap.insert(std::make_pair(key, val));
+// 		envpVector.insert(std::make_pair(key, val));
 // 	}
-// 	// std::cout << "envpMap.size() - " << envpMap.size() << "\n";
-//     // std::map<std::string, std::string>::iterator it = envpMap.begin();
-//     // for (; it != envpMap.end(); it++) {
+// 	// std::cout << "envpVector.size() - " << envpVector.size() << "\n";
+//     // std::map<std::string, std::string>::iterator it = envpVector.begin();
+//     // for (; it != envpVector.end(); it++) {
 //     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
 //     //     // it++;
 //     // }

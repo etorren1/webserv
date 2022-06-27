@@ -185,12 +185,12 @@ void Server::clientRequest(const int socket) {
         writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
-            if (client[socket]->status & IS_BODY) {
-                writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-                std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-                // std::cout << client[socket]->getStream().str();
-                std::cout << PURPLE << "end BODY." << RESET << "\n";
-            }
+            // if (client[socket]->status & IS_BODY) {
+            //     writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+            //     std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
+            //     std::cout << client[socket]->getStream().str();
+            //     std::cout << PURPLE << "end BODY." << RESET << "\n";
+            // }
 
             client[socket]->parseLocation();
             //std::cout << "status after location - " << client[socket]->status << "\n";
@@ -238,8 +238,6 @@ int     Server::readRequest( const size_t socket ) {
 		text << client[socket]->getStream().rdbuf();
         bytesRead = client[socket]->getStreamSize();
     }
-    if (client[socket]->status & IS_BODY)
-        std::cout << RED << "Try read BODY\n";
     while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
@@ -249,10 +247,6 @@ int     Server::readRequest( const size_t socket ) {
         else if (find_CRLN(&buf[find_CRLN(buf, BUF_SIZE)] + 1, 2))
             break;
     }
-    // std::cout << "|" << CYAN << text.str() << RESET << "|\n";
-    writeLog("logs/bad.log", "Client " + itos(socket) + " body:", text.str());
-    if (client[socket]->status & IS_BODY)
-        std::cout << GREEN << "Readed " << bytesRead << " bytes of body." << RESET << "\n";
     client[socket]->setStream(text, bytesRead);
     client[socket]->checkMessageEnd();
     return (bytesRead);
