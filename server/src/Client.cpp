@@ -27,24 +27,29 @@ void Client::checkMessageEnd( void ) {
 
 		// if (req.getTransferEnc() == "chunked")
 		// {
+		// 	char buf[6];
+			
 		// 	if (message.find("0\r\n\r\n"))
 		// 		fullpart = true;
 		// 	else
 		// 		fullpart = false;
 		// }
-		// else if (req.getContentLenght().size())
 		if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
 			std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
-			if (reader_size == len)
+			if (reader_size >= len)
 				fullpart = true;
+			// else if (reader_size > len)
+			// 	throw codeException(400);
 			else
 				fullpart = false;
 		}
-		else
+		else {
 			std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
-		// fullpart = true;
+			// throw codeException(400);
+			fullpart = true;
+		}
 		// ЕСЛИ Transfer-Encoding ждем 0
 		// ECЛИ Content-length ждем контент лен
 	}
@@ -401,7 +406,7 @@ void Client:: makePutResponse(char **envp)	{
 	std::cout << RED << "PUT\n" << RESET;
 	std::ofstream file(req.getReqURI());
 	if (file.is_open()) {
-		file << req.getBody();
+		file << reader.str();
 		file.close();
 	}
 	statusCode = 201;
@@ -627,8 +632,8 @@ int Client::parseLocation()	{
 				throw codeException(404);
 			}
 			status |= REDIRECT;
-			// return 0;
-		}//	else	{ // COMMENT IT FOR TESTER
+			// return 0; // COMMENT IT FOR TESTER
+		} //	else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex())	{

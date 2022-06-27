@@ -259,6 +259,7 @@ int     Server::readRequest( const size_t socket ) {
     if (client[socket]->status & IS_BODY)
         std::cout << GREEN << "Readed " << bytesRead << " bytes of body." << RESET << "\n";
     client[socket]->setStream(text, bytesRead);
+    writeLog("logs/bad.log", "Client " + itos(socket) + " body:", client[socket]->getStream().str());
     client[socket]->checkMessageEnd();
     //std::cout << CYAN << "bytes = " << bytesRead << " End read" << RESET << "\n";
     return (bytesRead);

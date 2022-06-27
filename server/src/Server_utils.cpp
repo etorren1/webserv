@@ -21,13 +21,13 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
     if (path != "off") {
         int fd;
         char buf[BUF_SIZE];
-        fd = open(path.c_str(), O_RDWR | O_CREAT | O_APPEND , 0777); // | O_TRUNC
+        fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777); // | O_TRUNC | O_APPEND
         if (fd < 0) {
             int sep = path.find_last_of("/");
             if (sep != std::string::npos) {
                 rek_mkdir(path.substr(0, sep));
             }
-            fd = open(path.c_str(), O_RDWR | O_CREAT | O_APPEND, 0777); // | O_TRUNC
+            fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0777); // | O_TRUNC | O_APPEND
             if (fd < 0) {
                 std::cerr << RED << "Error: can not open or create log file" << RESET << "\n";
                 return ;
@@ -48,8 +48,9 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
 }
 
 void     Server::checkBodySize( const size_t socket, size_t size ) {
-    if (size > client[socket]->getMaxBodySize()) 
-    {
+    if (client[socket]->getMaxBodySize() == 0)
+        return ;
+    if (size > client[socket]->getMaxBodySize()) {
         std::cout << RED << "Size more than client_max_body_size: has 400 exception " << RESET << "\n";
         throw codeException(400);
     }

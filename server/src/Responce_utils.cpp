@@ -17,7 +17,7 @@ void	Response::make_response_html( const int code, std::string & mess, std::stri
     std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\r\n" + location + "Version: " + "HTTP/1.1" \
                          + "\r\n" + "Content-Type: " + "text/html" + "\r\n" + "Content-Length: " + itos(responseBody.length()) + "\r\n\r\n";
     std::string response = header + responseBody;
-    // std::cout << YELLOW << response << "\n" << RESET;
+    //std::cout << YELLOW << response << "\n" << RESET;
     _contentLength = responseBody.length();
 	_stream << response;
 }
