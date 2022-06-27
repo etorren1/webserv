@@ -100,7 +100,6 @@ void Request::parseStartLine(std::string str) {
 size_t Request::findHeadersEnd(std::vector<std::string> vec) {
     // std::cout << GREEN << "_body = |" << _body << "|\n";
 
-    // const char *c = vec[]
     size_t pos = 0;
     for (size_t i = 0; i < vec.size() - 1; i++) {
         if (vec[i].length() == 0) {
@@ -128,14 +127,20 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
     }
     if ((checkHeaders(_headers, "Content-Type", _contentType) && \
         checkHeaders(_headers, "Content-Length", _contentLength)) || \
-        checkHeaders(_headers, "Transfer-Encoding", _transferEnc))
+        checkHeaders(_headers, "Transfer-Encoding", _transferEnc)) {
         _bodyExist = true;
-    else _bodyExist = false;
+        // std::cout << "body exist\n";
+        }
+    else  {
+        _bodyExist = false;
+        // std::cout << "body not exist\n";
+    }
     checkHeaders(_headers, "Status", _cgiStatusCode);
+    // std::cout << RED << getContType() << "\n";
     // std::cout << "_headers.size() - " << _headers.size() << "\n";
     // std::map<std::string, std::string>::iterator it = _headers.begin();
     // for (; it != _headers.end(); it++) {
-    //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
+    //     std::cout << GREEN << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
     //     // it++;
     // }
 }
@@ -160,32 +165,13 @@ void Request::parseMIMEType() {
     // std::cout << GREEN << "_MIMEType = |" << _MIMEType << "|\n";
 }
 
-// void Request::findType() {
-//     std::map<std::string, std::string>::iterator it = _typesMIME.begin();
-//     for ( ; it != _typesMIME.end(); it++) {
-//         if (_MIMEType == (*it).first) {
-//             _responseContentType = (*it).second;
-//         }
-//     }
-//     // std::cout << GREEN << "_responseContentType = |" << _responseContentType << "|\n";
-// }
-
 void Request::findHost() {
-    // std::map<std::string, std::string>::iterator it = _headers.begin();
-    // for ( ; it != _headers.end(); it++) {
-    //     if ((*it).first == "Host")
-    //         _host = (*it).second;
-    // }
-    // if (it == _headers.end() && _host.empty())
-        // throw codeException(400);
     if (!(checkHeaders(_headers, "Host", _host)))
         throw codeException(400);
-    // size_t pos = _host.find("localhost");
     if (_host.find("localhost") != std::string::npos) {
         std::string ip = "127.0.0.1" + _host.substr(9);
         _host = ip;
     }
-    // std::cout << GREEN << "_host = |" << _host << "|\n";
 }
 
 void Request::splitDirectories( ) {
@@ -224,6 +210,7 @@ void Request::cleaner() {
     _body.clear();
     _reqSize = 0;
     _bodyExist = false;
+    _boundary.clear();
 }
 
 std::string Request::getMethod() const { return this->_method; }
@@ -240,6 +227,7 @@ std::string Request::getTransferEnc() const { return this->_transferEnc; }
 std::string	Request::getCgiStatusCode() const { return this->_cgiStatusCode; };
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 int Request::getReqSize() const { return _reqSize; }
+std::string Request::getBoundary() const { return _boundary; }
 
 void Request::setHost(std::string host) { _host = host; }
 void Request::setReqSize() { _reqSize = _body.size(); }
@@ -264,32 +252,68 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
     for ( ; it != fMap.end(); it++) {
         if ((*it).first == checked) {
             header = (*it).second;
+            // std::cout << CYAN << "checkHeaders - " << checked << " header " << header << " found\n" << RESET;
             return 1;
         }
     }
+    // std::cout << CYAN << "checkHeaders - not found\n";
     return 0;
 }
 
-void Request::parseBody(std::string body) {
-    // std::cout << CYAN << "parseBody" << RESET << "\n";
-    // for (int i = 0; i < body.length(); i++) {
-    //     this->_body.push_back(body[i]);
+void Request::parseEnvpFromBody(std::map<std::string, std::string>&map) {
+    std::vector<std::string> vec;
+    std::istringstream strs(_body);
+	std::string s, key, val = "none";
+	size_t pos = 0;
+	while (std::getline(strs, s, '&'))
+        vec.push_back(s);
+	for (int i = 0; i < vec.size(); i++) {
+		pos = vec[i].find("=");
+		key = vec[i].substr(0, pos);
+		val = vec[i].substr(pos + 1);
+		map.insert(std::make_pair(key, val));
+        // std::cout << BLUE << "key&val " << key << " " << val << "\n" << RESET;
+        // std::cout << CYAN << "map     " << key << " " << map[key] << "\n" << RESET;
+	}
+    // std::cout << YELLOW << "map.size() - " << map.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = map.begin();
+    // for (; it != map.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it).first << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
     // }
-    _body = body;
+}
+
+void Request::parseBody(std::stringstream & reader, std::map<std::string, std::string>&map) {
+    _body = reader.str();
+    if (getContType() == "application/x-www-form-urlencoded")        
+		parseEnvpFromBody(map);
+    else if (getContType().find("multipart/form-data") != std::string::npos) {
+        findBoundary();
+    }
 }
 
 void Request::splitLocation(std::string loc) {
-    size_t posBegin = loc.find("//");
-    size_t posEnd = loc.find_last_of("/");
-    // std::string host, dir;
-    // std::cout << "before host - " << _host << ", reqURI - " << _reqURI << "\n";
-    if (posBegin != std::string::npos && posEnd != std::string::npos)
-        _host = loc.substr(posBegin + 2, posEnd - posBegin - 3);
-    if (posEnd != std::string::npos)
-        _reqURI = loc.substr(posEnd);
-    // std::cout << "after host - " << _host << ", reqURI - " << _reqURI << "\n";
+    _reqURI = loc;
+    // size_t posBegin = loc.find("//");
+    // size_t posEnd = loc.find_last_of("/");
+    // // std::string host, dir;
+    // if (posBegin != std::string::npos && posEnd != std::string::npos) {
+    //     _host = loc.substr(posBegin + 2, posEnd - posBegin - 2);
+    //     if (_host.back() == '/')
+    //         _host.pop_back();
+    // }
+    // if (posEnd != std::string::npos)
+    //     _reqURI = loc.substr(posEnd);
+    // std::cout << YELLOW<< "after host - " << _host << ", reqURI - " << _reqURI << "\n" << RESET;
 }
 
 void Request::clearHeaders(){
     _headers.clear();
+}
+
+void Request::findBoundary() {
+    size_t pos = _contentType.find("boundary=");
+    if (pos != std::string::npos) {
+        _boundary = _contentType.substr(pos);
+    }
+    std::cout << "this is boundary - " << _boundary << "\n";
 }

@@ -25,7 +25,7 @@ std::string Response::make_general_header (Request req, int statusCode)
 			// location +
 			contType +
 			contentLength +
-			"Connection: " + connection + "\r\n" +
+			"Connection: " + connection +// "\r\n" +
 			// Transfer-Encoding:
 			+ "\r\n");
 }
@@ -43,11 +43,15 @@ void Response::make_response_header(Request req, int code, std::string status, l
 		_contentLength = itos(size);
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
-
-	_header = statusLine + generalHeader;
+	addCookie(getCurTime());
+	_header = statusLine + generalHeader + _cookie;
 	_stream << _header;
 	
-	std::cout << RED << _header << RESET;
+	//std::cout << RED << _header << RESET;
+}
+
+void Response::addCookie(std::string cookie) {
+	_cookie = "Set-Cookie: time=" + cookie + ";\r\n\r\n";
 }
 
 int Response::sendResponse_file(const size_t socket)
@@ -95,6 +99,7 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	// std::cout << buffer <<"\n";
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -110,6 +115,7 @@ int Response::sendResponse_stream(const size_t socket)
 	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
+		_stream.str(std::string()); // clear content in stream
 		_stream.clear();
 		return (1);
 	}
@@ -168,16 +174,19 @@ bool Response::openFile()
 	return true;
 }
 
+int				Response::getContentLenght() { return(std::atoi(_contentLength.c_str())); }
 std::string		Response::getHeader() { return(_header); }
 std::string		Response::getContentType() { return(_contentType); }
 std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
+std::string		Response::getCookie() { return(_cookie); }
 // std::ifstream 	Response::getFileStream() { return(_file); }
 std::stringstream &	Response::getStrStream() { return(_stream); } 
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setStatusCode(std::string code){ _statusCode = code; };;
+void			Response::setStatusCode(std::string code) { _statusCode = code; };
+void			Response::setCookie(std::string cookie) { _cookie = cookie; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

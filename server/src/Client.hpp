@@ -6,7 +6,7 @@
 #include "config/Server_block.hpp"
 #include <sys/socket.h>
 #include <cstdlib>
-// #include <filesystem> C++17 !!!
+#include <sstream>
 #include <fstream>
 #include <fcntl.h>
 #include <map>
@@ -25,19 +25,24 @@
 class Client
 {
 	private:
-		Request						req;
-		Response					res;
-		Server_block				*srv;
-		Location_block				*loc;
+		Request								req;
+		Response							res;
+		Server_block						*srv;
+		Location_block						*loc;
 
-		bool						fullpart;
-		size_t						socket;
-		std::string					message;
-		std::string					tail;
+		bool								fullpart;
+		size_t								socket;
+		size_t								reader_size;
+		std::stringstream					reader;
+		std::string							header;
 
-		std::map<int, std::string>	resCode;
-		int							statusCode;
-		std::string					location;
+		std::map<int, std::string>			resCode;
+		std::map<std::string, std::string>	envpMap;
+		int									statusCode;
+		std::string							location;
+
+		//bonus:
+		std::map<std::string, std::string>	cookies;
 
 		// for POST:
 		int					pipe1[2];
@@ -52,6 +57,7 @@ class Client
 		bool		cgiWriteFlag;
 
 		void 						checkMessageEnd( void );
+		void						savePartOfStream( size_t pos );
 		void						handleRequest( char **envp );
 		void						handleError( const int code );
 		int							parseLocation( );
@@ -63,12 +69,13 @@ class Client
 		void						makeResponse( char **envp );
 		void						makeGetResponse( void );
 		void						makePostResponse( char **envp );
-		void						makeDeleteResponse( void );
+		void						makeDeleteResponse( char ** envp );
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
+		void						parseEnvpFromBody( );
 
-		void						setMessage( const std::string & mess );
+		void						setStream( const std::stringstream & mess, const size_t size);
 		void						setServer( Server_block * s );
 
 		bool 						readComplete( void ) const;
@@ -77,7 +84,9 @@ class Client
 		Response &					getResponse( void );
 		Request &					getRequest( void );
 		Server_block * 				getServer( void );
-		std::string 				getMessage( void ) const;
+		std::stringstream &			getStream( void );
+		std::string &				getHeader( void );
+		size_t						getStreamSize( void );
 		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
 		int *						getPipe1();
 		int *						getPipe2();
