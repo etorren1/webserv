@@ -430,8 +430,8 @@ void Client::cleaner()
 {
 	if (status & ERROR)
 		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	else
-		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
+	else if (status & RESP_DONE)
+		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << " with code " << statusCode << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	clearStream();
 	location.clear();
 	header.clear();
