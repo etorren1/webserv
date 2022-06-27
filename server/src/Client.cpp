@@ -172,6 +172,8 @@ void Client::initResponse(char **envp)	{
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
+	else if (req.getMethod() == "PUT")
+		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -231,6 +233,8 @@ void Client::makeResponse(char **envp)
 		makePostResponse(envp);
 	else if (req.getMethod() == "DELETE")
 		makeDeleteResponse(envp);
+	else if (req.getMethod() == "PUT")
+		makePutResponse(envp);
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
@@ -460,6 +464,7 @@ void Client::cleaner()
 	clearStream();
 	location.clear();
 	header.clear();
+	envpVector.clear();
 	req.cleaner();
 	res.cleaner();
 	statusCode = 0;
@@ -536,6 +541,7 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
+	envpVector.clear();
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
