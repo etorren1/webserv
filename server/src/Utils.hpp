@@ -30,6 +30,7 @@ std::string					getCurTime(); //https://stackoverflow.com/questions/7548759/gene
 long long					getFileSize(const char *fileLoc);
 long						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
+void						rek_mkdir( std::string path);
 
 struct codeException : public std::exception
 {

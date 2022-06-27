@@ -287,8 +287,8 @@ void Request::parseEnvpFromBody(std::vector<std::string>&vec) {
 }
 #include <cstring>
 
-static void trimChunks(std::stringstream & reader, size_t size) {
-    char buf[size + 1];
+static void trimChunks( std::stringstream & reader, size_t size ) {
+    char *buf = (char *)malloc(size + 1);
     bzero(buf, size + 1);
     reader.read(buf, size);
     clearStrStream(reader);
@@ -299,7 +299,7 @@ static void trimChunks(std::stringstream & reader, size_t size) {
         end = find_CRLN(&buf[begin], size - begin, begin) + 2;
         // std ::cout << "begin = " << begin << " size = " << size << " end = " << end << "\n";
         // std::cout << "create tmp\n";
-        char tmp[end - begin + 1];
+        char *tmp = (char *)malloc(end - begin + 1);
         bzero(tmp, end - begin + 1);
         // std::cout << "memcpy\n";
         memcpy(tmp, &buf[begin], end - begin);
@@ -315,11 +315,33 @@ static void trimChunks(std::stringstream & reader, size_t size) {
 
         reader << tmp;
         begin = find_CRLN(&buf[end], size - end, end) + 2;
+        free(tmp);
     }
+    free(buf);
     if (!begin)
         std::cout << RED << "ALERT! something wrong in body chunk" << RESET << "\n";
-
     // std::cout << CYAN << "size = " << reader.str().size() << "\n" << reader.str() << RESET << "\n";
+}
+
+static void trimBoundary( std::stringstream & reader, size_t size ) {
+    std::cout << RED << "\e[1mBOUNDARY! size = " << size << RESET << "\n";
+    char *buf = (char *)malloc(size + 1);
+    bzero(buf, size + 1);
+    reader.read(buf, size);
+    clearStrStream(reader);
+    std::cout << "show buf\n";
+    std::cout << GREEN;
+    // for (size_t i = 0; i < size; i++)
+    // {
+    //     usleep(500);
+    //     printf("%c", buf[i]);
+    //     // if (i % 25 == 0)
+    //     //     std::cout << "\n";
+    // }
+    std::cout << RESET << "\n";
+    free(buf);
+    // std::cout << RED << "EXIT" << RESET << "\n";
+    // exit(1);
 }
 
 void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vector<std::string>&vec) {
@@ -330,7 +352,7 @@ void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vec
     }
     else if (_contentLength.size()) {
         if (_boundary.size()) {
-            ;
+            trimBoundary(reader, reader_size);
         }
         else if (getContType() == "application/x-www-form-urlencoded") {
             _body = reader.str();
@@ -360,8 +382,6 @@ void Request::clearHeaders(){
 
 void Request::findBoundary() {
     size_t pos = _contentType.find("boundary=");
-    if (pos != std::string::npos) {
+    if (pos != std::string::npos)
         _boundary = _contentType.substr(pos);
-    }
-    std::cout << "this is boundary - " << _boundary << "\n";
 }

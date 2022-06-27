@@ -433,10 +433,20 @@ void Client:: makePutResponse(char **envp)	{
 	std::cout << RED << "PUT\n" << RESET;
 	std::ofstream file(location);
 	std::cout << GREEN << location << "\n" << RESET;
+	if (!file.is_open()) {
+		int sep = location.find_last_of("/");
+		if (sep != std::string::npos) {
+			rek_mkdir(location.substr(0, sep));
+		}
+		file.open(location);
+	}
 	if (file.is_open()) {
 		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
 		file << reader.str();
 		file.close();
+	} else {
+		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
+		throw codeException(406);
 	}
 	statusCode = 201;
 	res.setFileLoc(location);
@@ -453,8 +463,8 @@ void Client::cleaner()
 {
 	if (status & ERROR)
 		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	else
-		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
+	else if (status & RESP_DONE)
+		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << " with code " << statusCode << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	clearStream();
 	location.clear();
 	header.clear();
