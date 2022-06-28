@@ -95,13 +95,8 @@ void	rek_mkdir( std::string path)
     mkdir(create.c_str(), 0777);
 }
 
-// std::string	getTime()
-// {
-// 	char buf[100];
-// 	char ret[100];
-// 	time_t now = time(0);
-// 	struct tm tm = *gmtime(&now);
-// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-// 	sprintf(ret, "Time is: %s\n", buf);
-// 	return (ret);
-// };
+time_t timeChecker( ) { 
+    time_t result = time(0);
+	// std::cout << GREEN << "time - " << result << RESET << "\n";
+    return (intmax_t)result;
+}

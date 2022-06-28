@@ -22,6 +22,8 @@
 #define IS_BODY		0x100
 #define STRM_READY	0x200
 
+#define TIMEOUT		30
+
 class Client
 {
 	private:
@@ -40,6 +42,8 @@ class Client
 		std::vector<std::string>			envpVector;
 		int									statusCode;
 		std::string							location;
+		time_t								time;
+		time_t								lastTime;
 
 		//bonus:
 		std::map<std::string, std::string>	cookies;
@@ -75,10 +79,13 @@ class Client
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
-		void						parseEnvpFromBody( );
+		int							checkTimeout( long );
+		void						checkTimeout2( long );
 
 		void						setStream( const std::stringstream & mess, const size_t size);
 		void						setServer( Server_block * s );
+		void						setClientTime(time_t);
+		void						setLastTime(time_t);
 
 		bool 						readComplete( void ) const;
 		std::string					getHost( void ) const;
@@ -92,6 +99,8 @@ class Client
 		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
 		int *						getPipe1();
 		int *						getPipe2();
+		time_t						getClientTime();
+		time_t						getLastTime();
 
 		void						autoindex( const std::string & path );
 		void						extractCgiHeader( char * buff );

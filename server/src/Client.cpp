@@ -27,6 +27,8 @@ void Client::savePartOfStream( size_t pos ) {
 }
 
 void Client::checkMessageEnd( void ) {
+
+
 	if (status & IS_BODY)
 	{
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
@@ -478,6 +480,8 @@ void Client::cleaner()
 	status = 0;
 	loc = NULL;
 	srv = NULL;
+	time = timeChecker();
+	lastTime = 0;
 }
 
 void Client::setStream( const std::stringstream & mess, const size_t size ) {
@@ -497,6 +501,9 @@ void Client::setServer(Server_block *s)
 	}
 }
 
+void Client::setClientTime(time_t t) { time = t; }
+void Client::setLastTime(time_t t) { lastTime = t; }
+
 bool			Client::readComplete() const { return fullpart; }
 Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
@@ -506,8 +513,10 @@ std::string &	Client::getHeader( void ) { return header; }
 size_t			Client::getStreamSize( void ) { return reader_size; }
 std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
-int *			Client::getPipe1() { return pipe1; };
-int *			Client::getPipe2() { return pipe2; };
+int *			Client::getPipe1() { return pipe1; }
+int *			Client::getPipe2() { return pipe2; }
+time_t			Client::getClientTime() { return time; }
+time_t			Client::getLastTime() { return lastTime; }
 
 Location_block *Client::getLocationBlock(std::vector<std::string> vec) const
 {
@@ -539,6 +548,8 @@ Location_block *Client::getLocationBlock(std::vector<std::string> vec) const
 
 Client::Client(size_t nwsock)
 {
+	time = timeChecker();
+	lastTime = 0;
 	fullpart = false;
 	location.clear();
 	header.clear();
@@ -606,18 +617,6 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-	// std::cout << PURPLE << "envpVector.size() - " << envpVector.size() << "\n" << RESET;
-    // std::map<std::string, std::string>::iterator it = envpVector.begin();
-    // for (; it != envpVector.end(); it++) {
-    //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
-    //     it++;
-    // }
-	// std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
-	// if (req.getContType() == "application/x-www-form-urlencoded")// {
-	// 	// std::cout << "content type if it's equal- " << req.getContType() << "\n";
-	// 	parseEnvpFromBody();
-	// } else
-		// std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -709,32 +708,26 @@ int Client::makeRedirect(int code, std::string loc){
 	status |= REDIRECT;
 	// std::cout << "code - " << code << ", loc - " << loc << "\n";
 	statusCode = code;
-	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
 	req.splitLocation(loc);
 	req.splitDirectories();
 	return 1;
 }
 
-// void Client::parseEnvpFromBody() {
-// 	std::vector<std::string> vec;
-//     std::istringstream strs(req.getBody());
-// 	std::string s, key, val = "none";
-// 	std::string body = req.getBody();
-// 	size_t pos = 0;
-// 	// std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
-// 	while (std::getline(strs, s, '&'))
-//         vec.push_back(s);
-// 	// std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
-// 	for (int i = 0; i < vec.size(); i++) {
-// 		pos = vec[i].find("=");
-// 		key = vec[i].substr(0, pos);
-// 		val = vec[i].substr(pos + 1);
-// 		envpVector.insert(std::make_pair(key, val));
-// 	}
-// 	// std::cout << "envpVector.size() - " << envpVector.size() << "\n";
-//     // std::map<std::string, std::string>::iterator it = envpVector.begin();
-//     // for (; it != envpVector.end(); it++) {
-//     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
-//     //     // it++;
-//     // }
-// }
+int Client::checkTimeout(long bytesRead) {
+	// std::cout << GREEN << "bytesRead: " << bytesRead << " == reader_size: " << reader_size << "" << RESET << "\n";
+	if (bytesRead == reader_size && (lastTime - time) > TIMEOUT)
+			// std::cout << RED << "Timeout: " << time << " > " << TIMEOUT << " - client disconnected" << RESET << "\n";
+			return 0;
+    lastTime = timeChecker();
+	// std::cout << RED << "Time: " << time << "- lastTime:  " << lastTime << " = " << (lastTime - time) << " < "<< TIMEOUT << RESET << "\n";
+	return 1;
+}
+
+void Client::checkTimeout2(long bytesRead) {
+	if (bytesRead == reader_size && time > TIMEOUT) {
+		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
+        throw codeException(408);
+    }
+    time = timeChecker();
+	// return 1;
+}
