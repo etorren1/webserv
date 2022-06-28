@@ -43,7 +43,7 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	FILE *file;
 	struct stat buff;
 	if (!(file = fopen(fileLoc, "r"))) {
-		std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
+		// std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
 		throw codeException(404);
 	}
 	fstat (fileno (file), &buff);
@@ -84,14 +84,19 @@ void						clearStrStream(std::stringstream &strstream)
 	strstream.clear();
 }
 
+void	rek_mkdir( std::string path)
+{
+    int sep = path.find_last_of("/");
+    std::string create = path;
+    if (sep != std::string::npos) {
+        rek_mkdir(path.substr(0, sep));
+        path.erase(0, sep);
+    }
+    mkdir(create.c_str(), 0777);
+}
 
-// std::string	getTime()
-// {
-// 	char buf[100];
-// 	char ret[100];
-// 	time_t now = time(0);
-// 	struct tm tm = *gmtime(&now);
-// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-// 	sprintf(ret, "Time is: %s\n", buf);
-// 	return (ret);
-// };
+time_t timeChecker( ) { 
+    time_t result = time(0);
+	// std::cout << GREEN << "time - " << result << RESET << "\n";
+    return (intmax_t)result;
+}

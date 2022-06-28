@@ -125,12 +125,17 @@ int Response::sendResponse_stream(const size_t socket)
 }
 
 
-void Response::addCgiVar(char ***envp, Request req)
+void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & envpVector)
 {
 	char **tmp;
 	size_t numOfLines = 0;
 	size_t i = 0;
+	size_t startIndx;
+	std::vector<std::string>::iterator begin;
+	std::vector<std::string>::iterator end;
 
+	begin = envpVector.begin();
+	end = envpVector.end();
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
@@ -138,7 +143,7 @@ void Response::addCgiVar(char ***envp, Request req)
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4)); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpVector.size())); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)
 	{
@@ -149,7 +154,16 @@ void Response::addCgiVar(char ***envp, Request req)
 	tmp[numOfLines] = strdup(req_metod.c_str());
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
 	tmp[numOfLines + 2] = strdup(path_info.c_str());
-	tmp[numOfLines + 3] = NULL;
+
+	startIndx = numOfLines + 3;
+
+	while (begin != end)
+	{
+		// tmp[startIndx] = strdup(*begin);
+		startIndx++;
+		begin++;
+	}
+	tmp[startIndx] = NULL;
 
 	*envp = tmp;
 }

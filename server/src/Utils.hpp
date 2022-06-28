@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <ctime>
 
 #define RESET "\e[0m"
 #define RED "\e[31m"
@@ -30,6 +31,8 @@ std::string					getCurTime(); //https://stackoverflow.com/questions/7548759/gene
 long long					getFileSize(const char *fileLoc);
 long						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
+void						rek_mkdir( std::string path);
+time_t						timeChecker( );
 
 struct codeException : public std::exception
 {

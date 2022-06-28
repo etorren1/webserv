@@ -32,7 +32,7 @@
 #define	STOP	0b00
 #define WORKING 0b10
 #define RESTART 0b01
-#define BUF_SIZE 256
+#define BUF_SIZE 1024
 #define DEFAULT_PATH "webserv.conf"
 #define srvs_iterator std::map<std::string, Server_block * >::iterator
 #define lctn_iterator std::map<std::string, Location_block * >::iterator
@@ -63,7 +63,8 @@ class Server {
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
 		void		checkBodySize( const size_t socket, size_t size );
 		// int		    readHeader( const size_t socket, std::string & text );
-		Server_block * getServerBlock( std::string host ) const;
+		Server_block * getServerBlock( std::string host );
+		Server_block * searchServerName(std::string host);
 		void		clientRequest(const int socket);
 		bool 		noErrors( const int socket );
 
