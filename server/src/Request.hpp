@@ -4,6 +4,7 @@
 # include <iostream>
 # include <sstream>
 # include <unistd.h>
+# include <cstring>
 # include <vector>
 # include <map>
 # include "Utils.hpp"
@@ -44,11 +45,11 @@ public:
 	void									findHost();
 	void									splitDirectories();
 	void									cleaner();
-	void									setMIMEType(std::string);									
-	int										checkHeaders(std::map<std::string, std::string> fMap, std::string checked, std::string &header);
-	void									parseBody(std::stringstream &, size_t, std::map<std::string, std::string>&);
-	void									splitLocation(std::string);
-	void 									parseEnvpFromBody(std::map<std::string, std::string>&);
+	void									setMIMEType( std::string );									
+	int										checkHeaders( std::map<std::string, std::string> fMap, std::string checked, std::string &header);
+	void									parseBody( std::stringstream &, size_t, std::vector<std::string>&);
+	void									splitLocation( std::string );
+	void 									parseEnvpFromBody( std::vector<std::string>& );
 	void									clearHeaders();
 
 	std::string								getMethod() const;

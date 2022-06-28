@@ -74,6 +74,7 @@ class Server {
 			template <class T> void		cfg_set_attributes( std::string & text, T * block );
 			template <class T> void		cfg_server_name(std::string & text, T * block );
 			template <class T> void		cfg_index(std::string & text, T * block );
+			template <class T> void		cfg_cgi_index(std::string & text, T * block );
 			template <class T> void		cfg_accepted_methods(std::string & text, T * block );
 			template <class T> void     cfg_root( std::string & text, T * block );
 			template <class T> void     cfg_default_page( std::string & text, T * block );

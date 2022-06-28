@@ -98,7 +98,7 @@ void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
-		req.parseBody(reader, reader_size, envpMap);
+		req.parseBody(reader, reader_size, envpVector);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -113,7 +113,7 @@ void Client::handleRequest(char **envp)
 				checkMessageEnd();
 				if (fullpart) {
 					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
-					req.parseBody(reader, reader_size, envpMap);
+					req.parseBody(reader, reader_size, envpVector);
 					status |= REQ_DONE;
 				}
 			}
@@ -172,6 +172,8 @@ void Client::initResponse(char **envp)	{
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
+	else if (req.getMethod() == "PUT")
+		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -233,6 +235,8 @@ void Client::makeResponse(char **envp)
 		makePostResponse(envp);
 	else if (req.getMethod() == "DELETE")
 		makeDeleteResponse(envp);
+	else if (req.getMethod() == "PUT")
+		makePutResponse(envp);
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
@@ -414,8 +418,7 @@ void Client:: makeDeleteResponse(char **envp)	{
 		statusCode = 204;
 		// initResponse(envp);
 		res.setFileLoc(location);
-		res.getStrStream().str("");
-		res.getStrStream().clear();
+		clearStrStream(res.getStrStream());
 		res.make_response_html(204, resCode[204]);
 
 		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
@@ -424,6 +427,26 @@ void Client:: makeDeleteResponse(char **envp)	{
 			cleaner();
 		}
 	}
+}
+
+void Client:: makePutResponse(char **envp)	{
+	std::cout << RED << "PUT\n" << RESET;
+	std::ofstream file(location);
+	std::cout << GREEN << location << "\n" << RESET;
+	if (file.is_open()) {
+		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
+		file << reader.str();
+		file.close();
+	}
+	statusCode = 201;
+	res.setFileLoc(location);
+	clearStrStream(res.getStrStream());
+	res.make_response_html(201, resCode[201]);
+	if (res.sendResponse_stream(socket))  {
+		status |= RESP_DONE;
+		cleaner();
+	}
+	// exit(1);
 }
 
 void Client::cleaner()
@@ -435,6 +458,7 @@ void Client::cleaner()
 	clearStream();
 	location.clear();
 	header.clear();
+	envpVector.clear();
 	req.cleaner();
 	res.cleaner();
 	statusCode = 0;
@@ -511,6 +535,7 @@ Client::Client(size_t nwsock)
 	statusCode = 0;
 	srv = NULL;
 	loc = NULL;
+	envpVector.clear();
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -568,9 +593,9 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-	// std::cout << PURPLE << "envpMap.size() - " << envpMap.size() << "\n" << RESET;
-    // std::map<std::string, std::string>::iterator it = envpMap.begin();
-    // for (; it != envpMap.end(); it++) {
+	// std::cout << PURPLE << "envpVector.size() - " << envpVector.size() << "\n" << RESET;
+    // std::map<std::string, std::string>::iterator it = envpVector.begin();
+    // for (; it != envpVector.end(); it++) {
     //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
     //     it++;
     // }
@@ -585,16 +610,10 @@ int Client::parseLocation()	{
 	std::string locn = loc->get_location();
 	// if (locn[locn.size() - 1] != '/')
 	// 	locn += "/";
-	if (loc->get_accepted_methods().size())	{
-		std::string method = "";
-		for (size_t i = 0; i != loc->get_accepted_methods().size(); i++)
-			if (req.getMethod() == loc->get_accepted_methods()[i])
-				method = loc->get_accepted_methods()[i];
-		if (!method.size())
-		{
-			std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
-			throw codeException(405);
-		}
+	if (!loc->is_accepted_method(req.getMethod()))
+	{
+		std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
+		throw codeException(405);
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
@@ -615,6 +634,8 @@ int Client::parseLocation()	{
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
 		location = location.substr(1);
+	if (req.getMethod() == "PUT")
+		return 1;
 	if (status & IS_DIR)	{
 		if (location.size() && location[location.size() - 1] != '/')	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
@@ -689,11 +710,11 @@ int Client::makeRedirect(int code, std::string loc){
 // 		pos = vec[i].find("=");
 // 		key = vec[i].substr(0, pos);
 // 		val = vec[i].substr(pos + 1);
-// 		envpMap.insert(std::make_pair(key, val));
+// 		envpVector.insert(std::make_pair(key, val));
 // 	}
-// 	// std::cout << "envpMap.size() - " << envpMap.size() << "\n";
-//     // std::map<std::string, std::string>::iterator it = envpMap.begin();
-//     // for (; it != envpMap.end(); it++) {
+// 	// std::cout << "envpVector.size() - " << envpVector.size() << "\n";
+//     // std::map<std::string, std::string>::iterator it = envpVector.begin();
+//     // for (; it != envpVector.end(); it++) {
 //     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
 //     //     // it++;
 //     // }

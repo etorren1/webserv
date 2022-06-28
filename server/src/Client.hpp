@@ -37,7 +37,7 @@ class Client
 		std::string							header;
 
 		std::map<int, std::string>			resCode;
-		std::map<std::string, std::string>	envpMap;
+		std::vector<std::string>	envpVector;
 		int									statusCode;
 		std::string							location;
 
@@ -71,6 +71,7 @@ class Client
 		void						makeGetResponse( void );
 		void						makePostResponse( char **envp );
 		void						makeDeleteResponse( char ** envp );
+		void						makePutResponse( char ** envp );
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
