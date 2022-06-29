@@ -58,6 +58,21 @@ size_t 		find_CRLN( char* buf, size_t size, size_t indent ) {
     return (0);
 }
 
+size_t 		find_2xCRLN( char* buf, size_t size, size_t indent ) {
+    for (size_t i = 0; i < size - 3; i++)
+        if (buf[i] == '\r' && buf[i + 1] == '\n'
+			&& buf[i + 2] == '\r' && buf[i + 3] == '\n')
+            return (i + indent);
+    return (0);
+}
+
+std::string 	getstr(char *c, size_t size) {
+    std::string str;
+    for (size_t i = 0; i < size; i++)
+        str += c[i];
+    return str;
+}
+
 long		getStrStreamSize(std::stringstream &strm)
 {
     std::streambuf* buf = strm.rdbuf();
