@@ -43,7 +43,7 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	FILE *file;
 	struct stat buff;
 	if (!(file = fopen(fileLoc, "r"))) {
-		// std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
+		std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
 		throw codeException(404);
 	}
 	fstat (fileno (file), &buff);
@@ -56,6 +56,21 @@ size_t 		find_CRLN( char* buf, size_t size, size_t indent ) {
         if (buf[i] == '\r' && buf[i + 1] == '\n')
             return (i + indent);
     return (0);
+}
+
+size_t 		find_2xCRLN( char* buf, size_t size, size_t indent ) {
+    for (size_t i = 0; i < size - 3; i++)
+        if (buf[i] == '\r' && buf[i + 1] == '\n'
+			&& buf[i + 2] == '\r' && buf[i + 3] == '\n')
+            return (i + indent);
+    return (0);
+}
+
+std::string 	getstr(char *c, size_t size) {
+    std::string str;
+    for (size_t i = 0; i < size; i++)
+        str += c[i];
+    return str;
 }
 
 long		getStrStreamSize(std::stringstream &strm)
@@ -84,16 +99,6 @@ void		clearStrStream(std::stringstream & strstream)
 	strstream.clear();
 }
 
-void	rek_mkdir( std::string path)
-{
-    int sep = path.find_last_of("/");
-    std::string create = path;
-    if (sep != std::string::npos) {
-        rek_mkdir(path.substr(0, sep));
-        path.erase(0, sep);
-    }
-    mkdir(create.c_str(), 0777);
-}
 long		hexadecimalToDecimal(std::string hex_val)
 {
     int len = hex_val.size();
@@ -114,4 +119,21 @@ long		hexadecimalToDecimal(std::string hex_val)
         }
     }
     return dec_val;
+}
+
+void	rek_mkdir( std::string path)
+{
+    int sep = path.find_last_of("/");
+    std::string create = path;
+    if (sep != std::string::npos) {
+        rek_mkdir(path.substr(0, sep));
+        path.erase(0, sep);
+    }
+    mkdir(create.c_str(), 0777);
+}
+
+time_t timeChecker( ) { 
+    time_t result = time(0);
+	// std::cout << GREEN << "time - " << result << RESET << "\n";
+    return (intmax_t)result;
 }

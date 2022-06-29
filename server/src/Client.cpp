@@ -27,6 +27,8 @@ void Client::savePartOfStream( size_t pos ) {
 }
 
 void Client::checkMessageEnd( void ) {
+
+
 	if (status & IS_BODY)
 	{
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
@@ -182,16 +184,21 @@ void Client::initResponse(char **envp)	{
 	}
 	if (req.getMethod() == "POST")
 	{
-
 		iter = 0;
 		cgiWriteFlag = false;
 		totalSent = 0;
 		res.addCgiVar(&envp, req, envpVector);
 
 		if (pipe(pipe2))
+		{
+			std::cout << RED << "HERE0" << RESET << "\n";
 			throw(codeException(500));
+		}
 		if (pipe(pipe1))
+		{
+			std::cout << RED << "HERE1" << RESET << "\n";
 			throw(codeException(500));
+		}
 
 		size_t pos = location.rfind("/");
 		std::string fileName = location.substr(pos + 1);
@@ -200,7 +207,10 @@ void Client::initResponse(char **envp)	{
 		{
 			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
 			if ((pid = fork()) < 0)
+			{
+			std::cout << RED << "HERE2" << RESET << "\n";
 				throw(codeException(500));
+			}
 			if (pid == 0) //child - process for CGI programm
 			{
 				close(pipe1[PIPE_IN]); //Close unused pipe write end
@@ -209,7 +219,15 @@ void Client::initResponse(char **envp)	{
 				dup2(pipe2[PIPE_IN], 1);
 
 				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
+				{
+					if (!envp)
+						std::cerr << "ENVP DOES NOE EXIST\n";
+					char buffer[100];
+					std::cerr << RED << "HERE3" << RESET << "\n";
+					strerror_r( errno, buffer, 256 ); // to remove
+					std::cerr << "ERRNO: " << buffer << "\n"; // to remove
 					throw(codeException(500));
+				}
 				close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
 				close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
 				exit(ex);
@@ -346,12 +364,14 @@ void Client::makePostResponse(char **envp)
 	int					code;
 	char				buffer[200];
 
+
+
 	if (cgiWriteFlag == false)	// флаг cgi записан == false
 	{
 		wrtRet = write(pipe1[PIPE_IN], reader.str().c_str(), reader.str().length());
-
+		std::cout << "WRTRET:" << wrtRet << "\n";
 		strerror_r( errno, buffer, 256 ); // to remove
-		std::cout << "ERRNO: " << buffer; // to remove
+		std::cout << "ERRNO: " << buffer << "\n"; // to remove
 
 		totalSent += wrtRet;
 		if (totalSent == reader.str().length()) //SIGPIPE
@@ -360,32 +380,32 @@ void Client::makePostResponse(char **envp)
 			cgiWriteFlag = true;
 		}
 	}
-	if (cgiWriteFlag == false)		// флаг cgi записан == false 
-	{
-		// std::cout << "BODY: " << reader << "\n";
-		std::cout << "BEFORE WRITE"  << "\n";
+	// if (cgiWriteFlag == false)		// флаг cgi записан == false 
+	// {
+	// 	// std::cout << "BODY: " << reader << "\n";
+	// 	std::cout << "BEFORE WRITE"  << "\n";
 		
-		size_t sss = reader.str().length();
-		if (totalSent < sss)
-		{
-			reader.read(buff, BUF);
-			wrtRet = write(pipe1[PIPE_IN], buff, BUF);
-			totalSent += wrtRet;
-			std::cout << "BUF LENGTH= " <<to buff;
-		}
-		std::cout << "AFTER WRITE" << "\n";
-		if (totalSent == reader.str().length()) //SIGPIPE
-		{
-			close(pipe1[PIPE_IN]);
-			cgiWriteFlag = true;
-		}
-	}
+	// 	size_t sss = reader.str().length();
+	// 	if (totalSent < sss)
+	// 	{
+	// 		reader.read(buff, BUF);
+	// 		wrtRet = write(pipe1[PIPE_IN], buff, BUF);
+	// 		totalSent += wrtRet;
+	// 		std::cout << "BUF LENGTH= " << getstr(buff, BUF).length();
+	// 	}
+	// 	std::cout << "AFTER WRITE" << "\n";
+	// 	if (totalSent == reader.str().length()) //SIGPIPE
+	// 	{
+	// 		close(pipe1[PIPE_IN]);
+	// 		cgiWriteFlag = true;
+	// 	}
+	// }
 
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
 		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
 		readRet = read(pipe2[PIPE_OUT], buff, BUF);						//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
-
+		std::cout << "READRETURN = " << readRet << "\n";
 		if (!(status & HEAD_SENT))
 		{
 			extractCgiHeader(buff);
@@ -396,20 +416,31 @@ void Client::makePostResponse(char **envp)
 			// std::cout << "readRet " << readRet << "\n";
 			if (readRet == -1)
 			{
-				throw(codeException(500));
+			std::cout << RED << "HERE4" << RESET << "\n";
+				throw(codeException(500)); // ЗАШЕЛ СЮДА
 			}
 			if(status & STRM_READY)										//весь body уже записан в поток, отпавляем его частями клиенту, в нижние условия больше не заходим до конца response
 			{
 				if (res.sendResponse_stream(socket))
 					status |= RESP_DONE;
 			}
+			else if (readRet != 0 || iter == 0)													//записываем из буффера часть данных в поток
+			{
+				buff[readRet] = '\0';
+				std::cout << RED << "BUFF : " << buff << RESET << "\n";
+				res.getStrStream().write(buff, readRet); //вот тут появляется мусор!!!
+				std::cout << RED << "STREAM after BUFFER : " << res.getStrStream().str() << RESET << "\n";
+				iter++;
+			}
 			else if (readRet == 0)										//0 запишется в readRet один раз и больше не будет меняться до конца response
 			{
 				// std::cout << BLUE << "READ STOPED" << "\n" << RESET;
+				std::cout << "STRING: " << res.getStrStream().str() << "\n";
 				std::stringstream tmp;									//нужен, чтобы хедер записать в начало основного потока
 				status |= STRM_READY;									//все прочитали из cgi
 				code = std::atoi(req.getCgiStatusCode().c_str());
 				tmp << res.getStrStream().rdbuf();						//временyо перекладываем записанный в _strstream body в другой поток
+				std::cout << "TMP: " << tmp.str() << "\n";
 				clearStrStream(res.getStrStream());						//очищаем _stream
 				res.make_response_header(req, code, resCode[code], getStrStreamSize(tmp));
 				res.getStrStream() << tmp.str();						//!!! Возможно все не влезет в объет строки
@@ -417,11 +448,6 @@ void Client::makePostResponse(char **envp)
 					As such, the maximum size is std::string::max_size().
 					https://stackoverflow.com/questions/22025324/what-is-the-maximum-size-of-stdostringstream-buffer */
 				std::cout << "_BODY: " << res.getStrStream().str();
-			}
-			else														//записываем из буффера часть данных в поток
-			{
-				buff[readRet] = '\0';
-				res.getStrStream().write(buff, readRet);
 			}
 		}
 	}
@@ -500,6 +526,8 @@ void Client::cleaner()
 	status = 0;
 	loc = NULL;
 	srv = NULL;
+	time = timeChecker();
+	lastTime = 0;
 }
 
 void Client::setStream( const std::stringstream & mess, const size_t size ) {
@@ -519,6 +547,9 @@ void Client::setServer(Server_block *s)
 	}
 }
 
+void Client::setClientTime(time_t t) { time = t; }
+void Client::setLastTime(time_t t) { lastTime = t; }
+
 bool			Client::readComplete() const { return fullpart; }
 Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
@@ -528,8 +559,10 @@ std::string &	Client::getHeader( void ) { return header; }
 size_t			Client::getStreamSize( void ) { return reader_size; }
 std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
-int *			Client::getPipe1() { return pipe1; };
-int *			Client::getPipe2() { return pipe2; };
+int *			Client::getPipe1() { return pipe1; }
+int *			Client::getPipe2() { return pipe2; }
+time_t			Client::getClientTime() { return time; }
+time_t			Client::getLastTime() { return lastTime; }
 
 Location_block *Client::getLocationBlock(std::vector<std::string> vec) const
 {
@@ -561,6 +594,8 @@ Location_block *Client::getLocationBlock(std::vector<std::string> vec) const
 
 Client::Client(size_t nwsock)
 {
+	time = timeChecker();
+	lastTime = 0;
 	fullpart = false;
 	location.clear();
 	header.clear();
@@ -628,18 +663,6 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-	// std::cout << PURPLE << "envpVector.size() - " << envpVector.size() << "\n" << RESET;
-    // std::map<std::string, std::string>::iterator it = envpVector.begin();
-    // for (; it != envpVector.end(); it++) {
-    //     std::cout << PURPLE << "|" << (*it).first << "| - |" << (*it).second << "|\n" << RESET;
-    //     it++;
-    // }
-	// std::cout << GREEN << "req.getContentType() == application/x-www-form-urlencoded - " << (req.getContType() == "application/x-www-form-urlencoded") << "\n" << RESET;
-	// if (req.getContType() == "application/x-www-form-urlencoded")// {
-	// 	// std::cout << "content type if it's equal- " << req.getContType() << "\n";
-	// 	parseEnvpFromBody();
-	// } else
-		// std::cout << "content type if it's not equal- " << req.getContentType() << "\n";
 	size_t pos;
 	std::string root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -725,32 +748,26 @@ int Client::makeRedirect(int code, std::string loc){
 	status |= REDIRECT;
 	// std::cout << "code - " << code << ", loc - " << loc << "\n";
 	statusCode = code;
-	// if (loc.find("http") != std::string::npos || loc.find("localhost") != std::string::npos)
 	req.splitLocation(loc);
 	req.splitDirectories();
 	return 1;
 }
 
-// void Client::parseEnvpFromBody() {
-// 	std::vector<std::string> vec;
-//     std::istringstream strs(req.getBody());
-// 	std::string s, key, val = "none";
-// 	std::string body = req.getBody();
-// 	size_t pos = 0;
-// 	// std::cout << YELLOW << "req.getBody() - " << req.getBody() << "\n" << RESET;
-// 	while (std::getline(strs, s, '&'))
-//         vec.push_back(s);
-// 	// std::cout << RED << "vec.size() - " << vec.size() << "\n" << RESET;
-// 	for (int i = 0; i < vec.size(); i++) {
-// 		pos = vec[i].find("=");
-// 		key = vec[i].substr(0, pos);
-// 		val = vec[i].substr(pos + 1);
-// 		envpVector.insert(std::make_pair(key, val));
-// 	}
-// 	// std::cout << "envpVector.size() - " << envpVector.size() << "\n";
-//     // std::map<std::string, std::string>::iterator it = envpVector.begin();
-//     // for (; it != envpVector.end(); it++) {
-//     //     std::cout << "|" << (*it).first << "| - |" << (*it).second << "|\n";
-//     //     // it++;
-//     // }
-// }
+int Client::checkTimeout(long bytesRead) {
+	// std::cout << GREEN << "bytesRead: " << bytesRead << " == reader_size: " << reader_size << "" << RESET << "\n";
+	if (bytesRead == reader_size && (lastTime - time) > TIMEOUT)
+			// std::cout << RED << "Timeout: " << time << " > " << TIMEOUT << " - client disconnected" << RESET << "\n";
+			return 0;
+    lastTime = timeChecker();
+	// std::cout << RED << "Time: " << time << "- lastTime:  " << lastTime << " = " << (lastTime - time) << " < "<< TIMEOUT << RESET << "\n";
+	return 1;
+}
+
+void Client::checkTimeout2(long bytesRead) {
+	if (bytesRead == reader_size && time > TIMEOUT) {
+		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
+        throw codeException(408);
+    }
+    time = timeChecker();
+	// return 1;
+}

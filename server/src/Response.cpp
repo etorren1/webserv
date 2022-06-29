@@ -131,11 +131,14 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	size_t numOfLines = 0;
 	size_t i = 0;
 	size_t startIndx;
-	std::vector<std::string>::iterator begin;
-	std::vector<std::string>::iterator end;
+	std::vector<std::string>::iterator vBegin;
+	std::vector<std::string>::iterator vEnd;
 
-	begin = envpVector.begin();
-	end = envpVector.end();
+	// std::map<std::string, std::string>::iterator mBegin = req.getHeadears().begin();
+	// std::map<std::string, std::string>::iterator mBegin = req.getHeadears().end();
+
+	vBegin = envpVector.begin();
+	vEnd = envpVector.end();
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
@@ -145,23 +148,23 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 
 	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpVector.size())); // 3 for new vars and additional 1 for NULL ptr
 
-	while (i < numOfLines)
+	while (i < numOfLines)							//переносим все изначальные envp в новый массив
 	{
 		tmp[i] = (*envp)[i];
 		i++;
 	}
 
-	tmp[numOfLines] = strdup(req_metod.c_str());
+	tmp[numOfLines] = strdup(req_metod.c_str());	//записываем необходимые для работы CGI переменные 
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
 	tmp[numOfLines + 2] = strdup(path_info.c_str());
 
 	startIndx = numOfLines + 3;
 
-	while (begin != end)
+	while (vBegin != vEnd)
 	{
-		// tmp[startIndx] = strdup(*begin);
+		tmp[startIndx] = strdup((*vBegin).c_str());
 		startIndx++;
-		begin++;
+		vBegin++;
 	}
 	tmp[startIndx] = NULL;
 

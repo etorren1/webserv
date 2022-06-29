@@ -244,9 +244,12 @@ int     Server::readRequest( const size_t socket ) {
         text << buf;
         if (client[socket]->status & IS_BODY)
            checkBodySize(socket, bytesRead);
-        else if (find_CRLN(&buf[find_CRLN(buf, BUF_SIZE)] + 1, 2))
+        else if (find_2xCRLN(buf, bytesRead))
             break;
     }
+    if (!client[socket]->checkTimeout(bytesRead))
+        return 0;
+    // client[socket]->checkTimeout2(bytesRead);
     client[socket]->setStream(text, bytesRead);
     client[socket]->checkMessageEnd();
     return (bytesRead);
