@@ -43,7 +43,7 @@ class Response
 		std::stringstream						_stream;
 		bool									_isSent; //весь ответ был выслан
 
-		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0), _isSent(0) {};
+		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0), _isSent(0), _stream("") {};
 		~Response() {};
 
 		int				make_response_body(Request req, const size_t id);
@@ -91,12 +91,11 @@ class Response
 		}
 		
 		//for makePostResponse:
-		void addCgiVar(char ***envp, Request req);
+		void addCgiVar(char ***envp, Request req, std::vector<std::string> & envpVector);
 		/*	adds to exported environment variables new three
 			which are CGI environment variables to pass them all
 			to CGI new stream */
 		bool openFile();
-
 };
 
 #endif

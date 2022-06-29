@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <ctime>
 
 #define RESET "\e[0m"
 #define RED "\e[31m"
@@ -31,6 +32,8 @@ long long					getFileSize(const char *fileLoc);
 long						hexadecimalToDecimal(std::string hex_val);
 long						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
+void						rek_mkdir( std::string path);
+time_t						timeChecker( );
 
 struct codeException : public std::exception
 {

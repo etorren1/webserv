@@ -63,7 +63,8 @@ class Server {
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
 		void		checkBodySize( const size_t socket, size_t size );
 		// int		    readHeader( const size_t socket, std::string & text );
-		Server_block * getServerBlock( std::string host ) const;
+		Server_block * getServerBlock( std::string host );
+		Server_block * searchServerName(std::string host);
 		void		clientRequest(const int socket);
 		bool 		noErrors( const int socket );
 
