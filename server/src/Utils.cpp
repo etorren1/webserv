@@ -51,14 +51,14 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	return (buff.st_size);
 }
 
-size_t 						find_CRLN( char* buf, size_t size, size_t indent ) {
+size_t 		find_CRLN( char* buf, size_t size, size_t indent ) {
     for (size_t i = 0; i < size - 1; i++)
         if (buf[i] == '\r' && buf[i + 1] == '\n')
             return (i + indent);
     return (0);
 }
 
-long						getStrStreamSize(std::stringstream &strm)
+long		getStrStreamSize(std::stringstream &strm)
 {
     std::streambuf* buf = strm.rdbuf();
 	long size = buf->pubseekoff(0, strm.end);
@@ -77,7 +77,7 @@ std::string	getCurTime()
 	return buf;
 }
 
-void						clearStrStream(std::stringstream &strstream)
+void		clearStrStream(std::stringstream & strstream)
 {
 	strstream.seekg(0);
 	strstream.str(std::string());
@@ -94,14 +94,24 @@ void	rek_mkdir( std::string path)
     }
     mkdir(create.c_str(), 0777);
 }
+long		hexadecimalToDecimal(std::string hex_val)
+{
+    int len = hex_val.size();
 
-// std::string	getTime()
-// {
-// 	char buf[100];
-// 	char ret[100];
-// 	time_t now = time(0);
-// 	struct tm tm = *gmtime(&now);
-// 	strftime(buf, sizeof buf, "%a, %d %b %Y %H:%M:%S %Z", &tm);
-// 	sprintf(ret, "Time is: %s\n", buf);
-// 	return (ret);
-// };
+    int base = 1;
+ 
+    long dec_val = 0;
+    for (int i = len - 1; i >= 0; i--) {
+		if (hex_val[i] >= 'a' && hex_val[i] <= 'f')
+			hex_val[i] -= 32;
+        if (hex_val[i] >= '0' && hex_val[i] <= '9') {
+            dec_val += (int(hex_val[i]) - 48) * base;
+            base = base * 16;
+        }
+        else if (hex_val[i] >= 'A' && hex_val[i] <= 'F') {
+            dec_val += (int(hex_val[i]) - 55) * base;
+            base = base * 16;
+        }
+    }
+    return dec_val;
+}

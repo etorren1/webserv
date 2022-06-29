@@ -106,6 +106,13 @@ void    Server::cfg_index(std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_cgi_index(std::string & text, T * block ) {
+    std::string raw = get_raw_param("cgi_index", text);
+    if (raw.size())
+        block->set_cgi_index(raw);
+}
+
+template <class T>
 void    Server::cfg_accepted_methods(std::string & text, T * block ) {
     std::string raw = get_raw_param("accepted_methods", text);
     if (raw.size())
@@ -244,6 +251,7 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_sendfile(text, block);
     cfg_autoindex(text, block);
     cfg_index(text, block);
+    cfg_cgi_index(text, block);
     cfg_root(text, block);
     cfg_return(text, block);
     cfg_error_page(text, block);

@@ -193,8 +193,11 @@ void Client::initResponse(char **envp)	{
 		if (pipe(pipe1))
 			throw(codeException(500));
 
-		// if (cgi used)
-		// {
+		size_t pos = location.rfind("/");
+		std::string fileName = location.substr(pos + 1);
+		std::cout << "fileName = " << fileName << "\n";
+		if (loc->is_cgi_index(fileName))
+		{
 			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
 			if ((pid = fork()) < 0)
 				throw(codeException(500));
@@ -216,7 +219,9 @@ void Client::initResponse(char **envp)	{
 				close(pipe1[PIPE_OUT]); //Close unused pipe read end
 				close(pipe2[PIPE_IN]); //Close unused pipe write end
 			}
-		// }
+		}
+		else
+			std::cout << "NOT CGI\n";
 	}
 	status |= REQ_DONE;
 }
@@ -334,25 +339,39 @@ void Client::extractCgiHeader( char * buff )
 void Client::makePostResponse(char **envp)
 {
 	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
-	iter++;
-	// std::cout << "iter = " << iter << "\n";
-	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
+
 	char				buff[BUF];
 	int					wrtRet = 0;
 	int					readRet = 0;
 	int					code;
+	char				buffer[200];
 
+	if (cgiWriteFlag == false)	// флаг cgi записан == false
+	{
+		wrtRet = write(pipe1[PIPE_IN], reader.str().c_str(), reader.str().length());
+
+		strerror_r( errno, buffer, 256 ); // to remove
+		std::cout << "ERRNO: " << buffer; // to remove
+
+		totalSent += wrtRet;
+		if (totalSent == reader.str().length()) //SIGPIPE
+		{
+			close(pipe1[PIPE_IN]);
+			cgiWriteFlag = true;
+		}
+	}
 	if (cgiWriteFlag == false)		// флаг cgi записан == false 
 	{
 		// std::cout << "BODY: " << reader << "\n";
 		std::cout << "BEFORE WRITE"  << "\n";
 		
 		size_t sss = reader.str().length();
-		while (totalSent < sss)
+		if (totalSent < sss)
 		{
 			reader.read(buff, BUF);
 			wrtRet = write(pipe1[PIPE_IN], buff, BUF);
 			totalSent += wrtRet;
+			std::cout << "BUF LENGTH= " <<to buff;
 		}
 		std::cout << "AFTER WRITE" << "\n";
 		if (totalSent == reader.str().length()) //SIGPIPE
@@ -376,7 +395,9 @@ void Client::makePostResponse(char **envp)
 		{
 			// std::cout << "readRet " << readRet << "\n";
 			if (readRet == -1)
+			{
 				throw(codeException(500));
+			}
 			if(status & STRM_READY)										//весь body уже записан в поток, отпавляем его частями клиенту, в нижние условия больше не заходим до конца response
 			{
 				if (res.sendResponse_stream(socket))
@@ -395,6 +416,7 @@ void Client::makePostResponse(char **envp)
 				/*	The buffer of a std::stringstream object is a wrapper around a std::string object.
 					As such, the maximum size is std::string::max_size().
 					https://stackoverflow.com/questions/22025324/what-is-the-maximum-size-of-stdostringstream-buffer */
+				std::cout << "_BODY: " << res.getStrStream().str();
 			}
 			else														//записываем из буффера часть данных в поток
 			{
@@ -623,16 +645,10 @@ int Client::parseLocation()	{
 	std::string locn = loc->get_location();
 	// if (locn[locn.size() - 1] != '/')
 	// 	locn += "/";
-	if (loc->get_accepted_methods().size())	{
-		std::string method = "";
-		for (size_t i = 0; i != loc->get_accepted_methods().size(); i++)
-			if (req.getMethod() == loc->get_accepted_methods()[i])
-				method = loc->get_accepted_methods()[i];
-		if (!method.size())
-		{
-			std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
-			throw codeException(405);
-		}
+	if (!loc->is_accepted_method(req.getMethod()))
+	{
+		std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
+		throw codeException(405);
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();

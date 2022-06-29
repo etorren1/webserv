@@ -27,6 +27,7 @@ class Location_block : public Block {
             access_log = other.get_access_log();
             root = other.get_root();
             index = other.get_index();
+            cgi_index = other.get_cgi_index();
             sendfile = other.get_sendfile();
             autoindex = other.get_autoindex();
             client_max_body_size = other.get_client_max_body_size();

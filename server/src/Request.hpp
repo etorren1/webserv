@@ -4,6 +4,7 @@
 # include <iostream>
 # include <sstream>
 # include <unistd.h>
+# include <cstring>
 # include <vector>
 # include <map>
 # include "Utils.hpp"

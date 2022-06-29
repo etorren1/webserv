@@ -172,6 +172,8 @@ void Request::findHost() {
         std::cout << RED << "Host not found: has 400 exception " << RESET << "\n";
         throw codeException(400);
     }
+    if (_host.substr(9) == "" && (_host == "localhost" || _host == "127.0.0.1"))
+        _host += ":80";
     if (_host.find("localhost") != std::string::npos) {
         std::string ip = "127.0.0.1" + _host.substr(9);
         _host = ip;
@@ -285,42 +287,70 @@ void Request::parseEnvpFromBody(std::vector<std::string>&vec) {
         std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
     }
 }
-#include <cstring>
+
+// OLD VERSION trimChunks
+// static void trimChunks( std::stringstream & reader, size_t size ) {
+//     char *buf = (char *)malloc(size + 1);
+//     bzero(buf, size + 1);
+//     reader.read(buf, size);
+//     clearStrStream(reader);
+    
+//     size_t begin = find_CRLN(buf, size) + 2;
+//     size_t end = 0;
+//     while (begin && begin < size - 2) {
+//         end = find_CRLN(&buf[begin], size - begin, begin) + 2;
+//         // std ::cout << "begin = " << begin << " size = " << size << " end = " << end << "\n";
+//         // std::cout << "create tmp\n";
+//         char *tmp = (char *)malloc(end - begin + 1);
+//         bzero(tmp, end - begin + 1);
+//         // std::cout << "memcpy\n";
+//         memcpy(tmp, &buf[begin], end - begin);
+
+//         // std::cout << "show tmp\n";
+//         // for (size_t i = 0; i < end - begin; i++)
+//         // {
+//         //     printf("%d ", tmp[i]);
+//         //     if (i % 25 == 0)
+//         //         std::cout << "\n";
+//         // }
+//         // std::cout << "\n";
+
+//         reader << tmp;
+//         begin = find_CRLN(&buf[end], size - end, end) + 2;
+//         free(tmp);
+//     }
+//     free(buf);
+//     if (!begin)
+//         std::cout << RED << "ALERT! something wrong in body chunk" << RESET << "\n";
+//     // std::cout << CYAN << "size = " << reader.str().size() << "\n" << reader.str() << RESET << "\n";
+// }
 
 static void trimChunks( std::stringstream & reader, size_t size ) {
+    size_t end_hex, hex_size, chunk_size, rd_bytes = 0;
+    // copy stream into buffer
     char *buf = (char *)malloc(size + 1);
     bzero(buf, size + 1);
     reader.read(buf, size);
+    // clear stream
     clearStrStream(reader);
-    
-    size_t begin = find_CRLN(buf, size) + 2;
-    size_t end = 0;
-    while (begin && begin < size - 2) {
-        end = find_CRLN(&buf[begin], size - begin, begin) + 2;
-        // std ::cout << "begin = " << begin << " size = " << size << " end = " << end << "\n";
-        // std::cout << "create tmp\n";
-        char *tmp = (char *)malloc(end - begin + 1);
-        bzero(tmp, end - begin + 1);
-        // std::cout << "memcpy\n";
-        memcpy(tmp, &buf[begin], end - begin);
+    while (chunk_size > 0) {
+        //get hex chunck size
+        end_hex = find_CRLN(&buf[rd_bytes], size - rd_bytes, rd_bytes);
+        hex_size = end_hex - rd_bytes;
+        char hex[hex_size + 1];
+        bzero(hex, hex_size + 1);
+        memcpy(hex, &buf[rd_bytes], hex_size);
+        chunk_size = hexadecimalToDecimal(hex);
 
-        // std::cout << "show tmp\n";
-        // for (size_t i = 0; i < end - begin; i++)
-        // {
-        //     printf("%d ", tmp[i]);
-        //     if (i % 25 == 0)
-        //         std::cout << "\n";
-        // }
-        // std::cout << "\n";
-
+        //copy chunck content into stream without chunksizes
+        char *tmp = (char *)malloc(chunk_size + 1);
+        bzero(tmp, chunk_size + 1);
+        memcpy(tmp, &buf[end_hex + 2], chunk_size);
+        rd_bytes = end_hex + chunk_size + 4;
         reader << tmp;
-        begin = find_CRLN(&buf[end], size - end, end) + 2;
         free(tmp);
     }
     free(buf);
-    if (!begin)
-        std::cout << RED << "ALERT! something wrong in body chunk" << RESET << "\n";
-    // std::cout << CYAN << "size = " << reader.str().size() << "\n" << reader.str() << RESET << "\n";
 }
 
 static void trimBoundary( std::stringstream & reader, size_t size ) {

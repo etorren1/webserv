@@ -28,6 +28,7 @@ std::string					itos( long long const & num );
 size_t 						find_CRLN( char* buf, size_t size, size_t indent = 0 );
 std::string					getCurTime(); //https://stackoverflow.com/questions/7548759/generate-a-date-string-in-http-response-date-format-in-c
 long long					getFileSize(const char *fileLoc);
+long						hexadecimalToDecimal(std::string hex_val);
 long						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
 void						rek_mkdir( std::string path);
