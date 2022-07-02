@@ -228,7 +228,7 @@ void Client::initResponse(char **envp)	{
 			}
 		// }
 	}
-	status |= REQ_DONE;
+	// status |= REQ_DONE;
 }
 
 void Client::makeResponse(char **envp)
@@ -297,7 +297,13 @@ void Client::makeGetResponse()
 	{
 		if (res.sendResponse_stream(socket))
 		{
-			status |= HEAD_SENT;
+			if (status & REDIRECT) {
+				std::cout << location << "<-\n";
+				std::cout << RED << "\e[1mDONE" <<RESET << "\n";
+				status |= RESP_DONE;
+			}
+			else
+				status |= HEAD_SENT;
 			// std::cout << "GET sendstream() must be first\n";
 		}
 	}
@@ -642,12 +648,12 @@ int Client::parseLocation()	{
 	// else 
 		// location = req.getReqURI();
 	// FOR INTRA TESTER
-	std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
-	if (location.find("directory") != std::string::npos) {
-		location.erase(location.find("directory"), 10);
-		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
-	}
-	std::cout << location << '\n';
+	// std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
+	// if (location.find("directory") != std::string::npos) {
+	// 	location.erase(location.find("directory"), 10);
+	// 	std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+	// }
+	// std::cout << location << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
@@ -658,15 +664,11 @@ int Client::parseLocation()	{
 		return 1;
 	if (status & IS_DIR)	{
 		if (location.size() && location[location.size() - 1] != '/')	{
-			// statusCode = 301; // COMMENT IT FOR TESTER
-			location.push_back('/');
-			if (access(location.c_str(), 0) == -1)	{
-				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
-				throw codeException(404);
-			}
+			statusCode = 301; // COMMENT IT FOR TESTER
+			location = req.getReqURI() + "/";
 			status |= REDIRECT;
-			// return 0; // COMMENT IT FOR TESTER
-		} //	else	{ // COMMENT ELSE { FOR TESTER
+			return 0; // COMMENT IT FOR TESTER
+		} 	else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex())	{
@@ -690,7 +692,7 @@ int Client::parseLocation()	{
 				}
 				status |= AUTOIDX;
 			}
-		// } // COMMENT IT FOR TESTER
+		} // COMMENT IT FOR TESTER
 	}
 	else if (status & IS_FILE)	{ // FILE
 		if (access(location.c_str(), 0) == -1)	{

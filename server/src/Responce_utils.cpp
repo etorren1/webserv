@@ -13,7 +13,7 @@ void	Response::make_response_html( const int code, std::string & mess, std::stri
 + itos(code) + " " + mess + "</h1><hr></hr> \
 <p> with ♡ webserver</p></div></body></html>";
     if (!loc.empty())
-        location = "Location: " + loc + "/\r\n";
+        location = "Location: " + loc + "\r\n";
     std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\r\n" + location + "Version: " + "HTTP/1.1" \
                          + "\r\n" + "Content-Type: " + "text/html" + "\r\n" + "Content-Length: " + itos(responseBody.length()) + "\r\n\r\n";
     std::string response = header + responseBody;

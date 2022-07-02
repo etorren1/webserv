@@ -65,7 +65,7 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
         // return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
-    if (listen(newSrvSock, 5) < 0)
+    if (listen(newSrvSock, 1000) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
@@ -146,6 +146,8 @@ void Server::connectClients( const int & fd ) {
     int addrlen = sizeof(clientaddr);
 
     if ((newClientSock = accept(fd, (struct sockaddr*)&clientaddr, (socklen_t*)&addrlen)) > 0) {
+        int enable = 1;         //ЭТО НУЖНО???
+        setsockopt(newClientSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)); // И ВОТ ЭТО???
         struct pollfd nw;
 
         nw.fd = newClientSock;
@@ -191,7 +193,7 @@ void Server::clientRequest(const int socket) {
             //     std::cout << client[socket]->getStream().str();
             //     std::cout << PURPLE << "end BODY." << RESET << "\n";
             // }
-
+            checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
             //std::cout << "status after location - " << client[socket]->status << "\n";
             client[socket]->initResponse(envp);
