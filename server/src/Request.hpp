@@ -53,7 +53,7 @@ public:
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;
-	std::map<std::string, std::string>		getHeadears() const;
+	std::map<std::string, std::string>	const& getHeadears() const;
 	std::string								getMIMEType() const;
 	std::string								getContentType() const;
 	std::string								getHost() const;

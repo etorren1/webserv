@@ -128,25 +128,29 @@ int Response::sendResponse_stream(const size_t socket)
 void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & envpVector)
 {
 	char **tmp;
+	std::string tmpStr;
 	size_t numOfLines = 0;
 	size_t i = 0;
 	size_t startIndx;
 	std::vector<std::string>::iterator vBegin;
 	std::vector<std::string>::iterator vEnd;
-
-	// std::map<std::string, std::string>::iterator mBegin = req.getHeadears().begin();
-	// std::map<std::string, std::string>::iterator mBegin = req.getHeadears().end();
+	std::map<std::string, std::string>::const_iterator mBegin;
+	std::map<std::string, std::string>::const_iterator mEnd;
 
 	vBegin = envpVector.begin();
 	vEnd = envpVector.end();
+	mBegin = req.getHeadears().begin();
+	mEnd = req.getHeadears().end();
+
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
+	std::string content_length = ("CONTENT_LENGTH=" + req.getContentLenght());
 
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpVector.size())); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 5 + envpVector.size()) + req.getHeadears().size()); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)							//переносим все изначальные envp в новый массив
 	{
@@ -157,15 +161,25 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	tmp[numOfLines] = strdup(req_metod.c_str());	//записываем необходимые для работы CGI переменные 
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
 	tmp[numOfLines + 2] = strdup(path_info.c_str());
+	tmp[numOfLines + 3] = strdup(content_length.c_str());
 
-	startIndx = numOfLines + 3;
+	startIndx = numOfLines + 4;
 
-	while (vBegin != vEnd)
+	while (vBegin != vEnd)	//записываем переменные пришедшие из query string
 	{
 		tmp[startIndx] = strdup((*vBegin).c_str());
 		startIndx++;
 		vBegin++;
 	}
+
+	// while (mBegin != mEnd)	//записываем переменные из request header
+	// {
+	// 	tmpStr = mBegin->first + "=" + mBegin->second;
+	// 	tmp[startIndx] = strdup(tmpStr.c_str());
+	// 	startIndx++;
+	// 	mBegin++;
+	// }
+
 	tmp[startIndx] = NULL;
 
 	*envp = tmp;

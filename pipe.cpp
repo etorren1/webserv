@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-#define PATH_INFO "cgi_tester"
+#define PATH_INFO "./cgi_tester"
 #define PIPE_IN 1	//we write
 #define PIPE_OUT 0	//we read
 

@@ -16,9 +16,10 @@
 #define GRAY "\e[37m"
 
 //for CGI:
-#define PIPE_IN 1	//we write
-#define PIPE_OUT 0	//we read
-#define CGI_PATH "./cgi_tester"
+#define PIPE_IN 0	//we write
+#define PIPE_OUT 1	//we read
+#define CGI_PATH "/Users/kmeeseek/Documents/vebserv_old/cgi_tester"
+#define BUF 2048   //можно заменить на общий buff
 
 class Client;
 

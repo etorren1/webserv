@@ -218,7 +218,7 @@ void Request::cleaner() {
 std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
-std::map<std::string, std::string> Request::getHeadears() const { return this->_headers; }
+std::map<std::string, std::string> const & Request::getHeadears() const { return this->_headers; }
 std::string Request::getMIMEType() const { return this->_MIMEType; }
 std::string Request::getContentType() const { return this->_responseContentType; }
 std::string Request::getHost() const { return this->_host; }
