@@ -190,16 +190,22 @@ void Client::initResponse(char **envp)	{
 		totalSent = 0;
 		res.addCgiVar(&envp, req, envpVector);
 
-		if (pipe(pipe2))
+		if (pipe(pipe2)) {
+			std::cout << RED << "Pipe2 error: has 500 exception" << RESET << "\n";
 			throw(codeException(500));
-		if (pipe(pipe1))
+		}
+		if (pipe(pipe1)) {
+			std::cout << RED << "Pipe1 error: has 500 exception" << RESET << "\n";
 			throw(codeException(500));
+		}
 
 		// if (cgi used)
 		// {
 			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
-			if ((pid = fork()) < 0)
+			if ((pid = fork()) < 0) {
+				std::cout << RED << "Fork error: has 500 exception" << RESET << "\n";
 				throw(codeException(500));
+			}
 			if (pid == 0) //child - process for CGI programm
 			{
 				close(pipe1[PIPE_IN]); //Close unused pipe write end
@@ -207,8 +213,10 @@ void Client::initResponse(char **envp)	{
 				dup2(pipe1[PIPE_OUT], 0);
 				dup2(pipe2[PIPE_IN], 1);
 
-				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
+				if ((ex = execve(CGI_PATH, NULL, envp)) < 0) {
+					std::cout << RED << "Execve error: has 500 exception" << RESET << "\n";
 					throw(codeException(500));
+				}
 				close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
 				close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
 				exit(ex);
@@ -335,7 +343,7 @@ void Client::extractCgiHeader( char * buff )
 
 void Client::makePostResponse(char **envp)
 {
-	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
+	// std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 	iter++;
 	// std::cout << "iter = " << iter << "\n";
 	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
@@ -347,8 +355,8 @@ void Client::makePostResponse(char **envp)
 	if (cgiWriteFlag == false)		// флаг cgi записан == false 
 	{
 		// std::cout << "BODY: " << reader << "\n";
-		std::cout << "BEFORE WRITE"  << "\n";
-		
+		// std::cout << "BEFORE WRITE"  << "\n";
+		// 
 		size_t sss = reader.str().length();
 		while (totalSent < sss)
 		{
@@ -356,7 +364,7 @@ void Client::makePostResponse(char **envp)
 			wrtRet = write(pipe1[PIPE_IN], buff, BUF);
 			totalSent += wrtRet;
 		}
-		std::cout << "AFTER WRITE" << "\n";
+		// std::cout << "AFTER WRITE" << "\n";
 		if (totalSent == reader.str().length()) //SIGPIPE
 		{
 			close(pipe1[PIPE_IN]);

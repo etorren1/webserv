@@ -5,6 +5,7 @@ a.out
 /.vscode/
 /logs/
 /site/gds/
+/my_cgi
 nginx.conf
 main.cpp
 test.cpp
