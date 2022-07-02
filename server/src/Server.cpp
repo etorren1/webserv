@@ -246,7 +246,7 @@ int     Server::readRequest( const size_t socket ) {
         text << buf;
         if (client[socket]->status & IS_BODY)
            checkBodySize(socket, bytesRead);
-        else if (find_2xCRLN(buf, bytesRead))
+        else if (find_2xCRLN(buf, rd))
             break;
     }
     if (!client[socket]->checkTimeout(bytesRead))

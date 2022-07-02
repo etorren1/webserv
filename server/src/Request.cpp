@@ -378,7 +378,7 @@ void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vec
     }
     else if (_contentLength.size()) {
         if (_boundary.size()) {
-            // trimBoundary(reader, reader_size);
+            trimBoundary(reader, reader_size);
             ;
         }
         else if (getContType() == "application/x-www-form-urlencoded") {
