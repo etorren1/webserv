@@ -2,23 +2,79 @@
 #include "Utils.hpp"
 #include <errno.h>
 
+void Client::makeGetResponse()
+{
+	if (status & HEAD_SENT)
+	{
+		if (res.sendResponse_file(socket))
+		{
+			status |= RESP_DONE;
+			// std::cout << "GET sendfile() must be second\n";
+		}
+	}
+	else
+	{
+		if (res.sendResponse_stream(socket))
+		{
+			if (status & REDIRECT) {
+				std::cout << location << "<-\n";
+				std::cout << RED << "\e[1mDONE" <<RESET << "\n";
+				status |= RESP_DONE;
+			}
+			else
+				status |= HEAD_SENT;
+			// std::cout << "GET sendstream() must be first\n";
+		}
+	}
+	if (status & RESP_DONE)
+	{
+		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
+		cleaner();
+		// std::cout << "GET cleaner() must be ending\n";
+	}
+}
+
 void Client::makePostResponse(char **envp)
 {
 
 	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
 
 	char				buff[BUF];
-	int					wrtRet = 0;
+	long				wrtRet = 0;
+	int					wr = 0;
 	int					readRet = 0;
 	int					code;
 	char				buffer[200];
+	long				bytesRead;
 
 	if (cgiWriteFlag == false)	// флаг cgi записан == false
 	{
-		std::string s = reader.str();
-		std::string tmp(s.substr(0, 2000));
-		while (tmp.length()) {
-			wrtRet = write(pipe1[PIPE_OUT], tmp.c_str(), tmp.length());
+		while (wrtRet < reader_size) {
+			reader.read(buff, BUF);
+			bytesRead = reader.gcount();
+			wr = write(pipe1[PIPE_OUT], buff, bytesRead);
+			usleep (1000);
+			if (wr > 0)
+				wrtRet += wr;
+			if (wr < bytesRead)
+				reader.seekg(wrtRet - 1);
+			if (wr == 0) {
+				std::cout << "wr == 0\n";
+				int i = 0;
+				while (i < bytesRead) {
+					printf("%d ", buff[i++]);
+				}
+				printf("\n");
+				exit(1);
+			}
+			std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead : (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
+		}
+		exit (0);
+		{
+			readRet = read(pipe2[PIPE_IN], buff, BUF);
+			std::cout << "Read: (" << readRet << ") \n";// << PURPLE << buff << RESET << "\n";
+
+			// usleep(1000);
 
 			if (wrtRet == -1) {
 				std::cout << "WRTRET:" << wrtRet << "\n";
@@ -28,24 +84,25 @@ void Client::makePostResponse(char **envp)
 				int qq = 0;
 				// readRet = read(pipe2[PIPE_IN], buff, BUF);
 				readRet = 1;
-				while (readRet > 0) {
-					readRet = read(pipe2[PIPE_IN], buff, BUF);
-					qq += readRet;
-					std::cout << "after read from = " << qq << "\n";
-				}
-				wrtRet = write(pipe1[PIPE_OUT], tmp.c_str(), tmp.length());
+				// while (readRet > 0) {
+				// 	readRet = read(pipe2[PIPE_IN], buff, BUF);
+				// 	qq += readRet;
+				// 	std::cout << "after read from = " << qq << "\n";
+				// }
+				// wrtRet = write(pipe1[PIPE_OUT], tmp.c_str(), tmp.length());
 				std::cout << "WRTRET:" << wrtRet << "\n";
 				strerror_r( errno, buffer, 256 ); // to remove
 				std::cout << "ERRNO: " << buffer << "\n"; // to remove
 				buff[readRet] = '\0';
 				std::cout << "BUFFER: " << buff << std::endl;
+				// exit(1);
 			}
 			else
 			{
-				std::cout << "WRTRET NON ERROR:" << wrtRet << "\n";
+				// std::cout << "WRTRET NON ERROR:" << wrtRet << "  " << s.size() << "\n";
 			}
-			s.erase(s.begin(), s.begin() + 2000);
-			tmp = s.substr(0, 2000);
+			// s.erase(s.begin(), s.begin() + 10000);
+			// tmp = s.substr(0, 10000);
 		}
 		// wrtRet = write(pipe1[PIPE_OUT], reader.str().c_str(), reader.str().length()); // pipe
 		// std::cout << "WRTRET:" << wrtRet << "\n";
@@ -121,4 +178,53 @@ void Client::makePostResponse(char **envp)
 		close(pipe2[PIPE_OUT]);
 		// std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
+}
+
+void Client:: makeDeleteResponse(char **envp)	{
+	std::cout << RED << "DELETE\n" << RESET;
+	if (remove(location.c_str()) != 0) 
+		codeException(403);
+	else {
+		statusCode = 204;
+		// initResponse(envp);
+		res.setFileLoc(location);
+		clearStrStream(res.getStrStream());
+		res.make_response_html(204, resCode[204]);
+
+		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
+		if (res.sendResponse_stream(socket))  {
+			status |= RESP_DONE;
+			cleaner();
+		}
+	}
+}
+
+void Client:: makePutResponse(char **envp)	{
+	std::cout << RED << "PUT\n" << RESET;
+	std::ofstream file(location);
+	std::cout << GREEN << location << "\n" << RESET;
+	if (!file.is_open()) {
+		int sep = location.find_last_of("/");
+		if (sep != std::string::npos) {
+			rek_mkdir(location.substr(0, sep));
+		}
+		file.open(location);
+	}
+	if (file.is_open()) {
+		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
+		file << reader.str();
+		file.close();
+	} else {
+		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
+		throw codeException(406);
+	}
+	statusCode = 201;
+	res.setFileLoc(location);
+	clearStrStream(res.getStrStream());
+	res.make_response_html(201, resCode[201]);
+	if (res.sendResponse_stream(socket))  {
+		status |= RESP_DONE;
+		cleaner();
+	}
+	// exit(1);
 }

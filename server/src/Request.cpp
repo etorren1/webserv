@@ -79,9 +79,13 @@ bool Request::parseText(std::string text) {
 void Request::parseStartLine(std::string str) {
     size_t pos = str.find(" ");
     this->_method = str.substr(0, pos);
+    size_t query = str.find("?");
     if (pos != std::string::npos) {
         str.erase(pos, 1);
-        this->_reqURI = str.substr(pos, str.find(" ") - pos);
+        if (query == std::string::npos)
+            this->_reqURI = str.substr(pos, str.find(" ") - pos);
+        else 
+            this->_reqURI = str.substr(pos, query  - 1 - pos);
     }
     size_t pos_n = str.find(" ");
     if (pos_n != std::string::npos) {
@@ -375,6 +379,7 @@ void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vec
     else if (_contentLength.size()) {
         if (_boundary.size()) {
             trimBoundary(reader, reader_size);
+            ;
         }
         else if (getContType() == "application/x-www-form-urlencoded") {
             parseEnvpFromBody(reader, vec);

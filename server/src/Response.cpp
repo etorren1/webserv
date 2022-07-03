@@ -62,7 +62,8 @@ int Response::sendResponse_file(const size_t socket)
 		std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
 		throw(codeException(404));
 	}
-	
+
+	bzero(buffer, RES_BUF_SIZE);
 	_file.read (buffer, RES_BUF_SIZE);
 		_bytesRead = _file.gcount();
 	
@@ -95,6 +96,7 @@ int Response::sendResponse_stream(const size_t socket)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
+	bzero(buffer, RES_BUF_SIZE);
 	_stream.read(buffer, RES_BUF_SIZE);
 	_bytesRead = _stream.gcount();
 	

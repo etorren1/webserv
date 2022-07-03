@@ -109,6 +109,7 @@ void Client::handleRequest(char **envp)
 	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
 		req.parseBody(reader, reader_size, envpVector);
+		reader_size = getStrStreamSize(reader);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -124,6 +125,7 @@ void Client::handleRequest(char **envp)
 				if (fullpart) {
 					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
 					req.parseBody(reader, reader_size, envpVector);
+					reader_size = getStrStreamSize(reader);
 					status |= REQ_DONE;
 				}
 			}
@@ -244,10 +246,11 @@ void Client::initResponse(char **envp)	{
 					if (!envp)
 						std::cerr << "ENVP DOES NOE EXIST\n";
 					char buffer[100];
-					std::cerr << RED << "HERE3" << RESET << "\n";
+					std::cerr << RED << "Execve fault: has 500 exception" << RESET << "\n";
 					strerror_r( errno, buffer, 256 ); // to remove
 					std::cerr << "ERRNO: " << buffer << "\n"; // to remove
 					throw(codeException(500));
+					exit (20);
 				}
 				// close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
 				// close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
@@ -265,7 +268,7 @@ void Client::initResponse(char **envp)	{
 		else
 			std::cout << "NOT CGI\n";
 	}
-	status |= REQ_DONE;
+	// status |= REQ_DONE;
 }
 
 void Client::makeResponse(char **envp)
@@ -320,31 +323,7 @@ void Client::makeErrorResponse()
 	}
 }
 
-void Client::makeGetResponse()
-{
-	if (status & HEAD_SENT)
-	{
-		if (res.sendResponse_file(socket))
-		{
-			status |= RESP_DONE;
-			// std::cout << "GET sendfile() must be second\n";
-		}
-	}
-	else
-	{
-		if (res.sendResponse_stream(socket))
-		{
-			status |= HEAD_SENT;
-			// std::cout << "GET sendstream() must be first\n";
-		}
-	}
-	if (status & RESP_DONE)
-	{
-		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
-		cleaner();
-		// std::cout << "GET cleaner() must be ending\n";
-	}
-}
+
 
 void Client::extractCgiHeader( char * buff )
 {
@@ -376,57 +355,6 @@ void Client::extractCgiHeader( char * buff )
 		res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
 	
 	// res.sendResponse_stream(socket); //не тут должно быть 
-}
-
-
-
-void Client:: makeDeleteResponse(char **envp)	{
-	std::cout << RED << "DELETE\n" << RESET;
-	if (remove(location.c_str()) != 0) 
-		codeException(403);
-	else {
-		statusCode = 204;
-		// initResponse(envp);
-		res.setFileLoc(location);
-		clearStrStream(res.getStrStream());
-		res.make_response_html(204, resCode[204]);
-
-		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
-		if (res.sendResponse_stream(socket))  {
-			status |= RESP_DONE;
-			cleaner();
-		}
-	}
-}
-
-void Client:: makePutResponse(char **envp)	{
-	std::cout << RED << "PUT\n" << RESET;
-	std::ofstream file(location);
-	std::cout << GREEN << location << "\n" << RESET;
-	if (!file.is_open()) {
-		int sep = location.find_last_of("/");
-		if (sep != std::string::npos) {
-			rek_mkdir(location.substr(0, sep));
-		}
-		file.open(location);
-	}
-	if (file.is_open()) {
-		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
-		file << reader.str();
-		file.close();
-	} else {
-		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
-		throw codeException(406);
-	}
-	statusCode = 201;
-	res.setFileLoc(location);
-	clearStrStream(res.getStrStream());
-	res.make_response_html(201, resCode[201]);
-	if (res.sendResponse_stream(socket))  {
-		status |= RESP_DONE;
-		cleaner();
-	}
-	// exit(1);
 }
 
 void Client::cleaner()
@@ -616,14 +544,11 @@ int Client::parseLocation()	{
 	if (status & IS_DIR)	{
 		if (location.size() && location[location.size() - 1] != '/')	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
-			location.push_back('/');
-			if (access(location.c_str(), 0) == -1)	{
-				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
-				throw codeException(404);
-			}
+			// location = req.getReqURI() + "/"; // COMMENT IT FOR TESTER
+			location += "/"; // DELETE COMMENT IT FOR TESTER
 			status |= REDIRECT;
 			// return 0; // COMMENT IT FOR TESTER
-		} //	else	{ // COMMENT ELSE { FOR TESTER
+		} 	//else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex())	{
@@ -634,6 +559,7 @@ int Client::parseLocation()	{
 						req.setMIMEType(indexes[i]);
 						break;
 					}
+					std::cout << tmp << "\n";
 				}
 				if (i == indexes.size())	{
 					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
@@ -647,7 +573,7 @@ int Client::parseLocation()	{
 				}
 				status |= AUTOIDX;
 			}
-		// } // COMMENT IT FOR TESTER
+	//	} // COMMENT IT FOR TESTER
 	}
 	else if (status & IS_FILE)	{ // FILE
 		if (access(location.c_str(), 0) == -1)	{
