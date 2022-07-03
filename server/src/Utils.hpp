@@ -18,8 +18,9 @@
 //for CGI:
 #define PIPE_IN 0	//we write
 #define PIPE_OUT 1	//we read
-#define CGI_PATH "/Users/kmeeseek/Documents/vebserv_old/cgi_tester"
-#define BUF 10000   //можно заменить на общий buff
+// #define CGI_PATH "/Users/etorren/sand/webserv/pipe_bin"
+#define CGI_PATH "/Users/etorren/sand/webserv/cgi_tester"
+#define BUF 4048   //можно заменить на общий buff
 
 class Client;
 

@@ -7,6 +7,8 @@ void proc_exit(int) {
 	int wstat;
 	pid_t	pid;
 	pid = waitpid(P_ALL, &wstat, 0);
+	if (wstat > 255)
+		wstat /= 255;
 	std::cout << "Child process exited " << wstat << std::endl;
 	signal(SIGCHLD, SIG_DFL);
 }
@@ -186,14 +188,20 @@ void Client::initResponse(char **envp)	{
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
 	else if (req.getMethod() == "PUT")
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
-	else {
+	else if (req.getMethod() == "GET")
+	{
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-	if (req.getMethod() == "POST")
+	else if (req.getMethod() == "POST")
 	{
+		res.setFileLoc(location);
+		res.setContentType(req.getContentType());
+		res.openFile();
+
+		status |= IS_WRITE;
 		iter = 0;
 		cgiWriteFlag = false;
 		totalSent = 0;
@@ -217,6 +225,7 @@ void Client::initResponse(char **envp)	{
 		std::cout << "fileName = " << fileName << "\n";
 		if (loc->is_cgi_index(fileName))
 		{
+			std::cout << CYAN << "\e[1mIS_CGI " << RESET << "\n";
 			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
 			if ((pid = fork()) < 0)
 			{
@@ -323,40 +332,6 @@ void Client::makeErrorResponse()
 	}
 }
 
-
-
-void Client::extractCgiHeader( char * buff )
-{
-	clearStrStream(res.getStrStream());
-
-	std::string					tmp, tmp2;
-	std::vector<std::string>	headerAndBody;
-	std::vector<std::string>	headerStrs;
-	// int						code;
-
-	tmp = buff;
-	headerAndBody = split(tmp, "\r\n\r\n", "");
-	headerStrs = split(headerAndBody.at(0), "\r\n", "");
-
-	req.clearHeaders();
-	req.parseMapHeaders(headerStrs, headerStrs.size());
-	tmp.clear();
-	tmp = req.getCgiStatusCode();
-	tmp2 = tmp.substr(0, 3);
-	req.setCgiStatusCode(tmp2);
-	res.setStatusCode(tmp2);
-	res.setContentType(req.getContType());
-
-	// code = std::atoi(req.getCgiStatusCode().c_str());
-	// res.make_response_header(req, code, resCode[code]);
-
-	//отправка body оставшаяся в буффере после первого прочтения из пайпа
-	if (headerAndBody.size() > 1)
-		res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
-	
-	// res.sendResponse_stream(socket); //не тут должно быть 
-}
-
 void Client::cleaner()
 {
 	if (status & ERROR)
@@ -453,6 +428,8 @@ Client::Client(size_t nwsock)
 	srv = NULL;
 	loc = NULL;
 	envpVector.clear();
+	wrtRet = 0;
+	rdRet = 0;
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -545,7 +522,7 @@ int Client::parseLocation()	{
 		if (location.size() && location[location.size() - 1] != '/')	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
 			// location = req.getReqURI() + "/"; // COMMENT IT FOR TESTER
-			location += "/"; // DELETE COMMENT IT FOR TESTER
+			location += "/"; // UNCOMMENT IT FOR TESTER
 			status |= REDIRECT;
 			// return 0; // COMMENT IT FOR TESTER
 		} 	//else	{ // COMMENT ELSE { FOR TESTER

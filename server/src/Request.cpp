@@ -235,7 +235,6 @@ std::string Request::getBoundary() const { return _boundary; }
 
 void Request::setHost(std::string host) { _host = host; }
 void Request::setReqURI(std::string URI) { _reqURI = URI; }
-void Request::setCgiStatusCode(std::string code){ _cgiStatusCode = code; };
 void Request::setMIMEType(std::string type) { 
     size_t pos = type.find(".");
     if (pos != std::string::npos) {
@@ -266,7 +265,9 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
 void Request::parseEnvpFromBody(std::stringstream &reader, std::vector<std::string>&vec) {
 	std::string s, key, val = "none";
 	size_t pos = 0;
-	while (std::getline(reader, s, '&'))
+    std::stringstream tmp;
+    tmp << reader.rdbuf();
+	while (std::getline(tmp, s, '&'))
         vec.push_back(s);
 	// for (int i = 0; i < vec.size(); i++) {
 	// 	pos = vec[i].find("=");
@@ -281,6 +282,7 @@ void Request::parseEnvpFromBody(std::stringstream &reader, std::vector<std::stri
     for (; it != vec.end(); it++) {
         std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
     }
+    reader.seekg(0);
 }
 
 void Request::trimChunks( std::stringstream & reader, size_t size ) {

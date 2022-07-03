@@ -21,6 +21,7 @@
 #define REDIRECT	0x080
 #define IS_BODY		0x100
 #define STRM_READY	0x200
+#define IS_WRITE	0x400
 
 #define TIMEOUT		30
 
@@ -37,6 +38,9 @@ class Client
 		size_t								reader_size;
 		std::stringstream					reader;
 		std::string							header;
+
+			long				wrtRet;
+			long				rdRet;
 
 		std::map<int, std::string>			resCode;
 		std::vector<std::string>			envpVector;

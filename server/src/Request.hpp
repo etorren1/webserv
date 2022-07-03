@@ -70,7 +70,6 @@ public:
 
 	void									setHost(std::string);
 	void									setReqURI(std::string);
-	void									setCgiStatusCode(std::string);
 };
 
 

@@ -41,6 +41,8 @@ void Response::make_response_header(Request req, int code, std::string status, l
 		_contentLength = itos(getFileSize(_fileLoc.c_str()));
 	else
 		_contentLength = itos(size);
+	if (size == -1)
+		_contentLength = "";
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
 	addCookie(getCurTime());
@@ -103,7 +105,7 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	// std::cout << buffer <<"\n";
+	std::cout << RED << buffer << RESET << "\n"; 
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -211,10 +213,40 @@ bool Response::openFile()
 	return true;
 }
 
+int Response::extractCgiHeader( Request & req )
+{
+	std::string					headerAll;
+	std::vector<std::string>	headerAndBody;
+	std::vector<std::string>	headerStrs;
+	// int						code;
+
+	size_t pos;
+	size_t rd;
+	size_t bytesRead = 0;
+	char	buf[BUF];
+	while (true) {
+		_stream.read(buf, BUF);
+		headerAll += buf;
+		rd = _stream.gcount();
+		pos = find_2xCRLN(buf, BUF, bytesRead);
+		bytesRead += rd;
+		if (pos) {
+			headerAll = headerAll.substr(0, pos);
+			break;
+		}
+	}
+	_stream.seekg(pos + 4);
+	headerStrs = split(headerAll, "\r\n");
+
+	req.clearHeaders();
+	req.parseMapHeaders(headerStrs, headerStrs.size());
+	_contentType = req.getContType();
+	return atoi(req.getCgiStatusCode().substr(0, 3).c_str());
+}
+
 int				Response::getContentLenght() { return(std::atoi(_contentLength.c_str())); }
 std::string		Response::getHeader() { return(_header); }
 std::string		Response::getContentType() { return(_contentType); }
-std::string		Response::getStatusCode() { return(_statusCode); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
 std::string		Response::getCookie() { return(_cookie); }
@@ -223,7 +255,6 @@ std::stringstream &	Response::getStrStream() { return(_stream); }
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setStatusCode(std::string code) { _statusCode = code; };
 void			Response::setCookie(std::string cookie) { _cookie = cookie; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };
