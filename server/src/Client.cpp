@@ -174,8 +174,33 @@ void Client::initResponse(char **envp)	{
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
-	else if (req.getMethod() == "PUT")
-		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
+	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE") {
+		if (req.getMethod() == "PUT") {
+			std::ofstream file(location);
+			if (!file.is_open()) {
+				int sep = location.find_last_of("/");
+				if (sep != std::string::npos) {
+					rek_mkdir(location.substr(0, sep));
+				}
+				file.open(location);
+			}
+			if (file.is_open()) {
+				file << reader.str();
+				file.close();
+			} else {
+				throw codeException(406);
+			}
+			statusCode = 201;
+		}
+		if (req.getMethod() == "DELETE") {
+			if (remove(location.c_str()) != 0) 
+				codeException(403);
+			statusCode = 204;
+		}
+		res.setFileLoc(location);
+		clearStrStream(res.getStrStream());
+		res.make_response_html(statusCode, resCode[statusCode], location);
+	}
 	else {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -235,20 +260,16 @@ void Client::makeResponse(char **envp)
 { // envp не нужен уже
 	if (status & ERROR)
 		makeErrorResponse();
-	else if (status & AUTOIDX)
-		makeAutoidxResponse();
+	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")
+		makeResponseWithoutBody();
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
 	else if (req.getMethod() == "POST")
 		makePostResponse(envp);
-	else if (req.getMethod() == "DELETE")
-		makeDeleteResponse(envp);
-	else if (req.getMethod() == "PUT")
-		makePutResponse(envp);
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
-void Client::makeAutoidxResponse()
+void Client::makeResponseWithoutBody()
 {
 	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
@@ -427,55 +448,6 @@ void Client::makePostResponse(char **envp)
 		close(pipe2[PIPE_OUT]);
 		// std::cout << "COMPLEATING POST RESPONSE2\n"; 
 	}
-}
-
-void Client:: makeDeleteResponse(char **envp)	{
-	std::cout << RED << "DELETE\n" << RESET;
-	if (remove(location.c_str()) != 0) 
-		codeException(403);
-	else {
-		statusCode = 204;
-		// initResponse(envp);
-		res.setFileLoc(location);
-		clearStrStream(res.getStrStream());
-		res.make_response_html(204, resCode[204]);
-
-		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
-		if (res.sendResponse_stream(socket))  {
-			status |= RESP_DONE;
-			cleaner();
-		}
-	}
-}
-
-void Client:: makePutResponse(char **envp)	{
-	std::cout << RED << "PUT\n" << RESET;
-	std::ofstream file(location);
-	std::cout << GREEN << location << "\n" << RESET;
-	if (!file.is_open()) {
-		int sep = location.find_last_of("/");
-		if (sep != std::string::npos) {
-			rek_mkdir(location.substr(0, sep));
-		}
-		file.open(location);
-	}
-	if (file.is_open()) {
-		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
-		file << reader.str();
-		file.close();
-	} else {
-		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
-		throw codeException(406);
-	}
-	statusCode = 201;
-	res.setFileLoc(location);
-	clearStrStream(res.getStrStream());
-	res.make_response_html(201, resCode[201]);
-	if (res.sendResponse_stream(socket))  {
-		status |= RESP_DONE;
-		cleaner();
-	}
-	// exit(1);
 }
 
 void Client::cleaner()

@@ -51,7 +51,7 @@ void Response::make_response_header(Request req, int code, std::string status, l
 }
 
 void Response::addCookie(std::string cookie) {
-	_cookie = "Set-Cookie: time=" + cookie + ";\r\n\r\n";
+	_cookie = "Set-Cookie: time=" + cookie + "\r\n\r\n";
 }
 
 int Response::sendResponse_file(const size_t socket)

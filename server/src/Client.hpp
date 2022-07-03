@@ -74,10 +74,8 @@ class Client
 		void						makeResponse( char **envp );
 		void						makeGetResponse( void );
 		void						makePostResponse( char **envp );
-		void						makeDeleteResponse( char ** envp );
-		void						makePutResponse( char ** envp );
+		void						makeResponseWithoutBody();
 		void						makeErrorResponse( void );
-		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
 		int							checkTimeout( long );
 		void						checkTimeout2( long );
