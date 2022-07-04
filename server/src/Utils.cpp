@@ -27,6 +27,7 @@ std::string					trim(std::string str, std::string cut)
 
 std::string					itos( long long const & num )
 {
+	// std::cout << PURPLE << "\e[1mnum in itos = " << num << RESET << "\n";
 	std::stringstream ss;
 	ss << num;
 	return(ss.str());

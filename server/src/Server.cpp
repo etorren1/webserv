@@ -168,6 +168,8 @@ void Server::clientRequest(const int socket) {
         // std::cout << client[socket]->getStream().str();
         std::cout << PURPLE << "end BODY." << RESET << "\n";
 
+        std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
+
         client[socket]->handleRequest(envp);
         client[socket]->parseLocation();
         client[socket]->initResponse(envp);
@@ -219,6 +221,7 @@ void Server::mainHandler( void ) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE) {
                         // std::cout << YELLOW << "Send responce to " << socket << " socket" << RESET << "\n";
                         client[socket]->makeResponse(envp);
+                        // disconnectClients(id);
                     }
                 }
             }
@@ -232,17 +235,17 @@ void Server::mainHandler( void ) {
 
 int     Server::readRequest( const size_t socket ) { // v2
     char buf[BUF_SIZE + 1];
-    long bytesRead = 0;
+    size_t bytesRead = 0;
     int rd, count = 0;
 
     bytesRead = client[socket]->getStreamSize();
-    while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0 && count < BUF_SIZE) {
+    while (count < BUF_SIZE && (rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         count += rd;
         client[socket]->getStream() << buf;
         if (client[socket]->status & IS_BODY)
-           checkBodySize(socket, bytesRead);
+            checkBodySize(socket, bytesRead);
     }
     if (!client[socket]->checkTimeout(bytesRead))
         return 0;

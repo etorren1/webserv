@@ -54,7 +54,7 @@ void Client::checkMessageEnd( void ) {
 			// std::cout << "start bytes print: " << "\n";
 			// for (size_t i = 0; i < 5; i++)
 			// {
-			// 	printf("%d ", buf[i]);
+			// 	printf("%d ", buf[i]); 
 			// }
 			// std::cout << "\n";
 			// std::cout << "end bytes print\n";
@@ -356,6 +356,8 @@ void Client::cleaner()
 	srv = NULL;
 	time = timeChecker();
 	lastTime = 0;
+	wrtRet = 0;
+	rdRet = 0;
 }
 
 void Client::setStreamSize( const size_t size ) {

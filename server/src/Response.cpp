@@ -41,6 +41,8 @@ void Response::make_response_header(Request req, int code, std::string status, l
 		_contentLength = itos(getFileSize(_fileLoc.c_str()));
 	else
 		_contentLength = itos(size);
+	std::cout << GREEN << "\e[1msize = " << size << RESET << "\n";
+	std::cout << GREEN << "\e[1mitos(size) = " << itos(size) << RESET << "\n";
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
 	addCookie(getCurTime());
@@ -103,7 +105,9 @@ int Response::sendResponse_stream(const size_t socket)
 	_totalBytesRead += _bytesRead;
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	std::cout << RED << buffer << RESET << "\n"; 
+	
+	// if (getStrStreamSize(_stream) > 90000 && getStrStreamSize(_stream) < 110000)
+	// 	std::cout << RED << buffer << RESET << "\n"; 
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;

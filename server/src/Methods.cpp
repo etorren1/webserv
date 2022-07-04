@@ -37,13 +37,11 @@ void Client::makeGetResponse()
 void Client::makePostResponse(char **envp)
 {
 
-	std::cout << BLUE << "ENTERED makePostResponse METOD" << RESET << "\n";
+	// std::cout << BLUE << "ENTERED makePostResponse METOD" << RESET << "\n";
 
 	char				buf[BUF];
 	int					wr = 0;
 	int					rd = 0;
-	int					code;
-	char				buffer[200];
 	long				bytesRead = 0;
 
 	if (cgiWriteFlag == false)	// флаг cgi записан == false
@@ -53,32 +51,50 @@ void Client::makePostResponse(char **envp)
 			reader.read(buf, BUF);
 			bytesRead = reader.gcount();
 			wr = write(pipe1[PIPE_OUT], buf, bytesRead);
-			usleep (1000);
+			// usleep (100);
 			if (wr > 0)
 				wrtRet += wr;
 			if (wr < bytesRead)
 				reader.seekg(wrtRet);
-			if (wr == -1)
+			// if (wr == -1)
+			// 	status &= ~IS_WRITE;
+			if (wrtRet % 4048 == 0 || wr == -1 || wrtRet == reader_size)
 				status &= ~IS_WRITE;
-			std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 		// 	std::string sada = buf;
 		// 	std::cout << sada.substr(0, 5) << "\n";
 		}
-		else {
+		else if (rdRet != wrtRet) {
 			bzero(buf, BUF);
 			rd = read(pipe2[PIPE_IN], buf, BUF);
-			usleep (1000);
-			rdRet += rd;
-			if (rd == -1)
+			// usleep (100);
+			if (rd > 0)
+				rdRet += rd;
+			// if (rd == -1)
+			// 	status |= IS_WRITE;
+			if (rd % 4048 == 0 || rd == -1)
 				status |= IS_WRITE;
 			res.getStrStream() << buf;
 			// std::string sadae = buf;
 			// std::cout << sadae.substr(0, 150) << "\n";
 			// exit(1);
 			// std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// if (rdRet > 99000000 && (rd == -1 || rd % 4048 == 0)) {
+			// 	while (rdRet < wrtRet) {
+			// 		rd = read(pipe2[PIPE_IN], buf, BUF);
+			// 		if (rd > 0)
+			// 			rdRet += rd;
+			// 		std::cout << RED << "Read: (" << rdRet << ") rd: (" << rd << RESET << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// 		usleep(5000);
+			// 	}
+			// 	status |= IS_WRITE;
+			// }
 		}
-		if (reader.eof() && status & IS_WRITE) //SIGPIPE
+		// if (reader.eof() && status & IS_WRITE) //SIGPIPE
+		if (rdRet >= wrtRet && reader.eof()) //SIGPIPE
 		{
+			std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
+			std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
 			clearStream();
 			close(pipe1[PIPE_OUT]);
 			close(pipe2[PIPE_IN]);
@@ -87,8 +103,10 @@ void Client::makePostResponse(char **envp)
 			std::stringstream tmp;
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
-			res.make_response_header(req, statusCode, resCode[statusCode], 100000000);
-			res.getStrStream() << tmp;
+			std::cout << "reader_size = " << getStrStreamSize(res.getStrStream()) << "\n";
+			// res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
+			res.make_response_header(req, 201, resCode[201], getStrStreamSize(tmp));
+			res.getStrStream() << tmp.rdbuf();
 			cgiWriteFlag = true;
 		}
 	}
@@ -97,8 +115,8 @@ void Client::makePostResponse(char **envp)
 	{
 		if (res.sendResponse_stream(socket))
 			status |= RESP_DONE;
-		else
-			std::cout << RED << "not complete" << RESET << "\n";
+		// else
+		// 	std::cout << RED << "not complete" << RESET << "\n";
 	}
 	if (status & RESP_DONE)
 	{
