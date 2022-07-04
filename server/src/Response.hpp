@@ -62,7 +62,6 @@ class Response
 		int				getContentLenght();
 		std::string		getHeader();
 		std::string		getContentType();
-		std::string		getStatusCode();
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
 		std::string		getCookie();
@@ -71,8 +70,7 @@ class Response
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
-		void			setCookie(std::string cookie);
-		void			setStatusCode(std::string code);							//убрать
+		void			setCookie(std::string cookie);						//убрать
 		// void			setInput(std::ifstream &_file);
 		// void			setStrStream(std::stringstream stream);
 
@@ -96,6 +94,7 @@ class Response
 			which are CGI environment variables to pass them all
 			to CGI new stream */
 		bool openFile();
+		int extractCgiHeader( Request & req );
 };
 
 #endif
