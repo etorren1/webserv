@@ -58,7 +58,7 @@ class Client
 	public:
 		int			iter; //TEMPORARY - TO DELETE
 		int			status;
-		bool		cgiWriteFlag;
+		bool		cgiDone;
 
 		void 						checkMessageEnd( void );
 		void						savePartOfStream( size_t pos );
@@ -81,6 +81,7 @@ class Client
 		int							makeRedirect( int code, std::string loc );
 		int							checkTimeout( long );
 		void						checkTimeout2( long );
+		void						passThroughCgi();
 
 		void						setStream( const std::stringstream & mess, const size_t size);
 		void						setServer( Server_block * s );

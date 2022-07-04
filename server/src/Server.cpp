@@ -163,7 +163,7 @@ void Server::connectClients( const int & fd ) {
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
 
-        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
         std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
         // std::cout << client[socket]->getStream().str();
         std::cout << PURPLE << "end BODY." << RESET << "\n";
@@ -184,7 +184,7 @@ void Server::clientRequest(const int socket) {
             throw codeException(400);
         }
         client[socket]->setServer(srv);
-        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
+        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
             // if (client[socket]->status & IS_BODY) {

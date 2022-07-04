@@ -195,7 +195,7 @@ void Client::initResponse(char **envp)	{
 	if (req.getMethod() == "POST")
 	{
 		iter = 0;
-		cgiWriteFlag = false;
+		cgiDone = false;
 		totalSent = 0;
 		res.addCgiVar(&envp, req, envpVector);
 
@@ -238,8 +238,8 @@ void Client::initResponse(char **envp)	{
 				close(pipe1[PIPE_OUT]);
 				close(pipe1[PIPE_IN]);
 				
-				close(pipe2[PIPE_IN]);
-				close(pipe2[PIPE_OUT]);
+				// close(pipe2[PIPE_IN]);
+				// close(pipe2[PIPE_OUT]);
 
 				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
 				{
