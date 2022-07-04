@@ -230,29 +230,23 @@ void Server::mainHandler( void ) {
     }
 }
 
-int     Server::readRequest( const size_t socket ) {
+int     Server::readRequest( const size_t socket ) { // v2
     char buf[BUF_SIZE + 1];
     long bytesRead = 0;
-    int rd;
-    std::stringstream text;
+    int rd, count = 0;
 
-    if (client[socket]->getStreamSize() > 0) {
-		text << client[socket]->getStream().rdbuf();
-        bytesRead = client[socket]->getStreamSize();
-    }
-    while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
+    bytesRead = client[socket]->getStreamSize();
+    while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0 && count < BUF_SIZE) {
         buf[rd] = 0;
         bytesRead += rd;
-        text << buf;
+        count += rd;
+        client[socket]->getStream() << buf;
         if (client[socket]->status & IS_BODY)
            checkBodySize(socket, bytesRead);
-        else if (find_2xCRLN(buf, rd))
-            break;
     }
     if (!client[socket]->checkTimeout(bytesRead))
         return 0;
-    // client[socket]->checkTimeout2(bytesRead);
-    client[socket]->setStream(text, bytesRead);
+    client[socket]->setStreamSize(bytesRead);
     client[socket]->checkMessageEnd();
     return (bytesRead);
 }
@@ -272,6 +266,7 @@ void    Server::closeServer( int new_status ) {
         delete (*it).second;
     }
     for (client_iterator it = client.begin(); it != client.end(); it++) {
+        (*it).second->cleaner();
         delete (*it).second;
     }
     srvs.clear();

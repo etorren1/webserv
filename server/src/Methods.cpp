@@ -87,8 +87,8 @@ void Client::makePostResponse(char **envp)
 			std::stringstream tmp;
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
-			res.make_response_header(req, statusCode, resCode[statusCode], -1);
-			// res.getStrStream() << tmp;
+			res.make_response_header(req, statusCode, resCode[statusCode], 100000000);
+			res.getStrStream() << tmp;
 			cgiWriteFlag = true;
 		}
 	}

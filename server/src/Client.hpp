@@ -86,7 +86,7 @@ class Client
 		int							checkTimeout( long );
 		void						checkTimeout2( long );
 
-		void						setStream( const std::stringstream & mess, const size_t size);
+		void						setStreamSize( const size_t size );
 		void						setServer( Server_block * s );
 		void						setClientTime(time_t);
 		void						setLastTime(time_t);

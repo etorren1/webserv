@@ -28,7 +28,6 @@ void Client::savePartOfStream( size_t pos ) {
 	reader.seekg(pos + 4);
 	reader.read(buf, reader_size - pos - 4);
 	buf[reader_size - pos - 3] = 0;
-	std::cout << "readed: "<< reader.gcount() << "\n";
 	reader_size = reader.gcount();
 	reader.str(std::string()); // clearing content in stream
 	reader.clear();
@@ -38,20 +37,20 @@ void Client::savePartOfStream( size_t pos ) {
 }
 
 void Client::checkMessageEnd( void ) {
-
 	if (status & IS_BODY)
 	{
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
 		// std::cout << BLUE << "Content-Length: " << req.getСontentLenght() << RESET << "\n";
 
-		if (req.getTransferEnc() == "chunked")
+		if (req.getTransferEnc() == "chunked" && reader_size > 4)
 		{
-			char buf[6];
+			char buf[5];
 			bzero(buf, 5);
 			reader.seekg(reader_size - 5);
 			reader.read(buf, 5);
 			reader.seekg(0);
-			std::cout << "reader_size = " << reader_size << "\n";
+			// std::cout << "reader_size = " << reader_size << "\n";
+			// usleep(4000);
 			// std::cout << "start bytes print: " << "\n";
 			// for (size_t i = 0; i < 5; i++)
 			// {
@@ -59,12 +58,15 @@ void Client::checkMessageEnd( void ) {
 			// }
 			// std::cout << "\n";
 			// std::cout << "end bytes print\n";
-
-			if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
-				&& buf[3] == '\r' && buf[4] == '\n')
+			size_t pos = find_2xCRLN(buf, 5);
+			// std::cout << "pos = " << pos << "\n";
+			if (pos && buf[pos - 1] == '0')
+			// if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
+			// 	&& buf[3] == '\r' && buf[4] == '\n')
 				fullpart = true;
 			else
 				fullpart = false;
+			// std::cout << "fullpart: " << fullpart << "\n";
 		}
 		else if (req.getContentLenght().size())
 		{
@@ -87,9 +89,14 @@ void Client::checkMessageEnd( void ) {
 	}
 	else
 	{
+
 		header = reader.str();
 		size_t pos = header.find("\r\n\r\n");
+		// size_t pos = find_2xCRLN(buf, 5, reader_size - 5);
+		// std::cout << "pos = " << pos << "\n";
 		if (pos != std::string::npos) {
+		// if (pos != 0) {
+			// header = reader.str();
 			if (pos + 4 != reader_size) // part of body request got into the header
 				savePartOfStream(pos);
 			else
@@ -327,7 +334,6 @@ void Client::makeErrorResponse()
 	}
 	if (status & RESP_DONE)
 	{
-		// std::cout << GREEN << "End ERROR response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 	}
 }
@@ -352,12 +358,10 @@ void Client::cleaner()
 	lastTime = 0;
 }
 
-void Client::setStream( const std::stringstream & mess, const size_t size ) {
-	reader.str(std::string());
-	reader.clear();
-	reader << mess.rdbuf();
-	reader_size = size;	
+void Client::setStreamSize( const size_t size ) {
+	reader_size = size;
 }
+
 void Client::setServer(Server_block *s)
 {
 	srv = s;
