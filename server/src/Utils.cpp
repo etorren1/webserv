@@ -59,6 +59,8 @@ size_t 		find_CRLN( char* buf, size_t size, size_t indent ) {
 }
 
 size_t 		find_2xCRLN( char* buf, size_t size, size_t indent ) {
+	if (size < 4)
+		return (0);
     for (size_t i = 0; i < size - 3; i++)
         if (buf[i] == '\r' && buf[i + 1] == '\n'
 			&& buf[i + 2] == '\r' && buf[i + 3] == '\n')

@@ -206,6 +206,10 @@ void Server::mainHandler( void ) {
     if (ret != 0) {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
+            if (!isServerSocket(socket)) {
+                if (client[socket]->status & DISCONNECT)
+                    disconnectClients(id);
+            }
             try {
                 if (fds[id].revents & POLLIN) {
                     if (isServerSocket(socket))
@@ -250,7 +254,8 @@ int     Server::readRequest( const size_t socket ) {
             break;
     }
     if (!client[socket]->checkTimeout(bytesRead))
-        return 0;
+		throw codeException(408);
+        // return 0;
     // client[socket]->checkTimeout2(bytesRead);
     client[socket]->setStream(text, bytesRead);
     client[socket]->checkMessageEnd();

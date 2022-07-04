@@ -21,6 +21,7 @@
 #define REDIRECT	0x080
 #define IS_BODY		0x100
 #define STRM_READY	0x200
+#define DISCONNECT	0x400
 
 #define TIMEOUT		30
 

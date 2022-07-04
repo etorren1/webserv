@@ -691,9 +691,11 @@ int Client::makeRedirect(int code, std::string loc){
 
 int Client::checkTimeout(long bytesRead) {
 	// std::cout << GREEN << "bytesRead: " << bytesRead << " == reader_size: " << reader_size << "" << RESET << "\n";
-	if (bytesRead == reader_size && (lastTime - time) > TIMEOUT)
+	if (bytesRead == reader_size && (lastTime - time) > TIMEOUT) {
+			status |= DISCONNECT;
 			// std::cout << RED << "Timeout: " << time << " > " << TIMEOUT << " - client disconnected" << RESET << "\n";
 			return 0;
+	}
     lastTime = timeChecker();
 	// std::cout << RED << "Time: " << time << "- lastTime:  " << lastTime << " = " << (lastTime - time) << " < "<< TIMEOUT << RESET << "\n";
 	return 1;
