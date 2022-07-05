@@ -84,12 +84,12 @@ void Client::makePostResponse(char **envp)
 			close(pipe1[PIPE_OUT]);
 			close(pipe2[PIPE_IN]);
 			statusCode = res.extractCgiHeader(req);
-
+			
 			std::stringstream tmp;
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
 			res.make_response_header(req, statusCode, resCode[statusCode], 100000000);
-			// res.getStrStream() << tmp;
+			res.getStrStream() << tmp.rdbuf();
 			cgiWriteFlag = true;
 		}
 	}
@@ -98,7 +98,7 @@ void Client::makePostResponse(char **envp)
 	{
 		if (res.sendResponse_stream(socket))
 		{
-			std::cout << "STREAM SIZE: " << getStreamSize(res.getStrStream());
+			std::cout << "STREAM SIZE: " << getStrStreamSize(res.getStrStream());
 			std::ofstream outFile("myFile.txt");
     		outFile << res.getStrStream().rdbuf();
     		outFile.close();
