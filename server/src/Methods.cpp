@@ -44,6 +44,8 @@ void Client::makePostResponse(char **envp)
 	int					rd = 0;
 	long				bytesRead = 0;
 
+	size_t lastRead = rdRet;
+	size_t lastWrite = wrtRet;
 	if (cgiWriteFlag == false)	// флаг cgi записан == false
 	{
 		if (status & IS_WRITE) {
@@ -51,7 +53,6 @@ void Client::makePostResponse(char **envp)
 			reader.read(buf, BUF);
 			bytesRead = reader.gcount();
 			wr = write(pipe1[PIPE_OUT], buf, bytesRead);
-			// usleep (100);
 			if (wr > 0)
 				wrtRet += wr;
 			if (wr < bytesRead)
@@ -60,6 +61,8 @@ void Client::makePostResponse(char **envp)
 			// 	status &= ~IS_WRITE;
 			if (wrtRet % 4048 == 0 || wr == -1 || wrtRet == reader_size)
 				status &= ~IS_WRITE;
+			checkTimeout2(wrtRet, lastWrite);
+			// usleep (100);
 			// std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 		// 	std::string sada = buf;
 		// 	std::cout << sada.substr(0, 5) << "\n";
@@ -67,7 +70,6 @@ void Client::makePostResponse(char **envp)
 		else if (rdRet != wrtRet) {
 			bzero(buf, BUF);
 			rd = read(pipe2[PIPE_IN], buf, BUF);
-			// usleep (100);
 			if (rd > 0)
 				rdRet += rd;
 			// if (rd == -1)
@@ -75,9 +77,11 @@ void Client::makePostResponse(char **envp)
 			if (rd % 4048 == 0 || rd == -1)
 				status |= IS_WRITE;
 			res.getStrStream() << buf;
+			checkTimeout2(rdRet, lastRead);
 			// std::string sadae = buf;
 			// std::cout << sadae.substr(0, 150) << "\n";
 			// exit(1);
+			// usleep (100);
 			// std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
 			// if (rdRet > 99000000 && (rd == -1 || rd % 4048 == 0)) {
 			// 	while (rdRet < wrtRet) {
@@ -98,23 +102,35 @@ void Client::makePostResponse(char **envp)
 			clearStream();
 			close(pipe1[PIPE_OUT]);
 			close(pipe2[PIPE_IN]);
+			
+			char t[60];
+			res.getStrStream().read(t, 60);
+			res.getStrStream().seekg(0);
+			std::cout << YELLOW << t << RESET << "\n";
 			statusCode = res.extractCgiHeader(req);
+			res.wrRet = wrtRet;
 
 			std::stringstream tmp;
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
-			std::cout << "reader_size = " << getStrStreamSize(res.getStrStream()) << "\n";
 			// res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
-			res.make_response_header(req, 201, resCode[201], getStrStreamSize(tmp));
+			// if (wrtRet != 100000)
+				res.make_response_header(req, 201, resCode[201], getStrStreamSize(tmp));
+			// else
+			// 	res.make_response_header(req, 200, resCode[200], 0);
 			res.getStrStream() << tmp.rdbuf();
 			cgiWriteFlag = true;
+
+
 		}
 	}
 
 	if (cgiWriteFlag == true)											//если все данные передались в cgi
 	{
-		if (res.sendResponse_stream(socket))
+		if (res.sendResponse_stream(socket)) {
+			std::cout << RED << "All sended" << RESET << "\n";
 			status |= RESP_DONE;
+		}
 		// else
 		// 	std::cout << RED << "not complete" << RESET << "\n";
 	}

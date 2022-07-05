@@ -42,31 +42,31 @@ void Client::checkMessageEnd( void ) {
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
 		// std::cout << BLUE << "Content-Length: " << req.getСontentLenght() << RESET << "\n";
 
-		if (req.getTransferEnc() == "chunked" && reader_size > 4)
+		if (req.getTransferEnc() == "chunked")
 		{
-			char buf[5];
-			bzero(buf, 5);
-			reader.seekg(reader_size - 5);
-			reader.read(buf, 5);
-			reader.seekg(0);
-			// std::cout << "reader_size = " << reader_size << "\n";
-			// usleep(4000);
-			// std::cout << "start bytes print: " << "\n";
-			// for (size_t i = 0; i < 5; i++)
-			// {
-			// 	printf("%d ", buf[i]); 
-			// }
-			// std::cout << "\n";
-			// std::cout << "end bytes print\n";
-			size_t pos = find_2xCRLN(buf, 5);
-			// std::cout << "pos = " << pos << "\n";
-			if (pos && buf[pos - 1] == '0')
-			// if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
-			// 	&& buf[3] == '\r' && buf[4] == '\n')
-				fullpart = true;
-			else
-				fullpart = false;
-			// std::cout << "fullpart: " << fullpart << "\n";
+			if (reader_size > 4) {
+				char buf[5];
+				bzero(buf, 5);
+				reader.seekg(reader_size - 5);
+				reader.read(buf, 5);
+				reader.seekg(0);
+				// std::cout << "start bytes print: " << "\n";
+				// for (size_t i = 0; i < 5; i++)
+				// {
+				// 	printf("%d ", buf[i]); 
+				// }
+				// std::cout << "\n";
+				// std::cout << "end bytes print\n";
+				size_t pos = find_2xCRLN(buf, 5);
+				// std::cout << "pos = " << pos << "\n";
+				if (pos && buf[pos - 1] == '0')
+				// if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
+				// 	&& buf[3] == '\r' && buf[4] == '\n')
+					fullpart = true;
+				else
+					fullpart = false;
+				// std::cout << "fullpart: " << fullpart << "\n";
+			}
 		}
 		else if (req.getContentLenght().size())
 		{
@@ -581,9 +581,9 @@ int Client::makeRedirect(int code, std::string loc){
 	return 1;
 }
 
-int Client::checkTimeout(long bytesRead) {
+int Client::checkTimeout(size_t currentCount, size_t lastCount) {
 	// std::cout << GREEN << "bytesRead: " << bytesRead << " == reader_size: " << reader_size << "" << RESET << "\n";
-	if (bytesRead == reader_size && (lastTime - time) > TIMEOUT)
+	if (currentCount == lastCount && (lastTime - time) > TIMEOUT)
 			// std::cout << RED << "Timeout: " << time << " > " << TIMEOUT << " - client disconnected" << RESET << "\n";
 			return 0;
     lastTime = timeChecker();
@@ -591,8 +591,8 @@ int Client::checkTimeout(long bytesRead) {
 	return 1;
 }
 
-void Client::checkTimeout2(long bytesRead) {
-	if (bytesRead == reader_size && time > TIMEOUT) {
+void Client::checkTimeout2(size_t currentCount, size_t lastCount) {
+	if (currentCount == lastCount && time > TIMEOUT) {
 		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
         throw codeException(408);
     }

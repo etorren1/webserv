@@ -23,7 +23,7 @@
 #define STRM_READY	0x200
 #define IS_WRITE	0x400
 
-#define TIMEOUT		30
+#define TIMEOUT		10
 
 class Client
 {
@@ -39,8 +39,8 @@ class Client
 		std::stringstream					reader;
 		std::string							header;
 
-			long				wrtRet;
-			long				rdRet;
+			size_t				wrtRet;
+			size_t				rdRet;
 
 		std::map<int, std::string>			resCode;
 		std::vector<std::string>			envpVector;
@@ -60,6 +60,7 @@ class Client
 		size_t				totalSent;
 
 	public:
+
 		int			iter; //TEMPORARY - TO DELETE
 		int			status;
 		bool		cgiWriteFlag;
@@ -83,8 +84,8 @@ class Client
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
-		int							checkTimeout( long );
-		void						checkTimeout2( long );
+		int							checkTimeout(size_t currentCount, size_t lastCount);
+		void						checkTimeout2(size_t currentCount, size_t lastCount);
 
 		void						setStreamSize( const size_t size );
 		void						setServer( Server_block * s );

@@ -376,11 +376,12 @@ void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vec
     if (_transferEnc.size()) {
         if (_transferEnc == "chunked") {
             trimChunks(reader, reader_size);
+            ;
         }
     }
     else if (_contentLength.size()) {
         if (_boundary.size()) {
-            trimBoundary(reader, reader_size);
+            // trimBoundary(reader, reader_size);
             ;
         }
         else if (getContType() == "application/x-www-form-urlencoded") {

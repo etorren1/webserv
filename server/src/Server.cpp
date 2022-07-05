@@ -247,7 +247,7 @@ int     Server::readRequest( const size_t socket ) { // v2
         if (client[socket]->status & IS_BODY)
             checkBodySize(socket, bytesRead);
     }
-    if (!client[socket]->checkTimeout(bytesRead))
+    if (!client[socket]->checkTimeout(bytesRead, client[socket]->getStreamSize()))
         return 0;
     client[socket]->setStreamSize(bytesRead);
     client[socket]->checkMessageEnd();

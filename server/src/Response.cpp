@@ -9,7 +9,6 @@ std::string Response::make_general_header (Request req, int statusCode)
 	std::string contType = "Content-Type: " + _contentType + "\r\n";
 	std::string contentLength = "Content-Length: " + _contentLength + "\r\n";
 	std::string connection = "keep-alive"; //Connection: keep-alive
-
 	// if (statusCode == 301)
 	// {
 	// 	location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
@@ -106,8 +105,11 @@ int Response::sendResponse_stream(const size_t socket)
 
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
 	
-	// if (getStrStreamSize(_stream) > 90000 && getStrStreamSize(_stream) < 110000)
+	// if (wrRet == 100000) {
+	// 	usleep (1000);
 	// 	std::cout << RED << buffer << RESET << "\n"; 
+	// 	wrRet = 0;
+	// }
 	// if (_bytesSent == -1)
 	// {
 	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
@@ -152,11 +154,12 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
 	std::string content_length = ("CONTENT_LENGTH=" + req.getContentLenght());
+	std::string secret = ("X_SECRET_HEADER_FOR_TEST=1");
 
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 5 + envpVector.size()) + req.getHeadears().size()); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 6 + envpVector.size()) + req.getHeadears().size()); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)							//переносим все изначальные envp в новый массив
 	{
@@ -168,6 +171,7 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
 	tmp[numOfLines + 2] = strdup(path_info.c_str());
 	tmp[numOfLines + 3] = strdup(content_length.c_str());
+	tmp[numOfLines + 4] = strdup(secret.c_str());
 
 	startIndx = numOfLines + 4;
 

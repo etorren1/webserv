@@ -39,6 +39,8 @@ class Response
 		long									_totalBytesRead;
 
 	public:
+		size_t									wrRet;
+
 		std::ifstream							_file; //поток файла из которого читает в данный момент
 		std::stringstream						_stream;
 		bool									_isSent; //весь ответ был выслан
