@@ -46,13 +46,13 @@ void Client::makePostResponse(char **envp)
 
 	size_t lastRead = rdRet;
 	size_t lastWrite = wrtRet;
-	if (cgiWriteFlag == false)	// флаг cgi записан == false
+	if (!(status & CGI_DONE))	// флаг cgi записан == false
 	{
 		if (status & IS_WRITE) {
 			bzero(buf, BUF);
 			reader.read(buf, BUF);
 			bytesRead = reader.gcount();
-			wr = write(pipe1[PIPE_OUT], buf, bytesRead);
+			wr = write(res.getPipeWrite(), buf, bytesRead);
 			if (wr > 0)
 				wrtRet += wr;
 			if (wr < bytesRead)
@@ -69,7 +69,7 @@ void Client::makePostResponse(char **envp)
 		}
 		else if (rdRet != wrtRet) {
 			bzero(buf, BUF);
-			rd = read(pipe2[PIPE_IN], buf, BUF);
+			rd = read(res.getPipeRead(), buf, BUF);
 			if (rd > 0)
 				rdRet += rd;
 			// if (rd == -1)
@@ -100,8 +100,8 @@ void Client::makePostResponse(char **envp)
 			std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 			std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
 			clearStream();
-			close(pipe1[PIPE_OUT]);
-			close(pipe2[PIPE_IN]);
+			close(res.getPipeWrite());
+			close(res.getPipeRead());
 			
 			char t[90];
 			res.getStrStream().read(t, 90);
@@ -120,13 +120,12 @@ void Client::makePostResponse(char **envp)
 			// else
 			// 	res.make_response_header(req, 200, resCode[200], 0);
 			res.getStrStream() << tmp.rdbuf();
-			cgiWriteFlag = true;
+			status |= CGI_DONE;
 
 
 		}
 	}
-
-	if (cgiWriteFlag == true)											//если все данные передались в cgi
+	if (status & CGI_DONE)											//если все данные передались в cgi
 	{
 		if (res.sendResponse_stream(socket)) {
 			std::cout << RED << "All sended" << RESET << "\n";

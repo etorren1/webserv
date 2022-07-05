@@ -7,6 +7,7 @@
 #include <dirent.h> 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <cstring>
 
 #define RES_BUF_SIZE 2048
@@ -38,6 +39,12 @@ class Response
 		long									_bytesSent;
 		long									_totalBytesRead;
 
+		// for POST:
+		int					pipe1[2];
+		int					pipe2[2];
+		pid_t				pid;
+		int					ex;
+
 	public:
 		size_t									wrRet;
 
@@ -48,11 +55,11 @@ class Response
 		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0), _isSent(0), _stream("") {};
 		~Response() {};
 
-		int				make_response_body(Request req, const size_t id);
-		void			make_response_header(Request req, int code, std::string status, long size = 0);
-		std::string		make_general_header (Request req, int statusCode);
+		int				make_response_body(Request & req, const size_t id);
+		void			make_response_header(Request & req, int code, std::string status, long size = 0);
+		std::string		make_general_header (Request & req, int statusCode);
 		void			make_response_html( const int code, std::string & mess, std::string loc = "" );
-		void			make_response_autoidx(Request req, std::string location, int code, std::string & status);
+		void			make_response_autoidx(Request & req, std::string location, int code, std::string & status);
 		void			addCookie(std::string cookie);
 		// template <class T>
 		// int				sendResponse(T * input, const size_t socket);
@@ -61,18 +68,19 @@ class Response
 
 		void			cleaner();
 
+		int	&			getPipeWrite();
+		int	&			getPipeRead();
 		int				getContentLenght();
 		std::string		getHeader();
 		std::string		getContentType();
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
 		std::string		getCookie();
-		// std::ifstream 	getFileStream();
+		std::ifstream &	getFileStream();
 		std::stringstream &	getStrStream();
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
-		void			setCookie(std::string cookie);						//убрать
 		// void			setInput(std::ifstream &_file);
 		// void			setStrStream(std::stringstream stream);
 
@@ -91,12 +99,14 @@ class Response
 		}
 		
 		//for makePostResponse:
-		void addCgiVar(char ***envp, Request req, std::vector<std::string> & envpVector);
+		void addCgiVar(char ***envp, Request & req, std::vector<std::string> & envpVector);
+		char **addCgiVar(Request & req, char **envp);
 		/*	adds to exported environment variables new three
 			which are CGI environment variables to pass them all
 			to CGI new stream */
 		bool openFile();
 		int extractCgiHeader( Request & req );
+		void createSubprocess( Request & req, char **envp);
 };
 
 #endif

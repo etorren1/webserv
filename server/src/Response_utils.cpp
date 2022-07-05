@@ -22,7 +22,7 @@ void	Response::make_response_html( const int code, std::string & mess, std::stri
 	_stream << response;
 }
 
-void	Response::make_response_autoidx(Request req, std::string path, int code, std::string & status){
+void	Response::make_response_autoidx(Request & req, std::string path, int code, std::string & status){
     DIR *dir;
     struct dirent *entry;
 

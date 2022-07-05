@@ -22,6 +22,7 @@
 #define IS_BODY		0x100
 #define STRM_READY	0x200
 #define IS_WRITE	0x400
+#define CGI_DONE	0x800
 
 #define TIMEOUT		10
 
@@ -52,18 +53,9 @@ class Client
 		//bonus:
 		std::map<std::string, std::string>	cookies;
 
-		// for POST:
-		int					pipe1[2];
-		int					pipe2[2];
-		pid_t				pid;
-		int					ex;
-		size_t				totalSent;
-
 	public:
 
-		int			iter; //TEMPORARY - TO DELETE
 		int			status;
-		bool		cgiWriteFlag;
 
 		void 						checkMessageEnd( void );
 		void						savePartOfStream( size_t pos );
@@ -102,8 +94,6 @@ class Client
 		std::string &				getHeader( void );
 		size_t						getStreamSize( void );
 		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
-		int *						getPipe1();
-		int *						getPipe2();
 		time_t						getClientTime();
 		time_t						getLastTime();
 

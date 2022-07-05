@@ -2,18 +2,6 @@
 #include "Utils.hpp"
 #include <errno.h>
 
-
-void proc_exit(int) {
-	int wstat;
-	pid_t	pid;
-	pid = waitpid(P_ALL, &wstat, 0);
-	if (wstat > 255)
-		wstat /= 255;
-	std::cout << "Child process exited " << wstat << std::endl;
-	signal(SIGCHLD, SIG_DFL);
-}
-
-
 void Client::clearStream( void ) {
 	reader.seekg(0);
 	reader.str(std::string());
@@ -195,101 +183,29 @@ void Client::initResponse(char **envp)	{
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
 	else if (req.getMethod() == "PUT")
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
-	else if (req.getMethod() == "GET")
-	{
+	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-	else if (req.getMethod() == "POST")
-	{
-		res.setFileLoc(location);
+	else if (req.getMethod() == "POST") {
+		// res.setFileLoc(location);
+		// res.openFile();
 		res.setContentType(req.getContentType());
-		res.openFile();
+		// res.addCgiVar(&envp, req, envpVector);
 
-		status |= IS_WRITE;
-		iter = 0;
-		cgiWriteFlag = false;
-		totalSent = 0;
-		res.addCgiVar(&envp, req, envpVector);
-
-		if (pipe(pipe2))
-		{
-			std::cout << RED << "HERE0" << RESET << "\n";
-			throw(codeException(500));
-		}
-		if (pipe(pipe1))
-		{
-			std::cout << RED << "HERE1" << RESET << "\n";
-			throw(codeException(500));
-		}
-		fcntl(pipe1[PIPE_OUT], F_SETFL, O_NONBLOCK);
-		fcntl(pipe2[PIPE_IN], F_SETFL, O_NONBLOCK);
-
-		size_t pos = location.rfind("/");
-		std::string fileName = location.substr(pos + 1);
-		std::cout << "fileName = " << fileName << "\n";
-		int i = 0;
-		while (envp[i]) {
-			usleep(100);
-			std::cout << envp[i++] << "\n";
-		}
-		if (loc->is_cgi_index(fileName))
-		{
-			std::cout << CYAN << "\e[1mIS_CGI " << RESET << "\n";
-			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
-			if ((pid = fork()) < 0)
-			{
-			std::cout << RED << "HERE2" << RESET << "\n";
-				throw(codeException(500));
-			}
-			if (pid == 0) //child - process for CGI programm
-			{
-				// close(pipe1[PIPE_IN]); //Close unused pipe write end
-				// close(pipe2[PIPE_OUT]); //Close unused pipe read end
-				// dup2(pipe1[PIPE_OUT], 0);
-				// dup2(pipe2[PIPE_IN], 1);
-				// close(pipe1[PIPE_OUT]);
-				// close(pipe2[PIPE_IN]);
-
-				dup2(pipe1[PIPE_IN], 0);
-				dup2(pipe2[PIPE_OUT], 1);
-				
-				close(pipe1[PIPE_OUT]);
-				close(pipe1[PIPE_IN]);
-				
-				close(pipe2[PIPE_IN]);
-				close(pipe2[PIPE_OUT]);
-
-				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
-				{
-					if (!envp)
-						std::cerr << "ENVP DOES NOE EXIST\n";
-					char buffer[100];
-					std::cerr << RED << "Execve fault: has 500 exception" << RESET << "\n";
-					strerror_r( errno, buffer, 256 ); // to remove
-					std::cerr << "ERRNO: " << buffer << "\n"; // to remove
-					throw(codeException(500));
-					exit (20);
-				}
-				// close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
-				// close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
-				exit(ex);
-			}
-			else
-			{
-				// close(pipe1[PIPE_OUT]); //Close unused pipe read end
-				// close(pipe2[PIPE_IN]); //Close unused pipe write end
-				signal(SIGCHLD, proc_exit);
-				close(pipe1[PIPE_IN]);
-				close(pipe2[PIPE_OUT]);
-			}
+		// size_t pos = location.rfind("/");
+		// std::string fileName = location.substr(location.rfind("/") + 1);
+		// // std::cout << "fileName = " << fileName << "\n";
+		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
+			std::cout << CYAN << "\e[1m IS_CGI " << RESET << "\n";
+			res.createSubprocess(req, envp);
+			status |= IS_WRITE;
 		}
 		else
-			std::cout << "NOT CGI\n";
+			std::cout << CYAN << "\e[1m ~NOT_CGI " << RESET << "\n";
 	}
-	// status |= REQ_DONE;
 }
 
 void Client::makeResponse(char **envp)
@@ -392,8 +308,6 @@ std::string &	Client::getHeader( void ) { return header; }
 size_t			Client::getStreamSize( void ) { return reader_size; }
 std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
-int *			Client::getPipe1() { return pipe1; }
-int *			Client::getPipe2() { return pipe2; }
 time_t			Client::getClientTime() { return time; }
 time_t			Client::getLastTime() { return lastTime; }
 
