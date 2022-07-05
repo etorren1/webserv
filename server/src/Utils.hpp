@@ -20,7 +20,7 @@
 #define PIPE_OUT 1	//we read
 // #define CGI_PATH "/Users/etorren/sand/webserv/pipe_bin"
 #define CGI_PATH "/Users/etorren/sand/webserv/cgi_tester"
-#define BUF 4048   //можно заменить на общий buff
+#define BUF 8192   //можно заменить на общий buff
 
 class Client;
 

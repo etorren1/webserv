@@ -265,9 +265,9 @@ void 			Response::createSubprocess( Request & req, char **envp) {
 	else { // main process
 		// close(pipe1[PIPE_OUT]); //Close unused pipe read end
 		// close(pipe2[PIPE_IN]); //Close unused pipe write end
-		signal(SIGCHLD, wait_subprocess);
 		close(pipe1[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
+		signal(SIGCHLD, wait_subprocess);
 	}
 }
 
@@ -278,6 +278,7 @@ int Response::extractCgiHeader( Request & req )
 	size_t pos, rd, bytesRead = 0;
 	char	buf[BUF];
 	while (true) {
+		bzero(buf, BUF);
 		_stream.read(buf, BUF);
 		headerAll += buf;
 		rd = _stream.gcount();
@@ -288,7 +289,12 @@ int Response::extractCgiHeader( Request & req )
 			break;
 		}
 	}
-	_stream.seekg(pos + 4);
+	if (_stream.eof()) {
+		clearStrStream(_stream);
+		_stream << &buf[pos + 4];
+	}
+	else
+		_stream.seekg(pos + 4);
 	headerStrs = split(headerAll, "\r\n");
 	req.clearHeaders();
 	req.parseMapHeaders(headerStrs, headerStrs.size());

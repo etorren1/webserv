@@ -44,8 +44,13 @@ void Client::makePostResponse(char **envp)
 	int					rd = 0;
 	long				bytesRead = 0;
 
-	size_t lastRead = rdRet;
-	size_t lastWrite = wrtRet;
+	// size_t lastRead = rdRet;
+	// size_t lastWrite = wrtRet;
+
+	if (reader_size == 0 && !(status & CGI_DONE)) {
+		res.make_response_html(201, resCode[201]);
+		status |= CGI_DONE;
+	}
 	if (!(status & CGI_DONE))	// флаг cgi записан == false
 	{
 		if (status & IS_WRITE) {
@@ -53,29 +58,39 @@ void Client::makePostResponse(char **envp)
 			reader.read(buf, BUF);
 			bytesRead = reader.gcount();
 			wr = write(res.getPipeWrite(), buf, bytesRead);
-			if (wr > 0)
+			if (wr > 0) {
 				wrtRet += wr;
+				countw +=wr;
+			}
 			if (wr < bytesRead)
 				reader.seekg(wrtRet);
 			// if (wr == -1)
 			// 	status &= ~IS_WRITE;
-			if (wrtRet % 4048 == 0 || wr == -1 || wrtRet == reader_size)
+			if (countw >= BUF || wr == -1 || wrtRet == reader_size) {
+				countw = 0;
 				status &= ~IS_WRITE;
+			}
+			if (wrtRet >= reader_size)
+				close(res.getPipeWrite());
 			// checkTimeout2(wrtRet, lastWrite);
-			// usleep (100);
+			// usleep (200);
 			// std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 		// 	std::string sada = buf;
 		// 	std::cout << sada.substr(0, 5) << "\n";
 		}
-		else if (rdRet != wrtRet) {
+		else{
 			bzero(buf, BUF);
 			rd = read(res.getPipeRead(), buf, BUF);
-			if (rd > 0)
+			if (rd > 0) {
 				rdRet += rd;
+				countr += rd;
+			}
 			// if (rd == -1)
 			// 	status |= IS_WRITE;
-			if (rd % 4048 == 0 || rd == -1)
+			if ((countr >= BUF || rd == -1)) {
+				countr = 0;
 				status |= IS_WRITE;
+			}
 			res.getStrStream() << buf;
 			// checkTimeout2(rdRet, lastRead);
 			// std::string sadae = buf;
@@ -95,23 +110,28 @@ void Client::makePostResponse(char **envp)
 			// }
 		}
 		// if (reader.eof() && status & IS_WRITE) //SIGPIPE
-		if (rdRet >= wrtRet && reader.eof()) //SIGPIPE
+		if (rdRet >= wrtRet && wrtRet == reader_size) //SIGPIPE
 		{
+			// AT THIS MOMENT NEED WRITE BODY FROM STREAM TO FILE !
+
 			std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 			std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
 			clearStream();
-			close(res.getPipeWrite());
+			
 			close(res.getPipeRead());
 			
-			char t[90];
-			res.getStrStream().read(t, 90);
-			res.getStrStream().seekg(0);
-			std::cout << YELLOW << t << RESET << "\n";
+			// char t[90];
+			// res.getStrStream().read(t, 90);
+			// res.getStrStream().seekg(0);
+			// std::cout << YELLOW << t << RESET << "\n";
 			statusCode = res.extractCgiHeader(req);
 			res.wrRet = wrtRet;
 
-			std::stringstream tmp;
-			tmp << res.getStrStream().rdbuf();
+			std::stringstream tmp;// need delete
+
+			// res.getFileStream() << res.getStrStream().rdbuf();
+
+			tmp << res.getStrStream().rdbuf(); // need delete
 			clearStrStream(res.getStrStream());
 			// res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
 			// if (wrtRet == 100000)
@@ -119,18 +139,21 @@ void Client::makePostResponse(char **envp)
 				res.make_response_header(req, 201, resCode[201], getStrStreamSize(tmp));
 			// else
 			// 	res.make_response_header(req, 200, resCode[200], 0);
-			res.getStrStream() << tmp.rdbuf();
+			res.getStrStream() << tmp.rdbuf(); // need delete
 			status |= CGI_DONE;
 
 
 		}
 	}
-	if (status & CGI_DONE)											//если все данные передались в cgi
+	if (status & CGI_DONE)	//если все данные передались в cgi
 	{
 		if (res.sendResponse_stream(socket)) {
 			std::cout << RED << "All sended" << RESET << "\n";
 			status |= RESP_DONE;
 		}
+		// if (res.sendResponse_file(socket)) {
+
+		// }
 		// else
 		// 	std::cout << RED << "not complete" << RESET << "\n";
 	}

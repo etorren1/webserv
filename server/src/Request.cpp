@@ -372,10 +372,11 @@ void Request::trimBoundary( std::stringstream & reader, size_t size ) {
     exit(1);
 }
 
-void Request::parseBody(std::stringstream & reader, size_t reader_size, std::vector<std::string>&vec) {
+void Request::parseBody(std::stringstream & reader, size_t & reader_size, std::vector<std::string>&vec) {
     if (_transferEnc.size()) {
         if (_transferEnc == "chunked") {
             trimChunks(reader, reader_size);
+            reader_size = getStrStreamSize(reader);
             ;
         }
     }

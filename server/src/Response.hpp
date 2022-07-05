@@ -70,6 +70,7 @@ class Response
 
 		int	&			getPipeWrite();
 		int	&			getPipeRead();
+		
 		int				getContentLenght();
 		std::string		getHeader();
 		std::string		getContentType();

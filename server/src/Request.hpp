@@ -45,7 +45,7 @@ public:
 	void									cleaner();
 	void									setMIMEType( std::string );									
 	int										checkHeaders( std::map<std::string, std::string> fMap, std::string checked, std::string &header);
-	void									parseBody( std::stringstream &, size_t, std::vector<std::string>&);
+	void									parseBody( std::stringstream &, size_t &, std::vector<std::string>&);
 	void									splitLocation( std::string );
 	void 									parseEnvpFromBody( std::stringstream &, std::vector<std::string>& );
 	void									clearHeaders();

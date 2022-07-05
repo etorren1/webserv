@@ -42,6 +42,8 @@ class Client
 
 			size_t				wrtRet;
 			size_t				rdRet;
+			size_t				countw;
+			size_t				countr;
 
 		std::map<int, std::string>			resCode;
 		std::vector<std::string>			envpVector;
@@ -77,7 +79,7 @@ class Client
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
 		int							checkTimeout(size_t currentCount, size_t lastCount);
-		void						checkTimeout2(size_t currentCount, size_t lastCount);
+		// void						checkTimeout2(size_t currentCount, size_t lastCount);
 
 		void						setStreamSize( const size_t size );
 		void						setServer( Server_block * s );

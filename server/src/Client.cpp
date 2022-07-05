@@ -106,7 +106,6 @@ void Client::handleRequest(char **envp)
 	if (status & IS_BODY) {
 		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
 		req.parseBody(reader, reader_size, envpVector);
-		reader_size = getStrStreamSize(reader);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
 	}
@@ -122,7 +121,6 @@ void Client::handleRequest(char **envp)
 				if (fullpart) {
 					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
 					req.parseBody(reader, reader_size, envpVector);
-					reader_size = getStrStreamSize(reader);
 					status |= REQ_DONE;
 				}
 			}
@@ -193,11 +191,6 @@ void Client::initResponse(char **envp)	{
 		// res.setFileLoc(location);
 		// res.openFile();
 		res.setContentType(req.getContentType());
-		// res.addCgiVar(&envp, req, envpVector);
-
-		// size_t pos = location.rfind("/");
-		// std::string fileName = location.substr(location.rfind("/") + 1);
-		// // std::cout << "fileName = " << fileName << "\n";
 		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
 			std::cout << CYAN << "\e[1m IS_CGI " << RESET << "\n";
 			res.createSubprocess(req, envp);
@@ -279,6 +272,8 @@ void Client::cleaner()
 	lastTime = 0;
 	wrtRet = 0;
 	rdRet = 0;
+	countr = 0;
+	countw = 0;
 }
 
 void Client::setStreamSize( const size_t size ) {
@@ -399,7 +394,7 @@ Client::~Client() {
 
 int Client::parseLocation()	{
 	statusCode = 200;
-	if (req.getMIMEType() == "none")
+	if (req.getMIMEType() == "none" && !req.getContType().size())
 		status |= IS_DIR;
 	else
 		status |= IS_FILE;
@@ -433,7 +428,7 @@ int Client::parseLocation()	{
 		location.erase(location.find("directory"), 10);
 		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
 	}
-	std::cout << location << '\n';
+	std::cout << YELLOW << location << RESET << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
@@ -447,20 +442,21 @@ int Client::parseLocation()	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
 			// location = req.getReqURI() + "/"; // COMMENT IT FOR TESTER
 			location += "/"; // UNCOMMENT IT FOR TESTER
-			status |= REDIRECT;
+			// status |= REDIRECT; // COMMENT IT FOR TESTER
 			// return 0; // COMMENT IT FOR TESTER
 		} 	//else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex())	{
-				while (++i < indexes.size())	{
+				while (++i < indexes.size()) {
+					std::cout << "loc - " << location << " index - " << indexes[i] << "\n";
 					std::string tmp = location + indexes[i];
 					if (access(tmp.c_str(), 0) != -1)	{
 						location = tmp;
 						req.setMIMEType(indexes[i]);
 						break;
 					}
-					std::cout << tmp << "\n";
+					std::cout << "i = " << i << " " << tmp << "\n";
 				}
 				if (i == indexes.size())	{
 					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
@@ -477,7 +473,10 @@ int Client::parseLocation()	{
 	//	} // COMMENT IT FOR TESTER
 	}
 	else if (status & IS_FILE)	{ // FILE
-		if (access(location.c_str(), 0) == -1)	{
+		if (req.getMethod() == "POST") 
+			// res.new_method(); // OPEN OR CREATE FILE WITH URI NAME
+			;
+		else if (access(location.c_str(), 0) == -1)	{
 			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
@@ -509,11 +508,11 @@ int Client::checkTimeout(size_t currentCount, size_t lastCount) {
 	return 1;
 }
 
-void Client::checkTimeout2(size_t currentCount, size_t lastCount) {
-	if (currentCount == lastCount && time > TIMEOUT) {
-		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
-        throw codeException(408);
-    }
-    time = timeChecker();
-	// return 1;
-}
+// void Client::checkTimeout2(size_t currentCount, size_t lastCount) {
+// 	if (currentCount == lastCount && time > TIMEOUT) {
+// 		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
+//         throw codeException(408);
+//     }
+//     time = timeChecker();
+// 	// return 1;
+// }

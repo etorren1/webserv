@@ -171,6 +171,7 @@ void Server::clientRequest(const int socket) {
         std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
 
         client[socket]->handleRequest(envp);
+        checkBodySize(socket, client[socket]->getStreamSize());
         client[socket]->parseLocation();
         client[socket]->initResponse(envp);
     } else {
@@ -244,8 +245,10 @@ int     Server::readRequest( const size_t socket ) { // v2
         bytesRead += rd;
         count += rd;
         client[socket]->getStream() << buf;
-        if (client[socket]->status & IS_BODY)
-            checkBodySize(socket, bytesRead);
+        // if (client[socket]->status & IS_BODY)
+        //     checkBodySize(socket, bytesRead);
+        // if (!(client[socket]->status & IS_BODY))
+        //     std::cout << buf;
     }
     if (!client[socket]->checkTimeout(bytesRead, client[socket]->getStreamSize()))
         return 0;
