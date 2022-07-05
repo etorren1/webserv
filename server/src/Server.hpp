@@ -32,7 +32,7 @@
 #define	STOP	0b00
 #define WORKING 0b10
 #define RESTART 0b01
-#define BUF_SIZE 4048
+#define BUF_SIZE 256
 #define DEFAULT_PATH "webserv.conf"
 #define srvs_iterator std::map<std::string, Server_block * >::iterator
 #define lctn_iterator std::map<std::string, Location_block * >::iterator

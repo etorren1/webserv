@@ -47,6 +47,8 @@ std::string Server::get_raw_param(std::string key, std::string & text) {
         return "";
     if (in_other_block(text, pos))
         return "";
+    if ((pos && !isspace(text[pos - 1])) || !isspace(text[pos + key.size()]))
+        return "";
     size_t end = text.find("\n", pos);
     std::string res = text.substr(pos, end - pos);
     if (trim(res, " \n\t\r;{}").size() == key.size())
