@@ -32,7 +32,7 @@
 #define	STOP	0b00
 #define WORKING 0b10
 #define RESTART 0b01
-#define BUF_SIZE 1024
+#define BUF_SIZE 256
 #define DEFAULT_PATH "webserv.conf"
 #define srvs_iterator std::map<std::string, Server_block * >::iterator
 #define lctn_iterator std::map<std::string, Location_block * >::iterator
@@ -75,6 +75,7 @@ class Server {
 			template <class T> void		cfg_set_attributes( std::string & text, T * block );
 			template <class T> void		cfg_server_name(std::string & text, T * block );
 			template <class T> void		cfg_index(std::string & text, T * block );
+			template <class T> void		cfg_cgi_index(std::string & text, T * block );
 			template <class T> void		cfg_accepted_methods(std::string & text, T * block );
 			template <class T> void     cfg_root( std::string & text, T * block );
 			template <class T> void     cfg_default_page( std::string & text, T * block );

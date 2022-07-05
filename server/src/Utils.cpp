@@ -27,6 +27,7 @@ std::string					trim(std::string str, std::string cut)
 
 std::string					itos( long long const & num )
 {
+	// std::cout << PURPLE << "\e[1mnum in itos = " << num << RESET << "\n";
 	std::stringstream ss;
 	ss << num;
 	return(ss.str());
@@ -43,7 +44,7 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	FILE *file;
 	struct stat buff;
 	if (!(file = fopen(fileLoc, "r"))) {
-		// std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
+		std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
 		throw codeException(404);
 	}
 	fstat (fileno (file), &buff);
@@ -51,14 +52,31 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	return (buff.st_size);
 }
 
-size_t 						find_CRLN( char* buf, size_t size, size_t indent ) {
+size_t 		find_CRLN( char* buf, size_t size, size_t indent ) {
     for (size_t i = 0; i < size - 1; i++)
         if (buf[i] == '\r' && buf[i + 1] == '\n')
             return (i + indent);
     return (0);
 }
 
-long						getStrStreamSize(std::stringstream &strm)
+size_t 		find_2xCRLN( char* buf, size_t size, size_t indent ) {
+	if (size < 4)
+		return (0);
+    for (size_t i = 0; i < size - 3; i++)
+        if (buf[i] == '\r' && buf[i + 1] == '\n'
+			&& buf[i + 2] == '\r' && buf[i + 3] == '\n')
+            return (i + indent);
+    return (0);
+}
+
+std::string 	getstr(char *c, size_t size) {
+    std::string str;
+    for (size_t i = 0; i < size; i++)
+        str += c[i];
+    return str;
+}
+
+long		getStrStreamSize(std::stringstream &strm)
 {
     std::streambuf* buf = strm.rdbuf();
 	long size = buf->pubseekoff(0, strm.end);
@@ -77,11 +95,33 @@ std::string	getCurTime()
 	return buf;
 }
 
-void						clearStrStream(std::stringstream &strstream)
+void		clearStrStream(std::stringstream & strstream)
 {
 	strstream.seekg(0);
 	strstream.str(std::string());
 	strstream.clear();
+}
+
+long		hexadecimalToDecimal(std::string hex_val)
+{
+    int len = hex_val.size();
+
+    int base = 1;
+ 
+    long dec_val = 0;
+    for (int i = len - 1; i >= 0; i--) {
+		if (hex_val[i] >= 'a' && hex_val[i] <= 'f')
+			hex_val[i] -= 32;
+        if (hex_val[i] >= '0' && hex_val[i] <= '9') {
+            dec_val += (int(hex_val[i]) - 48) * base;
+            base = base * 16;
+        }
+        else if (hex_val[i] >= 'A' && hex_val[i] <= 'F') {
+            dec_val += (int(hex_val[i]) - 55) * base;
+            base = base * 16;
+        }
+    }
+    return dec_val;
 }
 
 void	rek_mkdir( std::string path)

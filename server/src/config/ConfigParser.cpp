@@ -47,6 +47,8 @@ std::string Server::get_raw_param(std::string key, std::string & text) {
         return "";
     if (in_other_block(text, pos))
         return "";
+    if ((pos && !isspace(text[pos - 1])) || !isspace(text[pos + key.size()]))
+        return "";
     size_t end = text.find("\n", pos);
     std::string res = text.substr(pos, end - pos);
     if (trim(res, " \n\t\r;{}").size() == key.size())
@@ -103,6 +105,13 @@ void    Server::cfg_index(std::string & text, T * block ) {
     std::string raw = get_raw_param("index", text);
     if (raw.size())
         block->set_index(raw);
+}
+
+template <class T>
+void    Server::cfg_cgi_index(std::string & text, T * block ) {
+    std::string raw = get_raw_param("cgi_index", text);
+    if (raw.size())
+        block->set_cgi_index(raw);
 }
 
 template <class T>
@@ -244,6 +253,7 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_sendfile(text, block);
     cfg_autoindex(text, block);
     cfg_index(text, block);
+    cfg_cgi_index(text, block);
     cfg_root(text, block);
     cfg_return(text, block);
     cfg_error_page(text, block);

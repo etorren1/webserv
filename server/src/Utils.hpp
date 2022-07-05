@@ -16,9 +16,11 @@
 #define GRAY "\e[37m"
 
 //for CGI:
-#define PIPE_IN 1	//we write
-#define PIPE_OUT 0	//we read
-#define CGI_PATH "cgi_tester"
+#define PIPE_IN 0	//we write
+#define PIPE_OUT 1	//we read
+// #define CGI_PATH "/Users/etorren/sand/webserv/pipe_bin"
+#define CGI_PATH "/Users/etorren/sand/webserv/cgi_tester"
+#define BUF 8192   //можно заменить на общий buff
 
 class Client;
 
@@ -26,9 +28,13 @@ std::vector<std::string>	split(std::string str, std::string delimiter, std::stri
 std::string					trim(std::string str, std::string cut);
 bool 						existDir(const char * name);
 std::string					itos( long long const & num );
+void						rek_mkdir( std::string path);
+std::string 				getstr(char *c, size_t size);
 size_t 						find_CRLN( char* buf, size_t size, size_t indent = 0 );
+size_t 						find_2xCRLN( char* buf, size_t size, size_t indent = 0 );
 std::string					getCurTime(); //https://stackoverflow.com/questions/7548759/generate-a-date-string-in-http-response-date-format-in-c
 long long					getFileSize(const char *fileLoc);
+long						hexadecimalToDecimal(std::string hex_val);
 long						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
 void						rek_mkdir( std::string path);

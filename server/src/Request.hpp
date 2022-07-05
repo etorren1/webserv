@@ -4,6 +4,7 @@
 # include <iostream>
 # include <sstream>
 # include <unistd.h>
+# include <cstring>
 # include <vector>
 # include <map>
 # include "Utils.hpp"
@@ -17,14 +18,12 @@ private:
 	std::string                             _reqURI;
 	std::string                             _protocolVersion;
 	std::map<std::string, std::string>      _headers;
-	std::string                             _body;
 	std::string								_MIMEType;
 	std::string								_host;
 	std::string								_contentLength;
 	std::string								_contentType;
 	std::string								_transferEnc;
 	std::vector<std::string>				_dirs;
-	int										_reqSize;
 	bool									_bodyExist;
 	std::string								_cgiStatusCode;
 	std::string								_boundary;
@@ -46,16 +45,15 @@ public:
 	void									cleaner();
 	void									setMIMEType( std::string );									
 	int										checkHeaders( std::map<std::string, std::string> fMap, std::string checked, std::string &header);
-	void									parseBody( std::stringstream &, size_t, std::vector<std::string>&);
+	void									parseBody( std::stringstream &, size_t &, std::vector<std::string>&);
 	void									splitLocation( std::string );
-	void 									parseEnvpFromBody( std::vector<std::string>& );
+	void 									parseEnvpFromBody( std::stringstream &, std::vector<std::string>& );
 	void									clearHeaders();
 
 	std::string								getMethod() const;
 	std::string								getReqURI() const;
 	std::string								getProtocolVer() const;
-	std::map<std::string, std::string>		getHeadears() const;
-	std::string								getBody() const;
+	std::map<std::string, std::string>	const& getHeadears() const;
 	std::string								getMIMEType() const;
 	std::string								getContentType() const;
 	std::string								getHost() const;
@@ -67,10 +65,11 @@ public:
 	std::string								getCgiStatusCode() const;
 	std::string								getBoundary() const;
 
+	void					trimBoundary( std::stringstream & reader, size_t size );
+	void					trimChunks( std::stringstream & reader, size_t size );
+
 	void									setHost(std::string);
-	void									setReqSize();
 	void									setReqURI(std::string);
-	void									setCgiStatusCode(std::string);
 };
 
 

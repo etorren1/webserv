@@ -3,62 +3,28 @@
 #include <stdlib.h>
 #include <sstream>
 #include <iostream>
+#include <stdlib.h>
+#include <fcntl.h>
 
-#define PATH_INFO "cgi_tester"
-#define PIPE_IN 1	//we write
-#define PIPE_OUT 0	//we read
+#define BUF_SIZE 4048
 
 int main (int argc, char **argv, char **envp)
 {
-	// // ------------------------ 1 ------------------------
-	char buff[100];
-	for (int i = 0; i < 100; i++)
-		buff[i] = 0;
-	std::string str= "HeLlO WoRlD! bla bla bla dHgfvbUJYIKJghgvjdfiUBUkjhGnhJ234234gdfgdfg";
-	int pid;
-	int pipe1[2];
-	int pipe2[2];
-	int ex;
-	int status;
+	std::stringstream reader;
+	char buf[BUF_SIZE + 1];
+    int rd = 0;
+	long reader_size = 0;
 
-	std::stringstream reqBody;
-	reqBody << str;
+	int fd = open("new.txt", O_RDWR | O_CREAT | O_APPEND, 0777);
 
-	if (pipe(pipe1) && pipe(pipe2))
-		return 1;
-	if ((pid = fork()) < 0)
-		return 1;
-	if (pid == 0) //child - prosses for CGI programm
-	{
-		char *buf[2048]; 
-		close(pipe1[PIPE_IN]); //Close unused pipe write end
-		close(pipe2[PIPE_OUT]); 
-		dup2(pipe1[PIPE_OUT], 0);
-		dup2(pipe2[PIPE_IN], 1);
-		if ((ex = execve(PATH_INFO, NULL, envp)) < 0)
-			return 1;
-		exit(ex);
-	}
-	else //parent - current programm prosses
-	{
-		close(pipe1[PIPE_OUT]);		//Close unused pipe read end
-		close(pipe2[PIPE_IN]); //Close unused pipe write end
-		write(pipe1[PIPE_IN], str.c_str(), str.length());
-		close(pipe1[PIPE_IN]);	
-		waitpid(pid, &status, 0);
-		read(pipe2[PIPE_OUT], &buff, 100);
-		write(1, &buff, 100);
-	}
-
-
-	// //------------------------ 2 ------------------------
-	// char buff[100];
-	// std::stringstream stream;
-	// // for (int i = 0; i < 100; i++)
-	// // 	buff[i] = 0;
-	// stream << "bla bla bla";
-	// stream.read(buff, 100);
-	// std::cout << buff[13];
-
-	return 0;
+    while ((rd = read(0, buf, BUF_SIZE)) > 0) {
+        buf[rd] = 0;
+		std::cerr << "\e[34;1mCGIRead(" << rd << "): \e[0m\n";// << buf;
+		write(fd, buf, rd);
+        reader << buf;
+        reader_size += rd;
+    }
+	
+	// std::cout << "\e[31m" << reader.str();
+	return 20;
 }

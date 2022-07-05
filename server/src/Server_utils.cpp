@@ -40,9 +40,10 @@ void    Server::writeLog( const std::string & path, const std::string & header, 
 void     Server::checkBodySize( const size_t socket, size_t size ) {
     if (client[socket]->getMaxBodySize() == 0)
         return ;
+	// std::cout << "size = " << size << " max_size = " << client[socket]->getMaxBodySize() << "\n";
     if (size > client[socket]->getMaxBodySize()) {
-        std::cout << RED << "Size more than client_max_body_size: has 400 exception " << RESET << "\n";
-        throw codeException(400);
+        std::cout << RED << "Size more than client_max_body_size: has 413 exception " << RESET << "\n";
+        throw codeException(413);
     }
 }
 

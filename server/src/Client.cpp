@@ -1,7 +1,6 @@
 #include "Client.hpp"
 #include "Utils.hpp"
 #include <errno.h>
-#define BUF 2048   //можно заменить на общий buff
 
 void Client::clearStream( void ) {
 	reader.seekg(0);
@@ -17,7 +16,6 @@ void Client::savePartOfStream( size_t pos ) {
 	reader.seekg(pos + 4);
 	reader.read(buf, reader_size - pos - 4);
 	buf[reader_size - pos - 3] = 0;
-	std::cout << "readed: "<< reader.gcount() << "\n";
 	reader_size = reader.gcount();
 	reader.str(std::string()); // clearing content in stream
 	reader.clear();
@@ -27,8 +25,6 @@ void Client::savePartOfStream( size_t pos ) {
 }
 
 void Client::checkMessageEnd( void ) {
-
-
 	if (status & IS_BODY)
 	{
 		// std::cout << BLUE << "Transfer-Encoding: " << req.getTransferEnc() << RESET << "\n";
@@ -36,25 +32,29 @@ void Client::checkMessageEnd( void ) {
 
 		if (req.getTransferEnc() == "chunked")
 		{
-			char buf[6];
-			bzero(buf, 5);
-			reader.seekg(reader_size - 5);
-			reader.read(buf, 5);
-			reader.seekg(0);
-			std::cout << "reader_size = " << reader_size << "\n";
-			// std::cout << "start bytes print: " << "\n";
-			// for (size_t i = 0; i < 5; i++)
-			// {
-			// 	printf("%d ", buf[i]);
-			// }
-			// std::cout << "\n";
-			// std::cout << "end bytes print\n";
-
-			if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
-				&& buf[3] == '\r' && buf[4] == '\n')
-				fullpart = true;
-			else
-				fullpart = false;
+			if (reader_size > 4) {
+				char buf[5];
+				bzero(buf, 5);
+				reader.seekg(reader_size - 5);
+				reader.read(buf, 5);
+				reader.seekg(0);
+				// std::cout << "start bytes print: " << "\n";
+				// for (size_t i = 0; i < 5; i++)
+				// {
+				// 	printf("%d ", buf[i]); 
+				// }
+				// std::cout << "\n";
+				// std::cout << "end bytes print\n";
+				size_t pos = find_2xCRLN(buf, 5);
+				// std::cout << "pos = " << pos << "\n";
+				if (pos && buf[pos - 1] == '0')
+				// if (buf[0] == '0' && buf[1] == '\r' && buf[2] == '\n'
+				// 	&& buf[3] == '\r' && buf[4] == '\n')
+					fullpart = true;
+				else
+					fullpart = false;
+				// std::cout << "fullpart: " << fullpart << "\n";
+			}
 		}
 		else if (req.getContentLenght().size())
 		{
@@ -77,9 +77,14 @@ void Client::checkMessageEnd( void ) {
 	}
 	else
 	{
+
 		header = reader.str();
 		size_t pos = header.find("\r\n\r\n");
+		// size_t pos = find_2xCRLN(buf, 5, reader_size - 5);
+		// std::cout << "pos = " << pos << "\n";
 		if (pos != std::string::npos) {
+		// if (pos != 0) {
+			// header = reader.str();
 			if (pos + 4 != reader_size) // part of body request got into the header
 				savePartOfStream(pos);
 			else
@@ -176,51 +181,24 @@ void Client::initResponse(char **envp)	{
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
 	else if (req.getMethod() == "PUT")
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
-	else {
+	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-	if (req.getMethod() == "POST")
-	{
-
-		iter = 0;
-		cgiWriteFlag = false;
-		totalSent = 0;
-		res.addCgiVar(&envp, req, envpVector);
-
-		if (pipe(pipe2))
-			throw(codeException(500));
-		if (pipe(pipe1))
-			throw(codeException(500));
-
-		// if (cgi used)
-		// {
-			clearStrStream(res.getStrStream()); //очищаем от записанного ранее хедера, который далеепридется переписать из-за cgi
-			if ((pid = fork()) < 0)
-				throw(codeException(500));
-			if (pid == 0) //child - process for CGI programm
-			{
-				close(pipe1[PIPE_IN]); //Close unused pipe write end
-				close(pipe2[PIPE_OUT]); //Close unused pipe read end
-				dup2(pipe1[PIPE_OUT], 0);
-				dup2(pipe2[PIPE_IN], 1);
-
-				if ((ex = execve(CGI_PATH, NULL, envp)) < 0)
-					throw(codeException(500));
-				close(pipe1[PIPE_OUT]); //Closing remaining fds before closing child process
-				close(pipe2[PIPE_IN]); //Closing remaining fds before closing child process
-				exit(ex);
-			}
-			else
-			{
-				close(pipe1[PIPE_OUT]); //Close unused pipe read end
-				close(pipe2[PIPE_IN]); //Close unused pipe write end
-			}
-		// }
+	else if (req.getMethod() == "POST") {
+		// res.setFileLoc(location);
+		// res.openFile();
+		res.setContentType(req.getContentType());
+		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
+			std::cout << CYAN << "\e[1m IS_CGI " << RESET << "\n";
+			res.createSubprocess(req, envp);
+			status |= IS_WRITE;
+		}
+		else
+			std::cout << CYAN << "\e[1m ~NOT_CGI " << RESET << "\n";
 	}
-	status |= REQ_DONE;
 }
 
 void Client::makeResponse(char **envp)
@@ -270,198 +248,8 @@ void Client::makeErrorResponse()
 	}
 	if (status & RESP_DONE)
 	{
-		// std::cout << GREEN << "End ERROR response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 	}
-}
-
-void Client::makeGetResponse()
-{
-	if (status & HEAD_SENT)
-	{
-		if (res.sendResponse_file(socket))
-		{
-			status |= RESP_DONE;
-			// std::cout << "GET sendfile() must be second\n";
-		}
-	}
-	else
-	{
-		if (res.sendResponse_stream(socket))
-		{
-			status |= HEAD_SENT;
-			// std::cout << "GET sendstream() must be first\n";
-		}
-	}
-	if (status & RESP_DONE)
-	{
-		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
-		cleaner();
-		// std::cout << "GET cleaner() must be ending\n";
-	}
-}
-
-void Client::extractCgiHeader( char * buff )
-{
-	clearStrStream(res.getStrStream());
-
-	std::string					tmp, tmp2;
-	std::vector<std::string>	headerAndBody;
-	std::vector<std::string>	headerStrs;
-	// int						code;
-
-	tmp = buff;
-	headerAndBody = split(tmp, "\r\n\r\n", "");
-	headerStrs = split(headerAndBody.at(0), "\r\n", "");
-
-	req.clearHeaders();
-	req.parseMapHeaders(headerStrs, headerStrs.size());
-	tmp.clear();
-	tmp = req.getCgiStatusCode();
-	tmp2 = tmp.substr(0, 3);
-	req.setCgiStatusCode(tmp2);
-	res.setStatusCode(tmp2);
-	res.setContentType(req.getContType());
-
-	// code = std::atoi(req.getCgiStatusCode().c_str());
-	// res.make_response_header(req, code, resCode[code]);
-
-	//отправка body оставшаяся в буффере после первого прочтения из пайпа
-	if (headerAndBody.size() > 1)
-		res.getStrStream().write(headerAndBody.at(1).c_str(), headerAndBody.at(1).length()); //записываем кусок body который попал в буффер вместе с хедером от cgi
-	
-	// res.sendResponse_stream(socket); //не тут должно быть 
-}
-
-void Client::makePostResponse(char **envp)
-{
-	std::cout << BLUE << "ENTERED makePostResponse METOD" << "\n" << RESET;
-	iter++;
-	// std::cout << "iter = " << iter << "\n";
-	// std::cout << "cgiWriteFlag = " << cgiWriteFlag << "\n";
-	char				buff[BUF];
-	int					wrtRet = 0;
-	int					readRet = 0;
-	int					code;
-
-	if (cgiWriteFlag == false)		// флаг cgi записан == false 
-	{
-		// std::cout << "BODY: " << reader << "\n";
-		std::cout << "BEFORE WRITE"  << "\n";
-		
-		size_t sss = reader.str().length();
-		while (totalSent < sss)
-		{
-			reader.read(buff, BUF);
-			wrtRet = write(pipe1[PIPE_IN], buff, BUF);
-			totalSent += wrtRet;
-		}
-		std::cout << "AFTER WRITE" << "\n";
-		if (totalSent == reader.str().length()) //SIGPIPE
-		{
-			close(pipe1[PIPE_IN]);
-			cgiWriteFlag = true;
-		}
-	}
-
-	if (cgiWriteFlag == true)											//если все данные передались в cgi
-	{
-		std::cout << BLUE << "READING FROM PIPE1 started" << "\n" << RESET;
-		readRet = read(pipe2[PIPE_OUT], buff, BUF);						//читаем из cgi порцию даты, прочитанный кусок из cgi пишем клиенту в сокет
-
-		if (!(status & HEAD_SENT))
-		{
-			extractCgiHeader(buff);
-			status |= HEAD_SENT;
-		}
-		else
-		{
-			// std::cout << "readRet " << readRet << "\n";
-			if (readRet == -1)
-				throw(codeException(500));
-			if(status & STRM_READY)										//весь body уже записан в поток, отпавляем его частями клиенту, в нижние условия больше не заходим до конца response
-			{
-				if (res.sendResponse_stream(socket))
-					status |= RESP_DONE;
-			}
-			else if (readRet == 0)										//0 запишется в readRet один раз и больше не будет меняться до конца response
-			{
-				// std::cout << BLUE << "READ STOPED" << "\n" << RESET;
-				std::stringstream tmp;									//нужен, чтобы хедер записать в начало основного потока
-				status |= STRM_READY;									//все прочитали из cgi
-				code = std::atoi(req.getCgiStatusCode().c_str());
-				tmp << res.getStrStream().rdbuf();						//временyо перекладываем записанный в _strstream body в другой поток
-				clearStrStream(res.getStrStream());						//очищаем _stream
-				res.make_response_header(req, code, resCode[code], getStrStreamSize(tmp));
-				res.getStrStream() << tmp.str();						//!!! Возможно все не влезет в объет строки
-				/*	The buffer of a std::stringstream object is a wrapper around a std::string object.
-					As such, the maximum size is std::string::max_size().
-					https://stackoverflow.com/questions/22025324/what-is-the-maximum-size-of-stdostringstream-buffer */
-			}
-			else														//записываем из буффера часть данных в поток
-			{
-				buff[readRet] = '\0';
-				res.getStrStream().write(buff, readRet);
-			}
-		}
-	}
-	if (status & RESP_DONE)
-	{
-		// close(pipe1[PIPE_IN]);
-		waitpid(pid, &status, 0); // ???
-		cleaner();
-		close(pipe2[PIPE_OUT]);
-		// std::cout << "COMPLEATING POST RESPONSE2\n"; 
-	}
-}
-
-void Client:: makeDeleteResponse(char **envp)	{
-	std::cout << RED << "DELETE\n" << RESET;
-	if (remove(location.c_str()) != 0) 
-		codeException(403);
-	else {
-		statusCode = 204;
-		// initResponse(envp);
-		res.setFileLoc(location);
-		clearStrStream(res.getStrStream());
-		res.make_response_html(204, resCode[204]);
-
-		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
-		if (res.sendResponse_stream(socket))  {
-			status |= RESP_DONE;
-			cleaner();
-		}
-	}
-}
-
-void Client:: makePutResponse(char **envp)	{
-	std::cout << RED << "PUT\n" << RESET;
-	std::ofstream file(location);
-	std::cout << GREEN << location << "\n" << RESET;
-	if (!file.is_open()) {
-		int sep = location.find_last_of("/");
-		if (sep != std::string::npos) {
-			rek_mkdir(location.substr(0, sep));
-		}
-		file.open(location);
-	}
-	if (file.is_open()) {
-		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
-		file << reader.str();
-		file.close();
-	} else {
-		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
-		throw codeException(406);
-	}
-	statusCode = 201;
-	res.setFileLoc(location);
-	clearStrStream(res.getStrStream());
-	res.make_response_html(201, resCode[201]);
-	if (res.sendResponse_stream(socket))  {
-		status |= RESP_DONE;
-		cleaner();
-	}
-	// exit(1);
 }
 
 void Client::cleaner()
@@ -482,14 +270,16 @@ void Client::cleaner()
 	srv = NULL;
 	time = timeChecker();
 	lastTime = 0;
+	wrtRet = 0;
+	rdRet = 0;
+	countr = 0;
+	countw = 0;
 }
 
-void Client::setStream( const std::stringstream & mess, const size_t size ) {
-	reader.str(std::string());
-	reader.clear();
-	reader << mess.rdbuf();
-	reader_size = size;	
+void Client::setStreamSize( const size_t size ) {
+	reader_size = size;
 }
+
 void Client::setServer(Server_block *s)
 {
 	srv = s;
@@ -513,8 +303,6 @@ std::string &	Client::getHeader( void ) { return header; }
 size_t			Client::getStreamSize( void ) { return reader_size; }
 std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
-int *			Client::getPipe1() { return pipe1; }
-int *			Client::getPipe2() { return pipe2; }
 time_t			Client::getClientTime() { return time; }
 time_t			Client::getLastTime() { return lastTime; }
 
@@ -560,6 +348,8 @@ Client::Client(size_t nwsock)
 	srv = NULL;
 	loc = NULL;
 	envpVector.clear();
+	wrtRet = 0;
+	rdRet = 0;
 	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
 	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
@@ -600,12 +390,11 @@ Client::Client(size_t nwsock)
 }
 
 Client::~Client() {
-	res.setCookie("");
 }
 
 int Client::parseLocation()	{
 	statusCode = 200;
-	if (req.getMIMEType() == "none")
+	if (req.getMIMEType() == "none" && !req.getContType().size())
 		status |= IS_DIR;
 	else
 		status |= IS_FILE;
@@ -622,16 +411,10 @@ int Client::parseLocation()	{
 	std::string locn = loc->get_location();
 	// if (locn[locn.size() - 1] != '/')
 	// 	locn += "/";
-	if (loc->get_accepted_methods().size())	{
-		std::string method = "";
-		for (size_t i = 0; i != loc->get_accepted_methods().size(); i++)
-			if (req.getMethod() == loc->get_accepted_methods()[i])
-				method = loc->get_accepted_methods()[i];
-		if (!method.size())
-		{
-			std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
-			throw codeException(405);
-		}
+	if (!loc->is_accepted_method(req.getMethod()))
+	{
+		std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
+		throw codeException(405);
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
@@ -645,7 +428,7 @@ int Client::parseLocation()	{
 		location.erase(location.find("directory"), 10);
 		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
 	}
-	std::cout << location << '\n';
+	std::cout << YELLOW << location << RESET << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
@@ -657,24 +440,23 @@ int Client::parseLocation()	{
 	if (status & IS_DIR)	{
 		if (location.size() && location[location.size() - 1] != '/')	{
 			// statusCode = 301; // COMMENT IT FOR TESTER
-			location.push_back('/');
-			if (access(location.c_str(), 0) == -1)	{
-				std::cout << RED << "File not found (IS_DIR): " << location << RESET << "\n";
-				throw codeException(404);
-			}
-			status |= REDIRECT;
+			// location = req.getReqURI() + "/"; // COMMENT IT FOR TESTER
+			location += "/"; // UNCOMMENT IT FOR TESTER
+			// status |= REDIRECT; // COMMENT IT FOR TESTER
 			// return 0; // COMMENT IT FOR TESTER
-		} //	else	{ // COMMENT ELSE { FOR TESTER
+		} 	//else	{ // COMMENT ELSE { FOR TESTER
 			std::vector<std::string> indexes = loc->get_index();
 			int i = -1;
 			if (!loc->get_autoindex())	{
-				while (++i < indexes.size())	{
+				while (++i < indexes.size()) {
+					std::cout << "loc - " << location << " index - " << indexes[i] << "\n";
 					std::string tmp = location + indexes[i];
 					if (access(tmp.c_str(), 0) != -1)	{
 						location = tmp;
 						req.setMIMEType(indexes[i]);
 						break;
 					}
+					std::cout << "i = " << i << " " << tmp << "\n";
 				}
 				if (i == indexes.size())	{
 					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
@@ -688,10 +470,13 @@ int Client::parseLocation()	{
 				}
 				status |= AUTOIDX;
 			}
-		// } // COMMENT IT FOR TESTER
+	//	} // COMMENT IT FOR TESTER
 	}
 	else if (status & IS_FILE)	{ // FILE
-		if (access(location.c_str(), 0) == -1)	{
+		if (req.getMethod() == "POST") 
+			// res.new_method(); // OPEN OR CREATE FILE WITH URI NAME
+			;
+		else if (access(location.c_str(), 0) == -1)	{
 			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
@@ -713,9 +498,9 @@ int Client::makeRedirect(int code, std::string loc){
 	return 1;
 }
 
-int Client::checkTimeout(long bytesRead) {
+int Client::checkTimeout(size_t currentCount, size_t lastCount) {
 	// std::cout << GREEN << "bytesRead: " << bytesRead << " == reader_size: " << reader_size << "" << RESET << "\n";
-	if (bytesRead == reader_size && (lastTime - time) > TIMEOUT)
+	if (currentCount == lastCount && (lastTime - time) > TIMEOUT)
 			// std::cout << RED << "Timeout: " << time << " > " << TIMEOUT << " - client disconnected" << RESET << "\n";
 			return 0;
     lastTime = timeChecker();
@@ -723,11 +508,11 @@ int Client::checkTimeout(long bytesRead) {
 	return 1;
 }
 
-void Client::checkTimeout2(long bytesRead) {
-	if (bytesRead == reader_size && time > TIMEOUT) {
-		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
-        throw codeException(408);
-    }
-    time = timeChecker();
-	// return 1;
-}
+// void Client::checkTimeout2(size_t currentCount, size_t lastCount) {
+// 	if (currentCount == lastCount && time > TIMEOUT) {
+// 		std::cout << RED << "Timeout: client disconnected" << RESET << "\n";
+//         throw codeException(408);
+//     }
+//     time = timeChecker();
+// 	// return 1;
+// }

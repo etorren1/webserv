@@ -65,7 +65,7 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
         // return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
-    if (listen(newSrvSock, 5) < 0)
+    if (listen(newSrvSock, 1000) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
@@ -146,6 +146,8 @@ void Server::connectClients( const int & fd ) {
     int addrlen = sizeof(clientaddr);
 
     if ((newClientSock = accept(fd, (struct sockaddr*)&clientaddr, (socklen_t*)&addrlen)) > 0) {
+        int enable = 1;         //ЭТО НУЖНО???
+        setsockopt(newClientSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)); // И ВОТ ЭТО???
         struct pollfd nw;
 
         nw.fd = newClientSock;
@@ -161,12 +163,15 @@ void Server::connectClients( const int & fd ) {
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
 
-        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
         std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
         // std::cout << client[socket]->getStream().str();
         std::cout << PURPLE << "end BODY." << RESET << "\n";
 
+        std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
+
         client[socket]->handleRequest(envp);
+        checkBodySize(socket, client[socket]->getStreamSize());
         client[socket]->parseLocation();
         client[socket]->initResponse(envp);
     } else {
@@ -182,7 +187,7 @@ void Server::clientRequest(const int socket) {
             throw codeException(400);
         }
         client[socket]->setServer(srv);
-        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
+        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
             // if (client[socket]->status & IS_BODY) {
@@ -191,7 +196,7 @@ void Server::clientRequest(const int socket) {
             //     std::cout << client[socket]->getStream().str();
             //     std::cout << PURPLE << "end BODY." << RESET << "\n";
             // }
-
+            checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
             //std::cout << "status after location - " << client[socket]->status << "\n";
             client[socket]->initResponse(envp);
@@ -217,6 +222,7 @@ void Server::mainHandler( void ) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE) {
                         // std::cout << YELLOW << "Send responce to " << socket << " socket" << RESET << "\n";
                         client[socket]->makeResponse(envp);
+                        // disconnectClients(id);
                     }
                 }
             }
@@ -228,29 +234,25 @@ void Server::mainHandler( void ) {
     }
 }
 
-int     Server::readRequest( const size_t socket ) {
+int     Server::readRequest( const size_t socket ) { // v2
     char buf[BUF_SIZE + 1];
-    long bytesRead = 0;
-    int rd;
-    std::stringstream text;
+    size_t bytesRead = 0;
+    int rd, count = 0;
 
-    if (client[socket]->getStreamSize() > 0) {
-		text << client[socket]->getStream().rdbuf();
-        bytesRead = client[socket]->getStreamSize();
-    }
-    while ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
+    bytesRead = client[socket]->getStreamSize();
+    while (count < BUF_SIZE && (rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
-        text << buf;
-        if (client[socket]->status & IS_BODY)
-           checkBodySize(socket, bytesRead);
-        else if (find_CRLN(&buf[find_CRLN(buf, BUF_SIZE)] + 1, 2))
-            break;
+        count += rd;
+        client[socket]->getStream() << buf;
+        // if (client[socket]->status & IS_BODY)
+        //     checkBodySize(socket, bytesRead);
+        // if (!(client[socket]->status & IS_BODY))
+        //     std::cout << buf;
     }
-    if (!client[socket]->checkTimeout(bytesRead))
+    if (!client[socket]->checkTimeout(bytesRead, client[socket]->getStreamSize()))
         return 0;
-    // client[socket]->checkTimeout2(bytesRead);
-    client[socket]->setStream(text, bytesRead);
+    client[socket]->setStreamSize(bytesRead);
     client[socket]->checkMessageEnd();
     return (bytesRead);
 }
@@ -270,6 +272,7 @@ void    Server::closeServer( int new_status ) {
         delete (*it).second;
     }
     for (client_iterator it = client.begin(); it != client.end(); it++) {
+        (*it).second->cleaner();
         delete (*it).second;
     }
     srvs.clear();

@@ -12,6 +12,7 @@ class Block
         std::string     root;
         std::vector<std::string>     accepted_methods;
         std::vector<std::string>     index;
+        std::vector<std::string>     cgi_index;
         bool            sendfile;
         bool            autoindex;
         size_t          client_max_body_size;
@@ -25,6 +26,7 @@ class Block
         void set_client_max_body_size( const size_t size ) { client_max_body_size = size; }
         void set_root( const std::string & s ) { root = s; }
         void set_index( const std::string & s ) { index = split(s, " ", " \t"); }
+        void set_cgi_index( const std::string & s ) { cgi_index = split(s, " ", " \t"); }
         void set_accepted_methods( const std::string & s ) { accepted_methods = split(s, " ", " \t"); }
         void set_redirect( const int code, const std::string & location ) { redirect = std::make_pair(code, location); }
         void set_error_page( const int code, const std::string & location ) { error_page = std::make_pair(code, location); }
@@ -36,25 +38,38 @@ class Block
         size_t get_client_max_body_size() const { return client_max_body_size; }
         std::string get_root() const { return root; }
         std::vector<std::string> get_index() const { return index; }
+        std::vector<std::string> get_cgi_index() const { return cgi_index; }
         std::vector<std::string> get_accepted_methods() const { return accepted_methods; }
         std::pair<int, std::string> get_redirect() const { return redirect; }
         std::pair<int, std::string> get_error_page() const { return error_page; }
 
-        bool    is_index( const std::string & type ) {
-            for (size_t i = 0; i < index.size(); i++) {
-                size_t pos = index[i].find(type);
-                if (pos != std::string::npos && index[i].size() - pos == type.size())
+        bool    is_index( const std::string & file ) {
+            for (size_t i = 0; i < index.size(); i++)
+                if (file == index[i])
                     return true;
+            return false;
+        }
+
+        bool    is_cgi_index( const std::string & file ) {
+            for (size_t i = 0; i < cgi_index.size(); i++) {
+                if (file == cgi_index[i])
+                    return true;
+                size_t pos = cgi_index[i].find("*");
+                // std::cout << file << " == " << cgi_index[i] << "\n";
+                if (pos != std::string::npos) {
+                    std::string sufix = cgi_index[i].substr(pos + 1);
+                    // std::cout << sufix << " == " << file.substr(file.size() - sufix.size()) << "\n";
+                    if (file.size() > sufix.size() && sufix == file.substr(file.size() - sufix.size()))
+                        return true;
+                }
             }
             return false;
         }
 
-        bool    is_accepted_methods( const std::string & type ) {
-            for (size_t i = 0; i < accepted_methods.size(); i++) {
-                size_t pos = accepted_methods[i].find(type);
-                if (pos != std::string::npos && accepted_methods[i].size() - pos == type.size())
+        bool    is_accepted_method( const std::string & method ) {
+            for (size_t i = 0; i < accepted_methods.size(); i++)
+                if (method == accepted_methods[i])
                     return true;
-            }
             return false;
         }
 
@@ -70,6 +85,9 @@ class Block
             std::cout << "index = ";
             for (size_t i = 0; i < index.size(); i++) { std::cout << index[i] << " "; }
             std::cout << "\n";
+            std::cout << "cg_index = ";
+            for (size_t i = 0; i < cgi_index.size(); i++) { std::cout << cgi_index[i] << " "; }
+            std::cout << "\n";
             std::cout << "accepted_methods = ";
             for (size_t i = 0; i < accepted_methods.size(); i++) { std::cout << accepted_methods[i] << " "; }
             std::cout << "\n";
@@ -80,8 +98,10 @@ class Block
             client_max_body_size = 0;
             error_log = "logs/error.log";
             access_log = "logs/access.log";
-            accepted_methods.clear();
+            accepted_methods.push_back("GET");
+            accepted_methods.push_back("POST");
             index.clear();
+            cgi_index.clear();
             redirect = std::make_pair(0, "");
             error_page = std::make_pair(0, "");
             sendfile = false;
