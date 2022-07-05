@@ -40,8 +40,8 @@ void Response::make_response_header( Request & req, int code, std::string status
 		_contentLength = itos(getFileSize(_fileLoc.c_str()));
 	else
 		_contentLength = itos(size);
-	std::cout << GREEN << "\e[1msize = " << size << RESET << "\n";
-	std::cout << GREEN << "\e[1mitos(size) = " << itos(size) << RESET << "\n";
+	// std::cout << GREEN << "\e[1msize = " << size << RESET << "\n";
+	// std::cout << GREEN << "\e[1mitos(size) = " << itos(size) << RESET << "\n";
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
 	generalHeader = make_general_header(req, code);
 	addCookie(getCurTime());
@@ -60,7 +60,7 @@ int Response::sendResponse_file(const size_t socket)
 	char 			*buffer = new char [RES_BUF_SIZE];
 
 	if(!_file.is_open()) {
-		std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
+		// std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
 		throw(codeException(404));
 	}
 

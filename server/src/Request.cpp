@@ -279,9 +279,9 @@ void Request::parseEnvpFromBody(std::stringstream &reader, std::vector<std::stri
 	// }
     // std::cout << YELLOW << "map.size() - " << map.size() << "\n" << RESET;
     std::vector<std::string>::iterator it = vec.begin();
-    for (; it != vec.end(); it++) {
-        std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
-    }
+    // for (; it != vec.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
+    // }
     reader.seekg(0);
 }
 
@@ -322,13 +322,13 @@ typedef struct s_mult
 } t_mult;
 
 void Request::trimBoundary( std::stringstream & reader, size_t size ) {
-    std::cout << RED << "\e[1mBOUNDARY! size = " << size << RESET << "\n";
+    // std::cout << RED << "\e[1mBOUNDARY! size = " << size << RESET << "\n";
     std::vector<t_mult> boundary;
     char *buf = new char [size + 1];
     bzero(buf, size + 1);
     reader.read(buf, size);
     clearStrStream(reader);
-    std::cout << "show buf\n";
+    // std::cout << "show buf\n";
     for (size_t i = 0; i < size; i++)
     {
         
@@ -344,29 +344,29 @@ void Request::trimBoundary( std::stringstream & reader, size_t size ) {
     while (1) {
         // size_t head_end = find_CRLN(&buf[find_CRLN(buf, size)] + 1, 2);
         size_t head_end = find_2xCRLN(&buf[rd_bytes], size - rd_bytes, rd_bytes);
-        std::cout << "head_end = " << head_end << "\n";
+        // std::cout << "head_end = " << head_end << "\n";
         size_t head_size;
         if (head_end) {
             t_mult part;
             head_size = head_end - rd_bytes;
-            std::cout << "head_size = " << head_size << "\n";
+            // std::cout << "head_size = " << head_size << "\n";
             std::string head = getstr(&buf[rd_bytes] ,head_size);
-            std::cout << YELLOW << "BOUNDARY:" << RESET << "\n";
-            std::cout << GREEN << head << RESET << "|\n";
+            // std::cout << YELLOW << "BOUNDARY:" << RESET << "\n";
+            // std::cout << GREEN << head << RESET << "|\n";
             
             rd_bytes += head_size + 4;
             size_t content_end = find_CRLN(&buf[rd_bytes], size - rd_bytes, rd_bytes) + 4;
-            if (getstr(&buf[content_end], _boundary.size()) == _boundary)
-                std::cout << CYAN << getstr(&buf[content_end], _boundary.size()) << RESET << "\n";
-            else
-                std::cout << RED << _boundary << RESET << "|@|\n";
+            // if (getstr(&buf[content_end], _boundary.size()) == _boundary)
+            //     std::cout << CYAN << getstr(&buf[content_end], _boundary.size()) << RESET << "\n";
+            // else
+            //     std::cout << RED << _boundary << RESET << "|@|\n";
         }
         else {
-            std::cout << RED << "end head" << RESET << "\n";
+            // std::cout << RED << "end head" << RESET << "\n";
             break;
         }
     }
-    std::cout << RESET << "\n";
+    // std::cout << RESET << "\n";
     delete[] buf;
     // std::cout << RED << "EXIT" << RESET << "\n";
     exit(1);

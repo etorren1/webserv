@@ -44,7 +44,7 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	FILE *file;
 	struct stat buff;
 	if (!(file = fopen(fileLoc, "r"))) {
-		std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
+		// std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
 		throw codeException(404);
 	}
 	fstat (fileno (file), &buff);

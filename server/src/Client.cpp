@@ -10,7 +10,7 @@ void Client::clearStream( void ) {
 }
 
 void Client::savePartOfStream( size_t pos ) {
-	std::cout << RED << pos + 4 << " != " << reader_size << " tail detected" << RESET << "\n";
+	// std::cout << RED << pos + 4 << " != " << reader_size << " tail detected" << RESET << "\n";
 	char buf[reader_size - pos - 3];
 	bzero(buf, reader_size - pos - 3);
 	reader.seekg(pos + 4);
@@ -59,7 +59,7 @@ void Client::checkMessageEnd( void ) {
 		else if (req.getContentLenght().size())
 		{
 			size_t len = atoi(req.getContentLenght().c_str());
-			std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
+			// std::cout <<  CYAN << "reader_size = " << reader_size << " " << "len = " << len << RESET << "\n";
 			if (reader_size >= len)
 				fullpart = true;
 			// else if (reader_size > len)
@@ -68,7 +68,7 @@ void Client::checkMessageEnd( void ) {
 				fullpart = false;
 		}
 		else {
-			std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
+			// std::cout << RED << "I cant work with this body Encoding" << RESET << "\n";
 			fullpart = true;
 			//throw codeException(400);
 		}
@@ -104,7 +104,7 @@ void Client::checkMessageEnd( void ) {
 void Client::handleRequest(char **envp)
 {
 	if (status & IS_BODY) {
-		std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
+		// std::cout << CYAN << "\nPARSE BODY 1" << RESET << "\n";
 		req.parseBody(reader, reader_size, envpVector);
 		status |= REQ_DONE;
 		// std::cout << GREEN << "REQ_DONE with body" << RESET << "\n";
@@ -119,7 +119,7 @@ void Client::handleRequest(char **envp)
 			if (reader_size) {
 				checkMessageEnd();
 				if (fullpart) {
-					std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
+					// std::cout << CYAN << "\nPARSE BODY 2" << RESET << "\n";
 					req.parseBody(reader, reader_size, envpVector);
 					status |= REQ_DONE;
 				}
@@ -192,12 +192,12 @@ void Client::initResponse(char **envp)	{
 		// res.openFile();
 		res.setContentType(req.getContentType());
 		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
-			std::cout << CYAN << "\e[1m IS_CGI " << RESET << "\n";
+			// std::cout << CYAN << "\e[1m IS_CGI " << RESET << "\n";
 			res.createSubprocess(req, envp);
 			status |= IS_WRITE;
 		}
-		else
-			std::cout << CYAN << "\e[1m ~NOT_CGI " << RESET << "\n";
+		// else
+			// std::cout << CYAN << "\e[1m ~NOT_CGI " << RESET << "\n";
 	}
 }
 
@@ -254,10 +254,10 @@ void Client::makeErrorResponse()
 
 void Client::cleaner()
 {
-	if (status & ERROR)
-		std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
-	else if (status & RESP_DONE)
-		std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << " with code " << statusCode << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
+	// if (status & ERROR)
+		// std::cout << GREEN << "Complete working with error: \e[1m" << statusCode << " " << resCode[statusCode] << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
+	// else if (status & RESP_DONE)
+		// std::cout << GREEN << "Complete working with request: \e[1m" << req.getMethod() << " with code " << statusCode << "\e[0m\e[32m on \e[1m" << socket << "\e[0m\e[32m socket" << RESET << "\n";
 	clearStream();
 	location.clear();
 	header.clear();
@@ -286,7 +286,7 @@ void Client::setServer(Server_block *s)
 	this->loc = getLocationBlock(req.getDirs());
 	if (loc == NULL)
 	{
-		std::cout << RED << "Location not found: has 404 exception " << RESET << "\n";
+		// std::cout << RED << "Location not found: has 404 exception " << RESET << "\n";
 		throw codeException(404);
 	}
 }
@@ -400,7 +400,7 @@ int Client::parseLocation()	{
 		status |= IS_FILE;
 	if (req.getMethod() != "DELETE" && loc->get_redirect().first && !(status & REDIRECT)) {
 		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
-			std::cout << CYAN << "REDIRECT" << RESET << "\n";
+			// std::cout << CYAN << "REDIRECT" << RESET << "\n";
 			location = req.getReqURI();
 			// std::cout << "location after makeRedirect - " << location << "\n";
 			return 0;
@@ -413,7 +413,7 @@ int Client::parseLocation()	{
 	// 	locn += "/";
 	if (!loc->is_accepted_method(req.getMethod()))
 	{
-		std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
+		// std::cout << RED << "Method: " << req.getMethod() << " has 405 exception " << RESET << "\n";
 		throw codeException(405);
 	}
 	size_t subpos;
@@ -423,12 +423,12 @@ int Client::parseLocation()	{
 	// else 
 		// location = req.getReqURI();
 	// FOR INTRA TESTER
-	std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
+	// std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
 	if (location.find("directory") != std::string::npos) {
 		location.erase(location.find("directory"), 10);
-		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
+		// std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
 	}
-	std::cout << YELLOW << location << RESET << '\n';
+	// std::cout << YELLOW << location << RESET << '\n';
 	// DELETE IT IN FINAL VERSION!
 
 	while ((pos = location.find("//")) != std::string::npos)
@@ -449,23 +449,23 @@ int Client::parseLocation()	{
 			int i = -1;
 			if (!loc->get_autoindex())	{
 				while (++i < indexes.size()) {
-					std::cout << "loc - " << location << " index - " << indexes[i] << "\n";
+					// std::cout << "loc - " << location << " index - " << indexes[i] << "\n";
 					std::string tmp = location + indexes[i];
 					if (access(tmp.c_str(), 0) != -1)	{
 						location = tmp;
 						req.setMIMEType(indexes[i]);
 						break;
 					}
-					std::cout << "i = " << i << " " << tmp << "\n";
+					// std::cout << "i = " << i << " " << tmp << "\n";
 				}
 				if (i == indexes.size())	{
-					std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
+					// std::cout << RED << "Not found index in directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 			}
 			else	{
 				if (access(location.c_str(), 0) == -1)		{
-					std::cout << RED << "No such directory: " << location << RESET << "\n";
+					// std::cout << RED << "No such directory: " << location << RESET << "\n";
 					throw codeException(404);
 				}
 				status |= AUTOIDX;
@@ -477,15 +477,15 @@ int Client::parseLocation()	{
 			// res.new_method(); // OPEN OR CREATE FILE WITH URI NAME
 			;
 		else if (access(location.c_str(), 0) == -1)	{
-			std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
+			// std::cout << RED << "File not found (IS_FILE): " << location << RESET << "\n";
 			throw codeException(404);
 		}
 	}
 	if (access(location.c_str(), 4) == -1)	{
-		std::cout << RED << "Permisson denied: " << location << RESET << "\n";
+		// std::cout << RED << "Permisson denied: " << location << RESET << "\n";
 		throw codeException(403);
 	}
-	std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
+	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
 	return (0);
 }
 

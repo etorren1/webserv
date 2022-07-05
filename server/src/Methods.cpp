@@ -17,8 +17,8 @@ void Client::makeGetResponse()
 		if (res.sendResponse_stream(socket))
 		{
 			if (status & REDIRECT) {
-				std::cout << location << "<-\n";
-				std::cout << RED << "\e[1mDONE" <<RESET << "\n";
+				// std::cout << location << "<-\n";
+				// std::cout << RED << "\e[1mDONE" <<RESET << "\n";
 				status |= RESP_DONE;
 			}
 			else
@@ -37,7 +37,7 @@ void Client::makeGetResponse()
 void Client::makePostResponse(char **envp)
 {
 
-	// std::cout << BLUE << "ENTERED makePostResponse METOD" << RESET << "\n";
+	// // std::cout << BLUE << "ENTERED makePostResponse METOD" << RESET << "\n";
 
 	char				buf[BUF];
 	int					wr = 0;
@@ -74,9 +74,9 @@ void Client::makePostResponse(char **envp)
 				close(res.getPipeWrite());
 			// checkTimeout2(wrtRet, lastWrite);
 			// usleep (200);
-			// std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// // std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 		// 	std::string sada = buf;
-		// 	std::cout << sada.substr(0, 5) << "\n";
+		// 	// std::cout << sada.substr(0, 5) << "\n";
 		}
 		else{
 			bzero(buf, BUF);
@@ -94,16 +94,16 @@ void Client::makePostResponse(char **envp)
 			res.getStrStream() << buf;
 			// checkTimeout2(rdRet, lastRead);
 			// std::string sadae = buf;
-			// std::cout << sadae.substr(0, 150) << "\n";
+			// // std::cout << sadae.substr(0, 150) << "\n";
 			// exit(1);
 			// usleep (100);
-			// std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// // std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
 			// if (rdRet > 99000000 && (rd == -1 || rd % 4048 == 0)) {
 			// 	while (rdRet < wrtRet) {
 			// 		rd = read(pipe2[PIPE_IN], buf, BUF);
 			// 		if (rd > 0)
 			// 			rdRet += rd;
-			// 		std::cout << RED << "Read: (" << rdRet << ") rd: (" << rd << RESET << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// 		// std::cout << RED << "Read: (" << rdRet << ") rd: (" << rd << RESET << ")\n"; // << CYAN << tmp << RESET << "\n";
 			// 		usleep(5000);
 			// 	}
 			// 	status |= IS_WRITE;
@@ -114,8 +114,8 @@ void Client::makePostResponse(char **envp)
 		{
 			// AT THIS MOMENT NEED WRITE BODY FROM STREAM TO FILE !
 
-			std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
-			std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
+			// std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
 			clearStream();
 			
 			close(res.getPipeRead());
@@ -123,7 +123,7 @@ void Client::makePostResponse(char **envp)
 			// char t[90];
 			// res.getStrStream().read(t, 90);
 			// res.getStrStream().seekg(0);
-			// std::cout << YELLOW << t << RESET << "\n";
+			// // std::cout << YELLOW << t << RESET << "\n";
 			statusCode = res.extractCgiHeader(req);
 			res.wrRet = wrtRet;
 
@@ -145,27 +145,27 @@ void Client::makePostResponse(char **envp)
 
 		}
 	}
-	if (status & CGI_DONE)	//если все данные передались в cgi
+	else if (status & CGI_DONE)	//если все данные передались в cgi
 	{
 		if (res.sendResponse_stream(socket)) {
-			std::cout << RED << "All sended" << RESET << "\n";
+			// std::cout << RED << "All sended" << RESET << "\n";
 			status |= RESP_DONE;
 		}
 		// if (res.sendResponse_file(socket)) {
 
 		// }
 		// else
-		// 	std::cout << RED << "not complete" << RESET << "\n";
+		// 	// std::cout << RED << "not complete" << RESET << "\n";
 	}
 	if (status & RESP_DONE)
 	{
 		cleaner();
-		std::cout << BLUE <<  "\e[1mCOMPLEATING POST RESPONSE! CONGRATULATIONS\n"; 
+		// std::cout << BLUE <<  "\e[1mCOMPLEATING POST RESPONSE! CONGRATULATIONS\n"; 
 	}
 }
 
 void Client:: makeDeleteResponse(char **envp)	{
-	std::cout << RED << "DELETE\n" << RESET;
+	// std::cout << RED << "DELETE\n" << RESET;
 	if (remove(location.c_str()) != 0) 
 		codeException(403);
 	else {
@@ -184,9 +184,9 @@ void Client:: makeDeleteResponse(char **envp)	{
 }
 
 void Client:: makePutResponse(char **envp)	{
-	std::cout << RED << "PUT\n" << RESET;
+	// std::cout << RED << "PUT\n" << RESET;
 	std::ofstream file(location);
-	std::cout << GREEN << location << "\n" << RESET;
+	// std::cout << GREEN << location << "\n" << RESET;
 	if (!file.is_open()) {
 		int sep = location.find_last_of("/");
 		if (sep != std::string::npos) {
@@ -195,11 +195,11 @@ void Client:: makePutResponse(char **envp)	{
 		file.open(location);
 	}
 	if (file.is_open()) {
-		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
+		// std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
 		file << reader.str();
 		file.close();
 	} else {
-		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
+		// std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
 		throw codeException(406);
 	}
 	statusCode = 201;

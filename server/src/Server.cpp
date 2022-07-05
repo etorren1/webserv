@@ -163,12 +163,12 @@ void Server::connectClients( const int & fd ) {
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
 
-        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
         std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-        // std::cout << client[socket]->getStream().str();
+        std::cout << client[socket]->getStream().str();
         std::cout << PURPLE << "end BODY." << RESET << "\n";
 
-        std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
+        // std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
 
         client[socket]->handleRequest(envp);
         checkBodySize(socket, client[socket]->getStreamSize());
@@ -183,19 +183,19 @@ void Server::clientRequest(const int socket) {
         client[socket]->handleRequest(envp);
         Server_block * srv = getServerBlock( client[socket]->getHost() );
         if (srv == NULL) {
-            std::cout << RED << "No such server with this host: has 400 exception \n" << RESET << "\n";
+            // std::cout << RED << "No such server with this host: has 400 exception \n" << RESET << "\n";
             throw codeException(400);
         }
         client[socket]->setServer(srv);
         // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
-            // if (client[socket]->status & IS_BODY) {
-            //     writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-            //     std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-            //     std::cout << client[socket]->getStream().str();
-            //     std::cout << PURPLE << "end BODY." << RESET << "\n";
-            // }
+            if (client[socket]->status & IS_BODY) {
+                writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+                std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
+                std::cout << client[socket]->getStream().str();
+                std::cout << PURPLE << "end BODY." << RESET << "\n";
+            }
             checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
             //std::cout << "status after location - " << client[socket]->status << "\n";

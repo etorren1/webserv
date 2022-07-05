@@ -42,7 +42,7 @@ void     Server::checkBodySize( const size_t socket, size_t size ) {
         return ;
 	// std::cout << "size = " << size << " max_size = " << client[socket]->getMaxBodySize() << "\n";
     if (size > client[socket]->getMaxBodySize()) {
-        std::cout << RED << "Size more than client_max_body_size: has 413 exception " << RESET << "\n";
+        // std::cout << RED << "Size more than client_max_body_size: has 413 exception " << RESET << "\n";
         throw codeException(413);
     }
 }
