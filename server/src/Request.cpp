@@ -288,7 +288,7 @@ void Request::parseEnvpFromBody(std::stringstream &reader, std::vector<std::stri
 void Request::trimChunks( std::stringstream & reader, size_t size ) {
     size_t end_hex, hex_size, chunk_size, rd_bytes = 0;
     // copy stream into buffer
-    char *buf = (char *)malloc(size + 1);
+    char *buf = new char[size + 1];
     bzero(buf, size + 1);
     reader.read(buf, size);
     // clear stream
@@ -300,14 +300,14 @@ void Request::trimChunks( std::stringstream & reader, size_t size ) {
         chunk_size = hexadecimalToDecimal(getstr(&buf[rd_bytes], hex_size));
 
         //copy chunck content into stream without chunksizes
-        char *tmp = (char *)malloc(chunk_size + 1);
+        char *tmp = new char [chunk_size + 1];
         bzero(tmp, chunk_size + 1);
         memcpy(tmp, &buf[end_hex + 2], chunk_size);
         rd_bytes = end_hex + chunk_size + 4;
         reader << tmp;
-        free(tmp);
+        delete[] tmp;
     }
-    free(buf);
+    delete[] buf;
 }
 
 typedef struct s_mult
@@ -324,7 +324,7 @@ typedef struct s_mult
 void Request::trimBoundary( std::stringstream & reader, size_t size ) {
     std::cout << RED << "\e[1mBOUNDARY! size = " << size << RESET << "\n";
     std::vector<t_mult> boundary;
-    char *buf = (char *)malloc(size + 1);
+    char *buf = new char [size + 1];
     bzero(buf, size + 1);
     reader.read(buf, size);
     clearStrStream(reader);
@@ -367,7 +367,7 @@ void Request::trimBoundary( std::stringstream & reader, size_t size ) {
         }
     }
     std::cout << RESET << "\n";
-    free(buf);
+    delete[] buf;
     // std::cout << RED << "EXIT" << RESET << "\n";
     exit(1);
 }

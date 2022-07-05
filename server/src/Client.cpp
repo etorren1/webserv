@@ -230,6 +230,11 @@ void Client::initResponse(char **envp)	{
 		size_t pos = location.rfind("/");
 		std::string fileName = location.substr(pos + 1);
 		std::cout << "fileName = " << fileName << "\n";
+		int i = 0;
+		while (envp[i]) {
+			usleep(100);
+			std::cout << envp[i++] << "\n";
+		}
 		if (loc->is_cgi_index(fileName))
 		{
 			std::cout << CYAN << "\e[1mIS_CGI " << RESET << "\n";
@@ -476,7 +481,6 @@ Client::Client(size_t nwsock)
 }
 
 Client::~Client() {
-	res.setCookie("");
 }
 
 int Client::parseLocation()	{

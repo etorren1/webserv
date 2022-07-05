@@ -153,13 +153,13 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
 	std::string path_info = ("PATH_INFO=./");
-	std::string content_length = ("CONTENT_LENGTH=" + req.getContentLenght());
-	std::string secret = ("X_SECRET_HEADER_FOR_TEST=1");
+	std::string content_length = ("HTTP_Transfer-Encoding=chunked");
+	// std::string secret = ("HTTP_X_SECRET_HEADER_FOR_TEST=1");
 
 	for (int i = 0; (*envp)[i] != NULL; ++i)
 		numOfLines++;
 
-	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 6 + envpVector.size()) + req.getHeadears().size()); // 3 for new vars and additional 1 for NULL ptr
+	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpVector.size()) + req.getHeadears().size()); // 3 for new vars and additional 1 for NULL ptr
 
 	while (i < numOfLines)							//переносим все изначальные envp в новый массив
 	{
@@ -171,7 +171,7 @@ void Response::addCgiVar(char ***envp, Request req, std::vector<std::string> & e
 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
 	tmp[numOfLines + 2] = strdup(path_info.c_str());
 	tmp[numOfLines + 3] = strdup(content_length.c_str());
-	tmp[numOfLines + 4] = strdup(secret.c_str());
+	// tmp[numOfLines + 4] = strdup(secret.c_str());
 
 	startIndx = numOfLines + 4;
 
@@ -261,6 +261,5 @@ std::stringstream &	Response::getStrStream() { return(_stream); }
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
-void			Response::setCookie(std::string cookie) { _cookie = cookie; }
 // void			Response::setInput(std::ifstream &input) { _file = input; };
 // void			Response::setStrStream(std::stringstream stream) { _stream = stream; };

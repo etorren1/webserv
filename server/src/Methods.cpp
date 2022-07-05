@@ -61,7 +61,7 @@ void Client::makePostResponse(char **envp)
 			// 	status &= ~IS_WRITE;
 			if (wrtRet % 4048 == 0 || wr == -1 || wrtRet == reader_size)
 				status &= ~IS_WRITE;
-			checkTimeout2(wrtRet, lastWrite);
+			// checkTimeout2(wrtRet, lastWrite);
 			// usleep (100);
 			// std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
 		// 	std::string sada = buf;
@@ -77,7 +77,7 @@ void Client::makePostResponse(char **envp)
 			if (rd % 4048 == 0 || rd == -1)
 				status |= IS_WRITE;
 			res.getStrStream() << buf;
-			checkTimeout2(rdRet, lastRead);
+			// checkTimeout2(rdRet, lastRead);
 			// std::string sadae = buf;
 			// std::cout << sadae.substr(0, 150) << "\n";
 			// exit(1);
@@ -103,8 +103,8 @@ void Client::makePostResponse(char **envp)
 			close(pipe1[PIPE_OUT]);
 			close(pipe2[PIPE_IN]);
 			
-			char t[60];
-			res.getStrStream().read(t, 60);
+			char t[90];
+			res.getStrStream().read(t, 90);
 			res.getStrStream().seekg(0);
 			std::cout << YELLOW << t << RESET << "\n";
 			statusCode = res.extractCgiHeader(req);
@@ -114,7 +114,8 @@ void Client::makePostResponse(char **envp)
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
 			// res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
-			// if (wrtRet != 100000)
+			// if (wrtRet == 100000)
+			// 	throw codeException(400);
 				res.make_response_header(req, 201, resCode[201], getStrStreamSize(tmp));
 			// else
 			// 	res.make_response_header(req, 200, resCode[200], 0);
