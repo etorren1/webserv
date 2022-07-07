@@ -94,7 +94,6 @@ void Request::parseStartLine(std::string str) {
     }
     if (_method != "GET" && _method != "POST" && \
      _method != "PUT" && _method != "DELETE") {
-        std::cout << RED << "Method " << _method << " not allowed: has 405 exception " << RESET << "\n";
         debug_msg(1, RED, "Method ", _method, " not allowed: has 405 exception");
         throw codeException(405);
     }
@@ -172,7 +171,6 @@ void Request::parseMIMEType() {
 
 void Request::findHost() {
     if (!(checkHeaders(_headers, "Host", _host))) {
-        std::cout << RED << "Host not found: has 400 exception " << RESET << "\n";
         debug_msg(1, RED, "Host not found: has 400 exception ");
         throw codeException(400);
     }

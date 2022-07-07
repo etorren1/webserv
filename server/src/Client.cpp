@@ -157,7 +157,8 @@ void Client::initResponse(char **envp) {
 }
 
 void Client::makeResponse( void )
-{ // envp не нужен уже
+{
+	lastTime = timeChecker();
 	if (status & ERROR)
 		makeErrorResponse();
 	else if (status & AUTOIDX)
@@ -244,7 +245,6 @@ void Client::setServer(Server_block *s) {
 void Client::setClientTime(time_t t) { time = t; }
 void Client::setLastTime(time_t t) { lastTime = t; }
 
-bool			Client::readComplete() const { return fullpart; }
 Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
 size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
@@ -255,6 +255,11 @@ std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
 time_t			Client::getClientTime() { return time; }
 time_t			Client::getLastTime() { return lastTime; }
+
+bool			Client::readComplete() {
+	lastTime = timeChecker();
+	return fullpart;
+}
 
 Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
 	Location_block *lctn;
@@ -280,7 +285,7 @@ Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
 
 Client::Client(size_t nwsock) {
 	time = timeChecker();
-	lastTime = 0;
+	lastTime = timeChecker();
 	fullpart = false;
 	location.clear();
 	header.clear();
@@ -437,9 +442,9 @@ int Client::makeRedirect(int code, std::string loc){
 	return 1;
 }
 
-int Client::checkTimeout(size_t currentCount, size_t lastCount) {
-	if (currentCount == lastCount && (lastTime - time) > TIMEOUT)
-			return 0;
-    lastTime = timeChecker();
-	return 1;
+int Client::checkTimeout( void ) {
+    time = timeChecker();
+	if ((time - lastTime) > TIMEOUT)
+		return 1;
+	return 0;
 }

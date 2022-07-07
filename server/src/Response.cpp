@@ -124,7 +124,7 @@ static void wait_subprocess(int) {
 	waitpid(P_ALL, &wstat, 0);
 	if (wstat > 255)
 		wstat /= 255;
-	std::cout << "Child process exited with code " << wstat << std::endl;
+	debug_msg(3, "Child process exited with code ", itos(wstat));
 	signal(SIGCHLD, SIG_DFL);
 }
 
