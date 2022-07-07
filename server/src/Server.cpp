@@ -14,10 +14,8 @@ void    Server::create() {
             brokenhosts.push_back((*it).first);
             delete (*it).second;
         }
-        // std::cout << GREEN << (*it).first << RESET << "\n";
-        // (*it).second->show_all();
     }
-    for (int i = 0; i < brokenhosts.size(); i++)
+    for (size_t i = 0; i < brokenhosts.size(); i++)
         srvs.erase(brokenhosts[i]);
     if (!srvs.size())
         closeServer(STOP);
@@ -27,7 +25,7 @@ void    Server::create() {
 void    Server::run( void ) {
 
     if (status & ~STOP)
-        std::cout << GREEN << "Server running." << RESET << "\n";
+        debug_msg(1, GREEN, "Server running.");
     while(status & WORKING) {
         mainHandler();
         consoleCommands();
@@ -63,9 +61,8 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     address.sin_addr.s_addr = inet_addr(hostname.c_str());
     address.sin_port = htons(atoi(port.c_str()));
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
-        // return closeVirtualServer(srv, newSrvSock, "error: bind failed: address already in use", "Host: " + hostname + ":" + port);
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
-    if (listen(newSrvSock, 1000) < 0)
+    if (listen(newSrvSock, 10) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
@@ -75,7 +72,7 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     */
     fds.push_back(newPoll);
     srvSockets.insert(newSrvSock);
-    std::cout << "Host: " << hostname << ":" << port << " up succsesfuly\n";
+    debug_msg(1, "Host: ", hostname, ":", port, " up succsesfuly");
     return (1);
 }
 
@@ -109,32 +106,29 @@ void Server::consoleCommands( void ) {
     }
     if (bytesRead > 0) {
         if (text == "STOP") {
-            std::cout << YELLOW << "Shutdown server\n" << RESET;
+            debug_msg(1, YELLOW, "Shutdown server");
             closeServer(STOP);
         }
         else if (text == "RESTART") {
-            std::cout << YELLOW << "Restarting server ... \n" << RESET;
+            debug_msg(1, YELLOW, "Restarting server ... ");
             closeServer(RESTART);
             int fd = open(cfg_path.c_str(), O_RDONLY);
             config(fd);
             create();
         }
         else if (text == "HELP") {
-            std::cout << YELLOW << "Allowed command: " << RESET << "\n\n";
-            std::cout << " * STOP - shutdown server." << "\n\n";
-            std::cout << " * RESTART - restarting server." << "\n\n";
+            debug_msg(1, YELLOW, "Allowed command: ");
+            debug_msg(1, " * STOP - shutdown server.", "\n");
+            debug_msg(1, " * RESTART - restarting server.", "\n");
         }
-        else {
-            std::cout << RED << "Uncnown command. Use " << RESET <<\
-             "HELP" << RED << " for more information." << RESET << "\n";
-        }
+        else
+            debug_msg(1, RED, "Uncnown command. Use ", RESET, "HELP", RED, " for more information.");
     }
 }
 
 void Server::disconnectClients( const size_t id ) {
-    std::cout << "Client " << fds[id].fd << " disconnected." << "\n";
+    debug_msg(1, "Client ", itos(fds[id].fd), " disconnected.");
     close(fds[id].fd);
-
     delete client[fds[id].fd];
     client.erase(fds[id].fd);
     fds.erase(fds.begin() + id);
@@ -146,8 +140,6 @@ void Server::connectClients( const int & fd ) {
     int addrlen = sizeof(clientaddr);
 
     if ((newClientSock = accept(fd, (struct sockaddr*)&clientaddr, (socklen_t*)&addrlen)) > 0) {
-        int enable = 1;         //ЭТО НУЖНО???
-        setsockopt(newClientSock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)); // И ВОТ ЭТО???
         struct pollfd nw;
 
         nw.fd = newClientSock;
@@ -156,49 +148,34 @@ void Server::connectClients( const int & fd ) {
         fds.push_back(nw);   
         client.insert(std::make_pair(newClientSock, new Client(newClientSock)));
         fcntl(newClientSock, F_SETFL, O_NONBLOCK);
-        std::cout << "New client on " << newClientSock << " socket." << "\n";
+        debug_msg(1,"New client on ", itos(newClientSock), " socket.");
     }
 }
 
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
-
         // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-        std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-        // std::cout << client[socket]->getStream().str();
-        std::cout << PURPLE << "end BODY." << RESET << "\n";
-
-        std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
-
-        client[socket]->handleRequest(envp);
+        client[socket]->handleRequest();
         checkBodySize(socket, client[socket]->getStreamSize());
         client[socket]->parseLocation();
         client[socket]->initResponse(envp);
     } else {
-
-        std::cout << YELLOW << "Client " << socket << " send HEADER: " << RESET << "\n";
-        std::cout << client[socket]->getHeader();
-        std::cout << PURPLE << "end HEADER." << RESET << "\n";
-
-        client[socket]->handleRequest(envp);
+        debug_msg(2, YELLOW, "Client ", itos(socket), " send HEADER: ", CYAN, "\n", client[socket]->getHeader());
+        client[socket]->handleRequest();
         Server_block * srv = getServerBlock( client[socket]->getHost() );
         if (srv == NULL) {
-            std::cout << RED << "No such server with this host: has 400 exception \n" << RESET << "\n";
+            debug_msg(1, RED,  "No such server with this host: has 400 exception");
             throw codeException(400);
         }
         client[socket]->setServer(srv);
-        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
+        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
-            // if (client[socket]->status & IS_BODY) {
-            //     writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-            //     std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-            //     std::cout << client[socket]->getStream().str();
-            //     std::cout << PURPLE << "end BODY." << RESET << "\n";
-            // }
+            if (client[socket]->status & IS_BODY) {
+                // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+            }
             checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
-            //std::cout << "status after location - " << client[socket]->status << "\n";
             client[socket]->initResponse(envp);
         }
     }
@@ -210,6 +187,12 @@ void Server::mainHandler( void ) {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
             try {
+                if (!isServerSocket(socket)) {
+                    if (client[socket]->checkTimeout()) {
+                        disconnectClients(id);
+                        continue;
+                    }
+                }
                 if (fds[id].revents & POLLIN) {
                     if (isServerSocket(socket))
                         connectClients(socket);
@@ -220,9 +203,7 @@ void Server::mainHandler( void ) {
                 }  
                 else if (fds[id].revents & POLLOUT) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE) {
-                        // std::cout << YELLOW << "Send responce to " << socket << " socket" << RESET << "\n";
-                        client[socket]->makeResponse(envp);
-                        // disconnectClients(id);
+                        client[socket]->makeResponse();
                     }
                 }
             }
@@ -237,24 +218,18 @@ void Server::mainHandler( void ) {
 int     Server::readRequest( const size_t socket ) { // v2
     char buf[BUF_SIZE + 1];
     size_t bytesRead = 0;
-    int rd, count = 0;
+    int rd = -2, count = 0;
 
     bytesRead = client[socket]->getStreamSize();
-    while (count < BUF_SIZE && (rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
+    if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {
         buf[rd] = 0;
         bytesRead += rd;
         count += rd;
         client[socket]->getStream() << buf;
-        // if (client[socket]->status & IS_BODY)
-        //     checkBodySize(socket, bytesRead);
-        // if (!(client[socket]->status & IS_BODY))
-        //     std::cout << buf;
     }
-    if (!client[socket]->checkTimeout(bytesRead, client[socket]->getStreamSize()))
-        return 0;
     client[socket]->setStreamSize(bytesRead);
     client[socket]->checkMessageEnd();
-    return (bytesRead);
+    return (rd);
 }
 
 void    Server::closeServer( int new_status ) {
@@ -297,5 +272,5 @@ Server::Server( char **envp, std::string nw_cfg_path ) {
 }
 
 Server::~Server() {
-    std::cout << "Destroyed.\n";
+    debug_msg(1, "Destroyed.");
 }

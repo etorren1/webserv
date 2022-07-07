@@ -17,7 +17,7 @@ OBJ = $(SRC:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 MKDIR = $(sort $(dir $(OBJ)))
 
 CC = clang++ -g
-FLAGS = #-Wall -Wextra -Werror -std=c++98
+FLAGS = -Wall -Wextra -Werror -std=c++98
 
 #colors for beauty
 RED =		\033[31m

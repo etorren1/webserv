@@ -17,7 +17,6 @@ void	Response::make_response_html( const int code, std::string & mess, std::stri
     std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\r\n" + location + "Version: " + "HTTP/1.1" \
                          + "\r\n" + "Content-Type: " + "text/html" + "\r\n" + "Content-Length: " + itos(responseBody.length()) + "\r\n\r\n";
     std::string response = header + responseBody;
-    //std::cout << YELLOW << response << "\n" << RESET;
     _contentLength = responseBody.length();
 	_stream << response;
 }
@@ -29,8 +28,10 @@ void	Response::make_response_autoidx(Request & req, std::string path, int code, 
     if (path.size() == 1)
         path = "." + path;
     dir = opendir(path.c_str());
-    if (!dir)
-        codeException(403);
+    if (!dir) {
+        debug_msg(1, RED, "Can't open directory: Permisson denied: ", path);
+        throw codeException(403);
+    }
     std::stack<std::string> q;
     while ( (entry = readdir(dir)) != NULL)
             q.push(entry->d_name);
@@ -47,4 +48,16 @@ void	Response::make_response_autoidx(Request & req, std::string path, int code, 
     body += "<hr></hr><p>webserver</p></div></body></html>";
     make_response_header(req, code, status, body.size());
     _stream << body;
+}
+
+bool Response::formHeaderLog(std::string str, int socket) {
+    size_t pos = str.find("\r\n\r\n");
+    if (pos != std::string::npos) {
+        writeLog(_logPath, "Server header to " + itos(socket) + " socket", str.substr(0, pos + 2));
+        return true;
+    }
+    else {
+        writeLog(_logPath, "Server header to " + itos(socket) + " socket", str);
+        return false;
+    }
 }

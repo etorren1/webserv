@@ -2,11 +2,11 @@
 #include "InterfaceBlockCfg.hpp"
 
 int    Server::get_block(const std::string& prompt, const std::string& content, std::string& dest, int last) {
-    int pos = content.find(prompt);
+    size_t pos = content.find(prompt);
     if (prompt.size() > content.size() || pos == std::string::npos)
         return (0);
     int brackets = 1;
-    int end = pos;
+    size_t end = pos;
     while (content[end] != '{') {
         if (end++ == content.length())
             errorShutdown(255, http->get_error_log(), "error: configuration file: not closed brackets.", content);
@@ -58,7 +58,7 @@ std::string Server::get_raw_param(std::string key, std::string & text) {
 }
 
 void    Server::cut_comments( std::string & text ) {
-    int rd;
+    size_t rd;
     while ((rd = text.find("#")) != std::string::npos)
     {
         int end = text.find("\n", rd);
