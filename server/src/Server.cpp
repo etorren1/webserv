@@ -187,12 +187,12 @@ void Server::mainHandler( void ) {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
             try {
-                if (!isServerSocket(socket)) {
-                    if (client[socket]->checkTimeout()) {
-                        disconnectClients(id);
-                        continue;
-                    }
-                }
+                // if (!isServerSocket(socket)) {
+                //     if (client[socket]->checkTimeout()) {
+                //         disconnectClients(id);
+                //         continue;
+                //     }
+                // }
                 if (fds[id].revents & POLLIN) {
                     if (isServerSocket(socket))
                         connectClients(socket);

@@ -73,10 +73,8 @@ class Client
 		void						makeResponse( void );
 		void						makeGetResponse( void );
 		void						makePostResponse( void );
-		void						makeDeleteResponse( void );
-		void						makePutResponse( void );
+		void						makeResponseWithoutBody();
 		void						makeErrorResponse( void );
-		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
 		int							checkTimeout( void );
 

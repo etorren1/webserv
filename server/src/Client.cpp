@@ -135,8 +135,33 @@ void Client::initResponse(char **envp) {
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], location);
-	else if (req.getMethod() == "PUT")
+	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE") {
+		if (req.getMethod() == "PUT") {
+			std::ofstream file(location);
+			if (!file.is_open()) {
+				size_t sep = location.find_last_of("/");
+				if (sep != std::string::npos) {
+					rek_mkdir(location.substr(0, sep));
+				}
+				file.open(location);
+			}
+			if (file.is_open()) {
+				file << reader.str();
+				file.close();
+			} else {
+				throw codeException(406);
+			}
+			statusCode = 201;
+		}
+		if (req.getMethod() == "DELETE") {
+			if (remove(location.c_str()) != 0) 
+				codeException(403);
+			statusCode = 204;
+		}
+		res.setFileLoc(location);
+		clearStrStream(res.getStrStream());
 		res.make_response_html(statusCode, resCode[statusCode], location);
+	}
 	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -150,7 +175,14 @@ void Client::initResponse(char **envp) {
 			status |= IS_WRITE;
 		}
 		else {
-			// what need doing here?
+			// size_t pos = location.rfind("/");
+			// location = location.substr(0, pos);
+			// parseLocation();
+			// res.setFileLoc(location);
+			// res.setContentType(req.getContentType());
+			// res.openFile();
+			// req.setMethod("GET");
+			// res.make_response_header(req, statusCode, resCode[statusCode]);
 			;
 		}
 	}
@@ -161,44 +193,18 @@ void Client::makeResponse( void )
 	lastTime = timeChecker();
 	if (status & ERROR)
 		makeErrorResponse();
-	else if (status & AUTOIDX)
-		makeAutoidxResponse();
+	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")
+		makeResponseWithoutBody();
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
 	else if (req.getMethod() == "POST")
 		makePostResponse();
-	else if (req.getMethod() == "DELETE")
-		makeDeleteResponse();
-	else if (req.getMethod() == "PUT")
-		makePutResponse();
 }
 
-void Client::makeAutoidxResponse() {
+void Client::makeResponseWithoutBody()
+{
 	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
-	if (status & RESP_DONE)
-	{
-		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
-		cleaner();
-	}
-}
-
-void Client::makeErrorResponse() {
-	if (status & HEAD_SENT)
-	{
-		if (status & IS_FILE)
-		{
-			if (res.sendResponse_file(socket))
-				status |= RESP_DONE;
-		}
-		else
-			status |= RESP_DONE;
-	}
-	else
-	{
-		if (res.sendResponse_stream(socket))
-			status |= HEAD_SENT;
-	}
 	if (status & RESP_DONE)
 	{
 		cleaner();

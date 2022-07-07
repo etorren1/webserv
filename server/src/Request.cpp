@@ -219,7 +219,6 @@ void Request::cleaner() {
     _boundary.clear();
 }
 
-std::string Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
 std::map<std::string, std::string> const & Request::getHeadears() const { return this->_headers; }
@@ -233,6 +232,7 @@ std::string	Request::getCgiStatusCode() const { return this->_cgiStatusCode; };
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 std::string Request::getBoundary() const { return _boundary; }
 
+void Request::setMethod(std::string method) { _method = method; } 
 void Request::setHost(std::string host) { _host = host; }
 void Request::setReqURI(std::string URI) { _reqURI = URI; }
 void Request::setMIMEType(std::string type) { 
