@@ -11,8 +11,6 @@
 #include <cstring>
 
 #define RES_BUF_SIZE 2048
-// #define STREAM_IS_FILE 0
-// #define STREAM_IS_STR 1
 
 class Response
 {
@@ -31,8 +29,10 @@ class Response
 
 		// work with file
 		std::string								_fileLoc;
+		std::string								_logPath;
 
 		//flags
+		bool									_logged;
 
 		// for boby sending procces 
 		long									_bytesRead;
@@ -46,18 +46,17 @@ class Response
 		int					ex;
 
 	public:
-		size_t									wrRet;
 
 		std::ifstream							_file; //поток файла из которого читает в данный момент
 		std::stringstream						_stream;
 		bool									_isSent; //весь ответ был выслан
 
-		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0), _isSent(0), _stream("") {};
+		Response() : _bytesRead(0), _bytesSent(0), _totalBytesRead(0), _stream(""), _isSent(0) {};
 		~Response() {};
 
 		int				make_response_body(Request & req, const size_t id);
 		void			make_response_header(Request & req, int code, std::string status, long size = 0);
-		std::string		make_general_header (Request & req, int statusCode);
+		std::string		make_general_header (Request & req);
 		void			make_response_html( const int code, std::string & mess, std::string loc = "" );
 		void			make_response_autoidx(Request & req, std::string location, int code, std::string & status);
 		void			addCookie(std::string cookie);
@@ -82,8 +81,7 @@ class Response
 
 		void			setFileLoc(std::string location);
 		void			setContentType(std::string type);
-		// void			setInput(std::ifstream &_file);
-		// void			setStrStream(std::stringstream stream);
+		void			setLogPath(std::string path);
 
 		//trash
 		void	show_all() {
@@ -106,6 +104,7 @@ class Response
 			which are CGI environment variables to pass them all
 			to CGI new stream */
 		bool openFile();
+		bool formHeaderLog(std::string str, int socket);
 		int extractCgiHeader( Request & req );
 		void createSubprocess( Request & req, char **envp);
 };
