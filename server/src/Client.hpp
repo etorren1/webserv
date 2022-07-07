@@ -72,11 +72,15 @@ class Client
 		void						initResponse( char **envp );
 		void						makeResponse( void );
 		void						makeGetResponse( void );
+<<<<<<< HEAD
 		void						makePostResponse( void );
 		void						makeDeleteResponse( void );
 		void						makePutResponse( void );
+=======
+		void						makePostResponse( char **envp );
+		void						makeResponseWithoutBody();
+>>>>>>> f5293cc (makeResponseWithoutBody moved to Methods.cpp)
 		void						makeErrorResponse( void );
-		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
 		int							checkTimeout( void );
 

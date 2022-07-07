@@ -89,45 +89,13 @@ void Client::makePostResponse( void )
 		cleaner();
 }
 
-void Client:: makeDeleteResponse( void )	{
-	if (remove(location.c_str()) != 0) {
-		debug_msg(1, RED, "Can't remove file: Permisson denied: ", location);
-		throw codeException(403);
-	}
-	else {
-		statusCode = 204;
-		res.setFileLoc(location);
-		clearStrStream(res.getStrStream());
-		res.make_response_html(statusCode, resCode[statusCode]);
-		if (res.sendResponse_stream(socket))  {
-			status |= RESP_DONE;
-			cleaner();
-		}
-	}
-}
-
-void Client:: makePutResponse( void )	{
-	std::ofstream file(location);
-	if (!file.is_open()) {
-		size_t sep = location.find_last_of("/");
-		if (sep != std::string::npos) {
-			rek_mkdir(location.substr(0, sep));
-		}
-		file.open(location);
-	}
-	if (file.is_open()) {
-		file << reader.str();
-		file.close();
-	} else {
-		debug_msg(1, RED, "File is not open: ", location);
-		throw codeException(406);
-	}
-	statusCode = 201;
-	res.setFileLoc(location);
-	clearStrStream(res.getStrStream());
-	res.make_response_html(201, resCode[201]);
-	if (res.sendResponse_stream(socket))  {
+void Client::makeResponseWithoutBody()
+{
+	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
+	if (status & RESP_DONE)
+	{
+		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 	}
 }
