@@ -6,50 +6,17 @@ bool    Server::isServerSocket( const int & fd ) {
 	return false;
 }
 
-
-void    Server::writeLog( const std::string & path, const std::string & header, const std::string & text ) {
-    if (path != "off") {
-        int fd;
-        char buf[BUF_SIZE];
-        fd = open(path.c_str(), O_RDWR | O_CREAT | O_APPEND, 0777); // | O_TRUNC | O_APPEND
-        if (fd < 0) {
-            int sep = path.find_last_of("/");
-            if (sep != std::string::npos) {
-                rek_mkdir(path.substr(0, sep));
-            }
-            fd = open(path.c_str(), O_RDWR | O_CREAT | O_APPEND, 0777); // | O_TRUNC | O_APPEND
-            if (fd < 0) {
-                std::cerr << RED << "Error: can not open or create log file" << RESET << "\n";
-                return ;
-            }
-        }
-        if (fd) {
-            std::time_t result = std::time(NULL);
-            std::string time = std::asctime(std::localtime(&result));
-            time = "[" + time.erase(time.size() - 1) + "] ";
-            write(fd, time.c_str(), time.size());
-            write(fd, header.c_str(), header.size());
-            write(fd, "\n", 1);
-            write(fd, text.c_str(), text.size());
-            write(fd, "\n\n", 2);
-            close (fd);
-        }
-    }
-}
-
 void     Server::checkBodySize( const size_t socket, size_t size ) {
     if (client[socket]->getMaxBodySize() == 0)
         return ;
-	// std::cout << "size = " << size << " max_size = " << client[socket]->getMaxBodySize() << "\n";
     if (size > client[socket]->getMaxBodySize()) {
-        std::cout << RED << "Size more than client_max_body_size: has 413 exception " << RESET << "\n";
+		debug_msg(1, RED, "Size more than client_max_body_size: has 413 exception ");
         throw codeException(413);
     }
 }
 
 Server_block * Server::searchServerName(std::string host)
 {
-	Server_block * srv;
 	srvs_iterator begin = srvs.begin();
 	srvs_iterator end = srvs.end();
 	

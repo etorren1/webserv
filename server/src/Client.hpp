@@ -62,7 +62,7 @@ class Client
 		void 						checkMessageEnd( void );
 		void						savePartOfStream( size_t pos );
 		void						clearStream( void );
-		void						handleRequest( char **envp );
+		void						handleRequest( void );
 		void						handleError( const int code );
 		int							parseLocation( );
 		int							searchErrorPages( void );
@@ -70,16 +70,15 @@ class Client
 
 		//for response:
 		void						initResponse( char **envp );
-		void						makeResponse( char **envp );
+		void						makeResponse( void );
 		void						makeGetResponse( void );
-		void						makePostResponse( char **envp );
-		void						makeDeleteResponse( char ** envp );
-		void						makePutResponse( char ** envp );
+		void						makePostResponse( void );
+		void						makeDeleteResponse( void );
+		void						makePutResponse( void );
 		void						makeErrorResponse( void );
 		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
 		int							checkTimeout(size_t currentCount, size_t lastCount);
-		// void						checkTimeout2(size_t currentCount, size_t lastCount);
 
 		void						setStreamSize( const size_t size );
 		void						setServer( Server_block * s );

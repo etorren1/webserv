@@ -44,7 +44,7 @@ long long					getFileSize(const char *fileLoc) //http://www.c-cpp.ru/content/fst
 	FILE *file;
 	struct stat buff;
 	if (!(file = fopen(fileLoc, "r"))) {
-		std::cout << RED << "Can't open file (" << fileLoc << "): has 404 exception " << RESET << "\n";
+        debug_msg(1, RED,  "Can't open file: ", fileLoc);
 		throw codeException(404);
 	}
 	fstat (fileno (file), &buff);
@@ -126,7 +126,7 @@ long		hexadecimalToDecimal(std::string hex_val)
 
 void	rek_mkdir( std::string path)
 {
-    int sep = path.find_last_of("/");
+    size_t sep = path.find_last_of("/");
     std::string create = path;
     if (sep != std::string::npos) {
         rek_mkdir(path.substr(0, sep));
@@ -139,4 +139,43 @@ time_t timeChecker( ) {
     time_t result = time(0);
 	// std::cout << GREEN << "time - " << result << RESET << "\n";
     return (intmax_t)result;
+}
+
+void	writeLog( const std::string & path, const std::string & header, const std::string & text ) {
+    if (path != "off") {
+		struct stat st;
+		stat(path.c_str(), &st);
+		size_t size = st.st_size;
+		int flags = 0, fd;
+		size > 1000000 ? flags = O_RDWR | O_CREAT | O_TRUNC : flags = O_RDWR | O_CREAT | O_APPEND;
+        fd = open(path.c_str(), flags, 0777);
+        if (fd < 0) {
+            size_t sep = path.find_last_of("/");
+            if (sep != std::string::npos) {
+                rek_mkdir(path.substr(0, sep));
+            }
+            fd = open(path.c_str(), flags, 0777);
+            if (fd < 0) {
+                std::cerr << RED << "Error: can not open or create log file" << RESET << "\n";
+                return ;
+            }
+        }
+        if (fd) {
+            std::time_t result = std::time(NULL);
+            std::string time = std::asctime(std::localtime(&result));
+            time = "[" + time.erase(time.size() - 1) + "] ";
+            write(fd, time.c_str(), time.size());
+            write(fd, header.c_str(), header.size());
+            write(fd, "\n", 1);
+            write(fd, text.c_str(), text.size());
+            write(fd, "\n", 1);
+            close (fd);
+        }
+    }
+}
+
+void debug_msg(int lvl, std::string m1, std::string m2, std::string m3, std::string m4,\
+	                     std::string m5, std::string m6, std::string m7, std::string m8) {
+    if (DEBUGLVL >= lvl)
+        std::cerr << m1 << m2 << m3 << m4 << m5 << m6 << m7 << m8 << RESET << "\n";
 }

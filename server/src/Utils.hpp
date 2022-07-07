@@ -1,6 +1,10 @@
 #ifndef Utils_hpp
 #define Utils_hpp
 
+#define TESTER 1
+#define DEBUGLVL 3 // LVL 1 output only exception and final result
+				   // LVL 2 output request header from client too
+
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -18,8 +22,7 @@
 //for CGI:
 #define PIPE_IN 0	//we write
 #define PIPE_OUT 1	//we read
-// #define CGI_PATH "/Users/etorren/sand/webserv/pipe_bin"
-#define CGI_PATH "./cgi_tester"
+#define CGI_PATH "server/cgi-bin/cgi_tester"
 #define BUF 8192   //можно заменить на общий buff
 
 class Client;
@@ -32,13 +35,16 @@ void						rek_mkdir( std::string path);
 std::string 				getstr(char *c, size_t size);
 size_t 						find_CRLN( char* buf, size_t size, size_t indent = 0 );
 size_t 						find_2xCRLN( char* buf, size_t size, size_t indent = 0 );
-std::string					getCurTime(); //https://stackoverflow.com/questions/7548759/generate-a-date-string-in-http-response-date-format-in-c
+std::string					getCurTime();
 long long					getFileSize(const char *fileLoc);
 long						hexadecimalToDecimal(std::string hex_val);
 long						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
 void						rek_mkdir( std::string path);
-time_t						timeChecker( );
+time_t						timeChecker( void );
+void						writeLog( const std::string & path, const std::string & header, const std::string & text = "" );
+void    					debug_msg(int lvl, std::string m1, std::string m2 = "", std::string m3 = "", std::string m4 = "",\
+												std::string m5 = "", std::string m6 = "", std::string m7 = "", std::string m8 = "");
 
 struct codeException : public std::exception
 {

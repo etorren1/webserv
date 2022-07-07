@@ -42,7 +42,7 @@ bool Request::parseText(std::string text) {
     std::vector<std::string> vec;
     std::istringstream strs(text);
     std::string s;
-    size_t pos;
+    size_t pos = 0;
 
     while (std::getline(strs, s, '\n'))
         vec.push_back(s);
@@ -95,6 +95,7 @@ void Request::parseStartLine(std::string str) {
     if (_method != "GET" && _method != "POST" && \
      _method != "PUT" && _method != "DELETE") {
         std::cout << RED << "Method " << _method << " not allowed: has 405 exception " << RESET << "\n";
+        debug_msg(1, RED, "Method ", _method, " not allowed: has 405 exception");
         throw codeException(405);
     }
     // std::cout << GREEN << "_method = |" << _method << "|\n";
@@ -172,6 +173,7 @@ void Request::parseMIMEType() {
 void Request::findHost() {
     if (!(checkHeaders(_headers, "Host", _host))) {
         std::cout << RED << "Host not found: has 400 exception " << RESET << "\n";
+        debug_msg(1, RED, "Host not found: has 400 exception ");
         throw codeException(400);
     }
     if (_host.substr(9) == "" && (_host == "localhost" || _host == "127.0.0.1"))
@@ -264,7 +266,6 @@ int Request::checkHeaders(std::map<std::string, std::string> fMap, std::string c
 
 void Request::parseEnvpFromBody(std::stringstream &reader, std::vector<std::string>&vec) {
 	std::string s, key, val = "none";
-	size_t pos = 0;
     std::stringstream tmp;
     tmp << reader.rdbuf();
 	while (std::getline(tmp, s, '&'))
@@ -278,15 +279,15 @@ void Request::parseEnvpFromBody(std::stringstream &reader, std::vector<std::stri
     //     // std::cout << CYAN << "map     " << key << " " << map[key] << "\n" << RESET;
 	// }
     // std::cout << YELLOW << "map.size() - " << map.size() << "\n" << RESET;
-    std::vector<std::string>::iterator it = vec.begin();
-    for (; it != vec.end(); it++) {
-        std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
-    }
+    // std::vector<std::string>::iterator it = vec.begin();
+    // for (; it != vec.end(); it++) {
+    //     std::cout << PURPLE << "|" << (*it) << "|\n" << RESET; // - |" << (*it).second << "|\n" << RESET;
+    // }
     reader.seekg(0);
 }
 
 void Request::trimChunks( std::stringstream & reader, size_t size ) {
-    size_t end_hex, hex_size, chunk_size, rd_bytes = 0;
+    size_t end_hex, hex_size, chunk_size = 1, rd_bytes = 0;
     // copy stream into buffer
     char *buf = new char[size + 1];
     bzero(buf, size + 1);
@@ -310,68 +311,6 @@ void Request::trimChunks( std::stringstream & reader, size_t size ) {
     delete[] buf;
 }
 
-typedef struct s_mult
-{
-    //multipart cluster
-    std::stringstream   content;
-    std::string         name;
-    std::string         filename;
-    std::string         contentType;
-    std::string         contentDisposition;
-
-} t_mult;
-
-void Request::trimBoundary( std::stringstream & reader, size_t size ) {
-    std::cout << RED << "\e[1mBOUNDARY! size = " << size << RESET << "\n";
-    std::vector<t_mult> boundary;
-    char *buf = new char [size + 1];
-    bzero(buf, size + 1);
-    reader.read(buf, size);
-    clearStrStream(reader);
-    std::cout << "show buf\n";
-    for (size_t i = 0; i < size; i++)
-    {
-        
-        usleep(500);
-        printf("%c", buf[i]);
-        // if ( buf[i] == '\n')
-        //     std::cout << "\n";
-        // if (i % 25 == 0)
-        //     std::cout << "\n";
-    }
-
-    size_t rd_bytes = 0;
-    while (1) {
-        // size_t head_end = find_CRLN(&buf[find_CRLN(buf, size)] + 1, 2);
-        size_t head_end = find_2xCRLN(&buf[rd_bytes], size - rd_bytes, rd_bytes);
-        std::cout << "head_end = " << head_end << "\n";
-        size_t head_size;
-        if (head_end) {
-            t_mult part;
-            head_size = head_end - rd_bytes;
-            std::cout << "head_size = " << head_size << "\n";
-            std::string head = getstr(&buf[rd_bytes] ,head_size);
-            std::cout << YELLOW << "BOUNDARY:" << RESET << "\n";
-            std::cout << GREEN << head << RESET << "|\n";
-            
-            rd_bytes += head_size + 4;
-            size_t content_end = find_CRLN(&buf[rd_bytes], size - rd_bytes, rd_bytes) + 4;
-            if (getstr(&buf[content_end], _boundary.size()) == _boundary)
-                std::cout << CYAN << getstr(&buf[content_end], _boundary.size()) << RESET << "\n";
-            else
-                std::cout << RED << _boundary << RESET << "|@|\n";
-        }
-        else {
-            std::cout << RED << "end head" << RESET << "\n";
-            break;
-        }
-    }
-    std::cout << RESET << "\n";
-    delete[] buf;
-    // std::cout << RED << "EXIT" << RESET << "\n";
-    exit(1);
-}
-
 void Request::parseBody(std::stringstream & reader, size_t & reader_size, std::vector<std::string>&vec) {
     if (_transferEnc.size()) {
         if (_transferEnc == "chunked") {
@@ -381,11 +320,7 @@ void Request::parseBody(std::stringstream & reader, size_t & reader_size, std::v
         }
     }
     else if (_contentLength.size()) {
-        if (_boundary.size()) {
-            // trimBoundary(reader, reader_size);
-            ;
-        }
-        else if (getContType() == "application/x-www-form-urlencoded") {
+        if (getContType() == "application/x-www-form-urlencoded") {
             parseEnvpFromBody(reader, vec);
         }
     }

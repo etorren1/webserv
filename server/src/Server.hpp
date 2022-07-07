@@ -3,8 +3,6 @@
 
 #include <iostream>
 #include <netdb.h>
-// #include <sys/socket.h>
-// #include <netinet/in.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <poll.h>
@@ -92,7 +90,6 @@ class Server {
 
 		bool			isServerSocket( const int & fd );
 		void			closeServer( int status );
-		void    		writeLog( const std::string & path, const std::string & header, const std::string & text = "");
 		void			errorShutdown( int code, const std::string & path, const std::string & error, const std::string & text = "");
 
 		// for response:

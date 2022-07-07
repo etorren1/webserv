@@ -17,7 +17,7 @@ void    Server::create() {
         // std::cout << GREEN << (*it).first << RESET << "\n";
         // (*it).second->show_all();
     }
-    for (int i = 0; i < brokenhosts.size(); i++)
+    for (size_t i = 0; i < brokenhosts.size(); i++)
         srvs.erase(brokenhosts[i]);
     if (!srvs.size())
         closeServer(STOP);
@@ -162,43 +162,28 @@ void Server::connectClients( const int & fd ) {
 
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
-
         // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-        std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-        // std::cout << client[socket]->getStream().str();
-        std::cout << PURPLE << "end BODY." << RESET << "\n";
-
-        std::cout << CYAN <<  "reader_size = " << client[socket]->getStreamSize() << " stream_size = " << getStrStreamSize(client[socket]->getStream()) << RESET << "\n";
-
-        client[socket]->handleRequest(envp);
+        client[socket]->handleRequest();
         checkBodySize(socket, client[socket]->getStreamSize());
         client[socket]->parseLocation();
         client[socket]->initResponse(envp);
     } else {
-
-        std::cout << YELLOW << "Client " << socket << " send HEADER: " << RESET << "\n";
-        std::cout << client[socket]->getHeader();
-        std::cout << PURPLE << "end HEADER." << RESET << "\n";
-
-        client[socket]->handleRequest(envp);
+        debug_msg(2, YELLOW, "Client ", itos(socket), " send HEADER: ", RESET, "\n", client[socket]->getHeader());
+        client[socket]->handleRequest();
         Server_block * srv = getServerBlock( client[socket]->getHost() );
         if (srv == NULL) {
-            std::cout << RED << "No such server with this host: has 400 exception \n" << RESET << "\n";
+            debug_msg(1, RED,  "No such server with this host: has 400 exception");
             throw codeException(400);
         }
         client[socket]->setServer(srv);
-        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
+        writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
-            // if (client[socket]->status & IS_BODY) {
-            //     writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-            //     std::cout << YELLOW << "Client " << socket << " send BODY: " << RESET << "\n";
-            //     std::cout << client[socket]->getStream().str();
-            //     std::cout << PURPLE << "end BODY." << RESET << "\n";
-            // }
+            if (client[socket]->status & IS_BODY) {
+                // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
+            }
             checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
-            //std::cout << "status after location - " << client[socket]->status << "\n";
             client[socket]->initResponse(envp);
         }
     }
@@ -220,9 +205,7 @@ void Server::mainHandler( void ) {
                 }  
                 else if (fds[id].revents & POLLOUT) {
                     if (!isServerSocket(socket) && client[socket]->status & REQ_DONE) {
-                        // std::cout << YELLOW << "Send responce to " << socket << " socket" << RESET << "\n";
-                        client[socket]->makeResponse(envp);
-                        // disconnectClients(id);
+                        client[socket]->makeResponse();
                     }
                 }
             }
@@ -245,10 +228,6 @@ int     Server::readRequest( const size_t socket ) { // v2
         bytesRead += rd;
         count += rd;
         client[socket]->getStream() << buf;
-        // if (client[socket]->status & IS_BODY)
-        //     checkBodySize(socket, bytesRead);
-        // if (!(client[socket]->status & IS_BODY))
-        //     std::cout << buf;
     }
     if (!client[socket]->checkTimeout(bytesRead, client[socket]->getStreamSize()))
         return 0;

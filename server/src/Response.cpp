@@ -1,31 +1,16 @@
 #include "Response.hpp"
 
-std::string Response::make_general_header ( Request & req, int statusCode )
+std::string Response::make_general_header ( Request & req )
 {
-	// std::string Server = "webserv";
-	// _date = getTime();
-
-	// std::string location;
 	std::string contType = "Content-Type: " + _contentType + "\r\n";
 	std::string contentLength = "Content-Length: " + _contentLength + "\r\n";
 	std::string connection = "keep-alive"; //Connection: keep-alive
-	// if (statusCode == 301)
-	// {
-	// 	location = "Location: http://" + req.getHost() + req.getReqURI() + "/\r\n";
-	// 	// std::string Last-Modified: Sun, 22 May 2022 13:32:52 GMT
-	// 	contType.clear();
-	// 	contentLength.clear();
-	// 	contentLength = "Content-Length: 0\r\n";
-	// }
 
 	return(
 			"Version: " + req.getProtocolVer()  + "\r\n" + 
-			// "Server: " + Server + "\r\n" +
-			// location +
 			contType +
 			contentLength +
-			"Connection: " + connection +// "\r\n" +
-			// Transfer-Encoding:
+			"Connection: " + connection +
 			+ "\r\n");
 }
 
@@ -40,16 +25,11 @@ void Response::make_response_header( Request & req, int code, std::string status
 		_contentLength = itos(getFileSize(_fileLoc.c_str()));
 	else
 		_contentLength = itos(size);
-	std::cout << GREEN << "\e[1msize = " << size << RESET << "\n";
-	std::cout << GREEN << "\e[1mitos(size) = " << itos(size) << RESET << "\n";
 	statusLine = req.getProtocolVer() + " " + _statusCode + " " + _reasonPhrase + "\r\n";
-	generalHeader = make_general_header(req, code);
+	generalHeader = make_general_header(req);
 	addCookie(getCurTime());
 	_header = statusLine + generalHeader + _cookie;
 	_stream << _header;
-	
-	std::cout << RED << "HEADER: " << RESET << "\n";
-	std::cout << RED << _header << RESET << "\n";
 }
 
 void Response::addCookie(std::string cookie) {
@@ -61,24 +41,15 @@ int Response::sendResponse_file(const size_t socket)
 	char 			*buffer = new char [RES_BUF_SIZE];
 
 	if(!_file.is_open()) {
-		std::cout << RED << "File not open!: has 404 exception" << RESET << "\n";
+		debug_msg(1, RED, "File not open!: has 404 exception");
 		throw(codeException(404));
 	}
-
 	bzero(buffer, RES_BUF_SIZE);
 	_file.read (buffer, RES_BUF_SIZE);
-		_bytesRead = _file.gcount();
-	
-	_totalBytesRead += _bytesRead;
+	_bytesRead = _file.gcount();
 
+	_totalBytesRead += _bytesRead;
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	// if (_bytesSent == -1)
-	// {
-	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
-		// std::cout << strerror(errno);
-		// std::cout << errno;
-	// 	throw codeException(502);
-	// }
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -101,23 +72,11 @@ int Response::sendResponse_stream(const size_t socket)
 	bzero(buffer, RES_BUF_SIZE);
 	_stream.read(buffer, RES_BUF_SIZE);
 	_bytesRead = _stream.gcount();
-	
-	_totalBytesRead += _bytesRead;
 
+	if (!_logged)
+		_logged = formHeaderLog(buffer, socket);
+	_totalBytesRead += _bytesRead;
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
-	
-	// if (wrRet == 100000) {
-	// 	usleep (1000);
-	// 	std::cout << RED << buffer << RESET << "\n"; 
-	// 	wrRet = 0;
-	// }
-	// if (_bytesSent == -1)
-	// {
-	// 	std::cerr << "wrote = " << _bytesSent << std::endl;
-		// std::cout << strerror(errno);
-		// std::cout << errno;
-	// 	throw codeException(502);
-	// }
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -126,8 +85,7 @@ int Response::sendResponse_stream(const size_t socket)
 	delete[] buffer;
 	if (_stream.eof())								//закрываем файл только после того как оправили все содержание файла
 	{
-		_stream.str(std::string()); // clear content in stream
-		_stream.clear();
+		clearStrStream(_stream);
 		return (1);
 	}
 	return (0);
@@ -158,67 +116,8 @@ char** Response::addCgiVar(Request & req, char **envp) {
 	tmp = "PATH_INFO=./";						// ??? What is PATH_INFO ???
 	arr[iter++] = strdup(tmp.c_str());
 	arr[iter++] = 0;
-	// int i = 0;
-	// while (arr[i]) {
-	// 	usleep(100);
-	// 	std::cerr << arr[i++] << "\n";
-	// }
-	// exit(1);
 	return arr;
 }
-
-// void Response::addCgiVar( char ***envp,  Request & req, std::vector<std::string> & envpVector )
-// {
-// 	char **tmp;
-// 	std::string tmpStr;
-// 	size_t numOfLines = 0;
-// 	size_t i = 0;
-// 	size_t startIndx;
-// 	std::vector<std::string>::iterator vBegin;
-// 	std::vector<std::string>::iterator vEnd;
-// 	std::map<std::string, std::string>::const_iterator mBegin;
-// 	std::map<std::string, std::string>::const_iterator mEnd;
-
-// 	vBegin = envpVector.begin();
-// 	vEnd = envpVector.end();
-// 	mBegin = req.getHeadears().begin();
-// 	mEnd = req.getHeadears().end();
-
-// 	std::string req_metod = ("REQUEST_METHOD=Post");			// REQUEST_METHOD=Post
-// 	std::string serv_protocol = ("SERVER_PROTOCOL=HTTP/1.1");	//SERVER_PROTOCOL=HTTP/1.1
-// 	std::string path_info = ("PATH_INFO=./");
-// 	std::string content_length = ("HTTP_Transfer-Encoding=chunked");
-// 	// std::string secret = ("HTTP_X_SECRET_HEADER_FOR_TEST=1");
-
-// 	for (int i = 0; (*envp)[i] != NULL; ++i)
-// 		numOfLines++;
-
-// 	tmp = (char **)malloc(sizeof(char *) * (numOfLines + 4 + envpVector.size()) + req.getHeadears().size()); // 3 for new vars and additional 1 for NULL ptr
-
-// 	while (i < numOfLines)							//переносим все изначальные envp в новый массив
-// 	{
-// 		tmp[i] = (*envp)[i];
-// 		i++;
-// 	}
-
-// 	tmp[numOfLines] = strdup(req_metod.c_str());	//записываем необходимые для работы CGI переменные 
-// 	tmp[numOfLines + 1] = strdup(serv_protocol.c_str());
-// 	tmp[numOfLines + 2] = strdup(path_info.c_str());
-// 	tmp[numOfLines + 3] = strdup(content_length.c_str());
-// 	// tmp[numOfLines + 4] = strdup(secret.c_str());
-
-// 	startIndx = numOfLines + 4;
-
-// 	while (vBegin != vEnd)	//записываем переменные пришедшие из query string
-// 	{
-// 		tmp[startIndx] = strdup((*vBegin).c_str());
-// 		startIndx++;
-// 		vBegin++;
-// 	}
-// 	tmp[startIndx] = NULL;
-
-// 	*envp = tmp;
-// }
 
 static void wait_subprocess(int) {
 	int wstat;
@@ -231,17 +130,17 @@ static void wait_subprocess(int) {
 
 void 			Response::createSubprocess( Request & req, char **envp) {
 	if (pipe(pipe1)) {
-		std::cerr << RED << "Pipe1 error: has 500 exception" << RESET << "\n";
+		debug_msg(1, RED, "Pipe1 error: has 500 exception");
 		throw(codeException(500));
 	}
 	if (pipe(pipe2)) {
-		std::cerr << RED << "Pipe2 error: has 500 exception" << RESET << "\n";
+		debug_msg(1, RED, "Pipe2 error: has 500 exception");
 		throw(codeException(500));
 	}
 	fcntl(pipe1[PIPE_OUT], F_SETFL, O_NONBLOCK);
 	fcntl(pipe2[PIPE_IN], F_SETFL, O_NONBLOCK);
 	if ((pid = fork()) < 0) {
-		std::cerr << RED << "Fork error: has 500 exception" << RESET << "\n";
+		debug_msg(1, RED, "Fork error: has 500 exception");
 		throw(codeException(500));
 	}
 	if (pid == 0) { //child - process for CGI programm
@@ -252,20 +151,12 @@ void 			Response::createSubprocess( Request & req, char **envp) {
 		close(pipe2[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
 		if ((ex = execve(CGI_PATH, NULL, addCgiVar(req, envp))) < 0) {
-			if (!envp)
-				std::cerr << "ENVP DOES NOE EXIST\n";
-			char buffer[100];
-			std::cerr << RED << "Execve fault: has 500 exception" << RESET << "\n";
-			strerror_r( errno, buffer, 256 ); // to remove
-			std::cerr << "ERRNO: " << buffer << "\n"; // to remove
+			debug_msg(1, RED, "Execve fault: has 500 exception");
 			throw(codeException(500));
-			exit (20);
 		}
 		exit(ex);
 	}
 	else { // main process
-		// close(pipe1[PIPE_OUT]); //Close unused pipe read end
-		// close(pipe2[PIPE_IN]); //Close unused pipe write end
 		close(pipe1[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
 		signal(SIGCHLD, wait_subprocess);
@@ -305,21 +196,9 @@ int Response::extractCgiHeader( Request & req )
 
 bool Response::openFile()
 {
-	if (access(_fileLoc.c_str(), 0) == -1)	//если файла не существует, создаем его
-		_file.open(_fileLoc.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out | std::fstream::trunc);
-	/* You should add fstream::trunc if you want fstream::in to work on an non-existent file.
-	https://stackoverflow.com/questions/15667530/fstream-wont-create-a-file
-	*/
-	else									//файл существует, просто открываем
-		_file.open(_fileLoc.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out); // open file
-		
+	_file.open(_fileLoc.c_str(), std::ios::binary|std::ios::in); // open file
 	if (!_file.is_open())
-	{
-		std::cout << "FILE LOCATION: " << _fileLoc << "\n";
-		std::cout << "FILE OPEN: Failture\n";
 		return false;
-	}
-	std::cout << "FILE OPEN: Success\n";
 	return true;
 }
 
@@ -334,15 +213,11 @@ void Response::cleaner()
 	_reasonPhrase.clear();
 	_connection.clear();
 	_fileLoc.clear();
+	_logPath.clear();
 	_bytesRead = 0;
 	_bytesSent = 0;
 	_totalBytesRead = 0;
-}
-
-void Response::openFileForPost (std::string location)
-{
-	setFileLoc(location);
-	openFile();
+	_logged = false;
 }
 
 int	&			Response::getPipeWrite( void ) { return pipe1[PIPE_OUT]; }
@@ -358,3 +233,4 @@ std::stringstream &	Response::getStrStream() { return(_stream); }
 
 void			Response::setFileLoc(std::string loc) { _fileLoc = loc; };
 void			Response::setContentType(std::string type) { _contentType = type; };
+void			Response::setLogPath(std::string path) { _logPath = path; }

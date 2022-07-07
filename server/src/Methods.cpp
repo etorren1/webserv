@@ -2,56 +2,55 @@
 #include "Utils.hpp"
 #include <errno.h>
 
-void Client::makeGetResponse()
+void Client::makeGetResponse( void )
 {
-	if (status & HEAD_SENT)
-	{
+	if (status & HEAD_SENT) {
 		if (res.sendResponse_file(socket))
-		{
 			status |= RESP_DONE;
-			// std::cout << "GET sendfile() must be second\n";
-		}
 	}
-	else
-	{
-		if (res.sendResponse_stream(socket))
-		{
-			if (status & REDIRECT) {
-				std::cout << location << "<-\n";
-				std::cout << RED << "\e[1mDONE" <<RESET << "\n";
+	else {
+		if (res.sendResponse_stream(socket)) {
+			if (status & REDIRECT)
 				status |= RESP_DONE;
-			}
 			else
 				status |= HEAD_SENT;
-			// std::cout << "GET sendstream() must be first\n";
 		}
 	}
 	if (status & RESP_DONE)
-	{
-		// std::cout << GREEN << "End GET response on " << socket << " socket" << RESET << "\n";
 		cleaner();
-		// std::cout << "GET cleaner() must be ending\n";
-	}
 }
 
-void Client::makePostResponse(char **envp)
+void Client::makePostResponse( void )
 {
-
-	// std::cout << BLUE << "ENTERED makePostResponse METOD" << RESET << "\n";
-
 	char				buf[BUF];
 	int					wr = 0;
 	int					rd = 0;
 	long				bytesRead = 0;
 
-	// size_t lastRead = rdRet;
-	// size_t lastWrite = wrtRet;
-	if (loc->is_cgi_index(location.substr(location.rfind("/") + 1)))
+	if (reader_size == 0 && !(status & CGI_DONE)) {
+		res.make_response_html(201, resCode[201]);
+		status |= CGI_DONE;
+	}
+	if (!(status & CGI_DONE))
 	{
-		if (reader_size == 0 && !(status & CGI_DONE))
-		{
-			res.make_response_html(201, resCode[201]);
-			status |= CGI_DONE;
+		if (status & IS_WRITE) {
+			bzero(buf, BUF);
+			reader.read(buf, BUF);
+			bytesRead = reader.gcount();
+			wr = write(res.getPipeWrite(), buf, bytesRead);
+			if (wr > 0) {
+				wrtRet += wr;
+				countw +=wr;
+			}
+			if (wr < bytesRead)
+				reader.seekg(wrtRet);
+			if (countw >= BUF || wr == -1 || wrtRet == reader_size) {
+				countw = 0;
+				status &= ~IS_WRITE;
+			}
+			if (wrtRet >= reader_size)
+				close(res.getPipeWrite());
+			debug_msg(3, RED,  "WrtRet : ", std::itoa(wrtRet), "\n");
 		}
 		if (!(status & CGI_DONE))	// флаг cgi записан == false
 		{
@@ -111,85 +110,49 @@ void Client::makePostResponse(char **envp)
 				// 	status |= IS_WRITE;
 				// }
 			}
-			// if (reader.eof() && status & IS_WRITE) //SIGPIPE
-			if (rdRet >= wrtRet && wrtRet == reader_size) //SIGPIPE
-			{
-				// AT THIS MOMENT NEED WRITE BODY FROM STREAM TO FILE !
-
-				std::cout << "Write: (" << wrtRet << ") wr: (" << wr << ") bytesRead: (" << bytesRead << ")\n"; // << CYAN << tmp << RESET << "\n";
-				std::cout << "Read: (" << rdRet << ") rd: (" << rd << ")\n"; // << CYAN << tmp << RESET << "\n";
-				clearStream();
-
-				close(res.getPipeRead());
-
-				// char t[90];
-				// res.getStrStream().read(t, 90);
-				// res.getStrStream().seekg(0);
-				// std::cout << YELLOW << t << RESET << "\n";
-				statusCode = res.extractCgiHeader(req);
-				res.wrRet = wrtRet;
-
-				std::stringstream tmp;// need delete
-
-				res.getFileStream() << res.getStrStream().rdbuf();
-
-				// tmp << res.getStrStream().rdbuf(); // need delete
-				clearStrStream(res.getStrStream());
-				// res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
-				// if (wrtRet == 100000)
-				// 	throw codeException(400);
-				res.make_response_header(req, 201, resCode[201], getStrStreamSize(tmp));
-				// else
-				// 	res.make_response_header(req, 200, resCode[200], 0);
-				res.getStrStream() << tmp.rdbuf(); // need delete
-				status |= CGI_DONE;
+			if ((countr >= BUF || rd == -1)) {
+				countr = 0;
+				status |= IS_WRITE;
 			}
+			res.getStrStream() << buf;
 		}
-		if (status & CGI_DONE)	//если все данные передались в cgi
+		if (rdRet >= wrtRet && wrtRet == reader_size) //SIGPIPE
 		{
-			if (res.sendResponse_stream(socket)) {
-				// std::cout << RED << "All sended" << RESET << "\n";
-				status |= RESP_DONE;
-			}
-			if (res.sendResponse_file(socket)) {
-				std::cout << RED << "All sended" << RESET << "\n";
-				status |= RESP_DONE;
-			}
-			// else
-			// 	std::cout << RED << "not complete" << RESET << "\n";
+			clearStream();
+			
+			close(res.getPipeRead());
+			statusCode = res.extractCgiHeader(req);
+			std::stringstream tmp;
+			tmp << res.getStrStream().rdbuf();
+			clearStrStream(res.getStrStream());
+			statusCode = 201;
+			res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
+			res.getStrStream() << tmp.rdbuf();
+			status |= CGI_DONE;
 		}
 	}
-	else
+	else if (status & CGI_DONE)	//если все данные передались в cgi
 	{
-		status |= RESP_DONE;
+		debug_msg(3, RED,  "CGI_DONE FLAGE REACHED\n");
+		if (res.sendResponse_stream(socket)) {
+			status |= RESP_DONE;
+		}
 	}
 
 	if (status & RESP_DONE)
-	{
-		res.make_response_header(req, 201, resCode[201], getFileSize(res.getFileLoc().c_str()));
-		reader.seekg(0);
-		res.getFileStream() << reader.rdbuf();
-		res.getFileStream().close();
-		res.sendResponse_stream(socket);
-		res.sendResponse_file(socket);
 		cleaner();
-		std::cout << BLUE <<  "\e[1mCOMPLEATING POST RESPONSE! CONGRATULATIONS\n"; 
-	}
 }
 
-
-void Client:: makeDeleteResponse(char **envp)	{
-	std::cout << RED << "DELETE\n" << RESET;
-	if (remove(location.c_str()) != 0) 
-		codeException(403);
+void Client:: makeDeleteResponse( void )	{
+	if (remove(location.c_str()) != 0) {
+		debug_msg(1, RED, "Can't remove file: Permisson denied: ", location);
+		throw codeException(403);
+	}
 	else {
 		statusCode = 204;
-		// initResponse(envp);
 		res.setFileLoc(location);
 		clearStrStream(res.getStrStream());
-		res.make_response_html(204, resCode[204]);
-
-		// res.make_response_header(req, 204, resCode[204], res.getContentLenght());
+		res.make_response_html(statusCode, resCode[statusCode]);
 		if (res.sendResponse_stream(socket))  {
 			status |= RESP_DONE;
 			cleaner();
@@ -197,23 +160,20 @@ void Client:: makeDeleteResponse(char **envp)	{
 	}
 }
 
-void Client:: makePutResponse(char **envp)	{
-	std::cout << RED << "PUT\n" << RESET;
+void Client:: makePutResponse( void )	{
 	std::ofstream file(location);
-	std::cout << GREEN << location << "\n" << RESET;
 	if (!file.is_open()) {
-		int sep = location.find_last_of("/");
+		size_t sep = location.find_last_of("/");
 		if (sep != std::string::npos) {
 			rek_mkdir(location.substr(0, sep));
 		}
 		file.open(location);
 	}
 	if (file.is_open()) {
-		std::cout << GREEN << "if file is_open - " << req.getReqURI() << ", location - " << location << "\n" << RESET;
 		file << reader.str();
 		file.close();
 	} else {
-		std::cout << RED << "File is not open: " << location << ", code - 406" << RESET << "\n";
+		debug_msg(1, RED, "File is not open: ", location);
 		throw codeException(406);
 	}
 	statusCode = 201;
@@ -224,5 +184,4 @@ void Client:: makePutResponse(char **envp)	{
 		status |= RESP_DONE;
 		cleaner();
 	}
-	// exit(1);
 }
