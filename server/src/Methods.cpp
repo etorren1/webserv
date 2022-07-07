@@ -89,12 +89,38 @@ void Client::makePostResponse( void )
 		cleaner();
 }
 
-void Client::makeResponseWithoutBody()
-{
+void Client::makeDeleteOrPut() {
+	if (req.getMethod() == "PUT") {
+	std::ofstream file(location);
+	if (!file.is_open()) {
+		size_t sep = location.find_last_of("/");
+		if (sep != std::string::npos) {
+			rek_mkdir(location.substr(0, sep));
+		}
+		file.open(location);
+	}
+	if (file.is_open()) {
+		file << reader.str();
+		file.close();
+	} else {
+		throw codeException(406);
+	}
+	statusCode = 201;
+	}
+	if (req.getMethod() == "DELETE") {
+		if (remove(location.c_str()) != 0) 
+			codeException(403);
+		statusCode = 204;
+	}
+	res.setFileLoc(location);
+	clearStrStream(res.getStrStream());
+	res.make_response_html(statusCode, resCode[statusCode], location);
+}
+
+void Client::makeResponseWithoutBody() {
 	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
-	if (status & RESP_DONE)
-	{
+	if (status & RESP_DONE)	{
 		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 	}

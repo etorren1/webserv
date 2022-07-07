@@ -72,6 +72,7 @@ class Client
 		void						initResponse( char **envp );
 		void						makeResponse( void );
 		void						makeGetResponse( void );
+		void						makeDeleteOrPut( void );
 		void						makePostResponse( );
 		void						makeResponseWithoutBody();
 		void						makeErrorResponse( void );

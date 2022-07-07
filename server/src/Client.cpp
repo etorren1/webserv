@@ -136,33 +136,8 @@ void Client::initResponse(char **envp) {
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
-	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE") {
-		if (req.getMethod() == "PUT") {
-			std::ofstream file(location);
-			if (!file.is_open()) {
-				size_t sep = location.find_last_of("/");
-				if (sep != std::string::npos) {
-					rek_mkdir(location.substr(0, sep));
-				}
-				file.open(location);
-			}
-			if (file.is_open()) {
-				file << reader.str();
-				file.close();
-			} else {
-				throw codeException(406);
-			}
-			statusCode = 201;
-		}
-		if (req.getMethod() == "DELETE") {
-			if (remove(location.c_str()) != 0) 
-				codeException(403);
-			statusCode = 204;
-		}
-		res.setFileLoc(location);
-		clearStrStream(res.getStrStream());
-		res.make_response_html(statusCode, resCode[statusCode], location);
-	}
+	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE")
+		makeDeleteOrPut();
 	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
