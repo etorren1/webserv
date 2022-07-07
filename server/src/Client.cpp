@@ -134,19 +134,13 @@ void Client::initResponse(char **envp) {
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
-<<<<<<< HEAD
-		res.make_response_html(statusCode, resCode[statusCode], location);
-	else if (req.getMethod() == "PUT")
-		res.make_response_html(statusCode, resCode[statusCode], location);
-	else if (req.getMethod() == "GET") {
-=======
 		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
 		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
 	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE") {
 		if (req.getMethod() == "PUT") {
 			std::ofstream file(location);
 			if (!file.is_open()) {
-				int sep = location.find_last_of("/");
+				size_t sep = location.find_last_of("/");
 				if (sep != std::string::npos) {
 					rek_mkdir(location.substr(0, sep));
 				}
@@ -169,20 +163,15 @@ void Client::initResponse(char **envp) {
 		clearStrStream(res.getStrStream());
 		res.make_response_html(statusCode, resCode[statusCode], location);
 	}
-	else {
->>>>>>> f5293cc (makeResponseWithoutBody moved to Methods.cpp)
+	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-<<<<<<< HEAD
-	else if (req.getMethod() == "POST") {
-=======
-	if (req.getMethod() == "POST")
+	else if (req.getMethod() == "POST")
 	{
 		res.setFileLoc(location);
->>>>>>> f5293cc (makeResponseWithoutBody moved to Methods.cpp)
 		res.setContentType(req.getContentType());
 		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
 			res.createSubprocess(req, envp);
@@ -205,33 +194,12 @@ void Client::makeResponse( void )
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
 	else if (req.getMethod() == "POST")
-<<<<<<< HEAD
 		makePostResponse();
-	else if (req.getMethod() == "DELETE")
-		makeDeleteResponse();
-	else if (req.getMethod() == "PUT")
-		makePutResponse();
-}
-
-void Client::makeAutoidxResponse() {
-	if (res.sendResponse_stream(socket))
-		status |= RESP_DONE;
-	if (status & RESP_DONE)
-	{
-		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
-		cleaner();
-	}
-}
-
-void Client::makeErrorResponse() {
-=======
-		makePostResponse(envp);
 	// 	makePostResponse(envp);  //envp не нужен уже
 }
 
 void Client::makeErrorResponse()
 {
->>>>>>> f5293cc (makeResponseWithoutBody moved to Methods.cpp)
 	if (status & HEAD_SENT)
 	{
 		if (status & IS_FILE)
@@ -410,7 +378,6 @@ int Client::parseLocation()	{
 	}
 	size_t subpos;
 	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
-<<<<<<< HEAD
 	location = root + locn + req.getReqURI().substr(subpos);
 
 	if (TESTER) {
@@ -419,17 +386,6 @@ int Client::parseLocation()	{
 			location.erase(location.find("directory"), 10);
 		}
 		// DELETE IT IN FINAL VERSION!
-=======
-	// if (req.getReqURI().find("http") == std::string::npos) {
-		location = root + locn + req.getReqURI().substr(subpos);
-	// else 
-		// location = req.getReqURI();
-	// FOR INTRA TESTER
-	// std::cout << CYAN << "this is loc = " << location << "\n" << RESET;
-	if (location.find("directory") != std::string::npos) {
-		location.erase(location.find("directory"), 10);
-		std::cout << RED << "\e[1m  ALERT! tester stick trim /directory/" << RESET << "\n";
->>>>>>> f5293cc (makeResponseWithoutBody moved to Methods.cpp)
 	}
 
 	while ((pos = location.find("//")) != std::string::npos)
