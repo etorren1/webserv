@@ -73,19 +73,17 @@ class Client
 		void						makeResponse( void );
 		void						makeGetResponse( void );
 		void						makePostResponse( void );
-		void						makeDeleteResponse( void );
-		void						makePutResponse( void );
+		void						makeResponseWithoutBody();
 		void						makeErrorResponse( void );
-		void						makeAutoidxResponse( void );
 		int							makeRedirect( int code, std::string loc );
-		int							checkTimeout(size_t currentCount, size_t lastCount);
+		int							checkTimeout( void );
 
 		void						setStreamSize( const size_t size );
 		void						setServer( Server_block * s );
 		void						setClientTime(time_t);
 		void						setLastTime(time_t);
 
-		bool 						readComplete( void ) const;
+		bool 						readComplete( void );
 		std::string					getHost( void ) const;
 		size_t						getMaxBodySize( void ) const;
 		Response &					getResponse( void );

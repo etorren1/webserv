@@ -135,8 +135,33 @@ void Client::initResponse(char **envp) {
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
 		res.make_response_html(statusCode, resCode[statusCode], location);
-	else if (req.getMethod() == "PUT")
+	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE") {
+		if (req.getMethod() == "PUT") {
+			std::ofstream file(location);
+			if (!file.is_open()) {
+				size_t sep = location.find_last_of("/");
+				if (sep != std::string::npos) {
+					rek_mkdir(location.substr(0, sep));
+				}
+				file.open(location);
+			}
+			if (file.is_open()) {
+				file << reader.str();
+				file.close();
+			} else {
+				throw codeException(406);
+			}
+			statusCode = 201;
+		}
+		if (req.getMethod() == "DELETE") {
+			if (remove(location.c_str()) != 0) 
+				codeException(403);
+			statusCode = 204;
+		}
+		res.setFileLoc(location);
+		clearStrStream(res.getStrStream());
 		res.make_response_html(statusCode, resCode[statusCode], location);
+	}
 	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
 		res.setContentType(req.getContentType());
@@ -150,54 +175,36 @@ void Client::initResponse(char **envp) {
 			status |= IS_WRITE;
 		}
 		else {
-			// what need doing here?
+			// size_t pos = location.rfind("/");
+			// location = location.substr(0, pos);
+			// parseLocation();
+			// res.setFileLoc(location);
+			// res.setContentType(req.getContentType());
+			// res.openFile();
+			// req.setMethod("GET");
+			// res.make_response_header(req, statusCode, resCode[statusCode]);
 			;
 		}
 	}
 }
 
 void Client::makeResponse( void )
-{ // envp не нужен уже
+{
+	lastTime = timeChecker();
 	if (status & ERROR)
 		makeErrorResponse();
-	else if (status & AUTOIDX)
-		makeAutoidxResponse();
+	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")
+		makeResponseWithoutBody();
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
 	else if (req.getMethod() == "POST")
 		makePostResponse();
-	else if (req.getMethod() == "DELETE")
-		makeDeleteResponse();
-	else if (req.getMethod() == "PUT")
-		makePutResponse();
 }
 
-void Client::makeAutoidxResponse() {
+void Client::makeResponseWithoutBody()
+{
 	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
-	if (status & RESP_DONE)
-	{
-		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
-		cleaner();
-	}
-}
-
-void Client::makeErrorResponse() {
-	if (status & HEAD_SENT)
-	{
-		if (status & IS_FILE)
-		{
-			if (res.sendResponse_file(socket))
-				status |= RESP_DONE;
-		}
-		else
-			status |= RESP_DONE;
-	}
-	else
-	{
-		if (res.sendResponse_stream(socket))
-			status |= HEAD_SENT;
-	}
 	if (status & RESP_DONE)
 	{
 		cleaner();
@@ -244,7 +251,6 @@ void Client::setServer(Server_block *s) {
 void Client::setClientTime(time_t t) { time = t; }
 void Client::setLastTime(time_t t) { lastTime = t; }
 
-bool			Client::readComplete() const { return fullpart; }
 Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
 size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
@@ -255,6 +261,11 @@ std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
 time_t			Client::getClientTime() { return time; }
 time_t			Client::getLastTime() { return lastTime; }
+
+bool			Client::readComplete() {
+	lastTime = timeChecker();
+	return fullpart;
+}
 
 Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
 	Location_block *lctn;
@@ -280,7 +291,7 @@ Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
 
 Client::Client(size_t nwsock) {
 	time = timeChecker();
-	lastTime = 0;
+	lastTime = timeChecker();
 	fullpart = false;
 	location.clear();
 	header.clear();
@@ -434,9 +445,9 @@ int Client::makeRedirect(int code, std::string loc){
 	return 1;
 }
 
-int Client::checkTimeout(size_t currentCount, size_t lastCount) {
-	if (currentCount == lastCount && (lastTime - time) > TIMEOUT)
-			return 0;
-    lastTime = timeChecker();
-	return 1;
+int Client::checkTimeout( void ) {
+    time = timeChecker();
+	if ((time - lastTime) > TIMEOUT)
+		return 1;
+	return 0;
 }

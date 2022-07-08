@@ -135,9 +135,8 @@ void	rek_mkdir( std::string path)
     mkdir(create.c_str(), 0777);
 }
 
-time_t timeChecker( ) { 
+time_t timeChecker() { 
     time_t result = time(0);
-	// std::cout << GREEN << "time - " << result << RESET << "\n";
     return (intmax_t)result;
 }
 
@@ -156,7 +155,7 @@ void	writeLog( const std::string & path, const std::string & header, const std::
             }
             fd = open(path.c_str(), flags, 0777);
             if (fd < 0) {
-                std::cerr << RED << "Error: can not open or create log file" << RESET << "\n";
+                debug_msg(1, RED, "Error: can not open or create log file");
                 return ;
             }
         }
