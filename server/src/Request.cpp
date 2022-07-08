@@ -140,6 +140,7 @@ void Request::parseMapHeaders(std::vector<std::string> vec, size_t pos) {
         // std::cout << "body not exist\n";
     }
     checkHeaders(_headers, "Status", _cgiStatusCode);
+    checkHeaders(_headers, "Referer", _referer);
     // std::cout << RED << getContType() << "\n";
     // std::cout << "_headers.size() - " << _headers.size() << "\n";
     // std::map<std::string, std::string>::iterator it = _headers.begin();
@@ -174,6 +175,7 @@ void Request::findHost() {
         debug_msg(1, RED, "Host not found: has 400 exception ");
         throw codeException(400);
     }
+    _raw_host = _host;
     if (_host.substr(9) == "" && (_host == "localhost" || _host == "127.0.0.1"))
         _host += ":80";
     if (_host.find("localhost") != std::string::npos) {
@@ -219,11 +221,13 @@ void Request::cleaner() {
     _boundary.clear();
 }
 
+std::string	Request::getMethod() const { return this->_method; }
 std::string Request::getReqURI() const { return this->_reqURI; }
 std::string Request::getProtocolVer() const { return this->_protocolVersion; }
 std::map<std::string, std::string> const & Request::getHeadears() const { return this->_headers; }
 std::string Request::getMIMEType() const { return this->_MIMEType; }
-std::string Request::getContentType() const { return this->_responseContentType; }
+std::string Request::getResponceContType() const { return this->_responseContentType; }
+std::string Request::getRawHost() const { return this->_raw_host; }
 std::string Request::getHost() const { return this->_host; }
 std::string Request::getContType() const { return this->_contentType; }
 std::string Request::getContentLenght() const { return this->_contentLength; }
@@ -231,8 +235,9 @@ std::string Request::getTransferEnc() const { return this->_transferEnc; }
 std::string	Request::getCgiStatusCode() const { return this->_cgiStatusCode; };
 std::vector<std::string> Request::getDirs() const { return this->_dirs; }
 std::string Request::getBoundary() const { return _boundary; }
+std::string Request::getReferer() const { return _referer; }
 
-void Request::setMethod(std::string method) { _method = method; } 
+void Request::setContType(std::string type) { _contentType = type; }
 void Request::setHost(std::string host) { _host = host; }
 void Request::setReqURI(std::string URI) { _reqURI = URI; }
 void Request::setMIMEType(std::string type) { 

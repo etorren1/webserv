@@ -20,6 +20,7 @@ private:
 	std::map<std::string, std::string>      _headers;
 	std::string								_MIMEType;
 	std::string								_host;
+	std::string								_raw_host;
 	std::string								_contentLength;
 	std::string								_contentType;
 	std::string								_transferEnc;
@@ -27,6 +28,7 @@ private:
 	bool									_bodyExist;
 	std::string								_cgiStatusCode;
 	std::string								_boundary;
+	std::string								_referer;
 
 	//data for response
 	std::string								_responseContentType;
@@ -55,8 +57,9 @@ public:
 	std::string								getProtocolVer() const;
 	std::map<std::string, std::string>	const& getHeadears() const;
 	std::string								getMIMEType() const;
-	std::string								getContentType() const;
+	std::string								getResponceContType() const;
 	std::string								getHost() const;
+	std::string								getRawHost() const;
 	std::string								getContentLenght() const;
 	std::string								getContType() const;
 	std::string								getTransferEnc() const;
@@ -64,10 +67,12 @@ public:
 	int										getReqSize() const;
 	std::string								getCgiStatusCode() const;
 	std::string								getBoundary() const;
+	std::string								getReferer() const;
 
 	void					trimBoundary( std::stringstream & reader, size_t size );
 	void					trimChunks( std::stringstream & reader, size_t size );
 
+	void									setContType(std::string);
 	void									setHost(std::string);
 	void									setReqURI(std::string);
 };

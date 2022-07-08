@@ -11,18 +11,19 @@
 #include <fcntl.h>
 #include <map>
 
-#define REQ_DONE	0x001
-#define RESP_DONE	0x002
-#define IS_DIR		0x004
-#define IS_FILE		0x008
-#define AUTOIDX		0x010
-#define ERROR		0x020
-#define	HEAD_SENT	0x040
-#define REDIRECT	0x080
-#define IS_BODY		0x100
-#define STRM_READY	0x200
-#define IS_WRITE	0x400
-#define CGI_DONE	0x800
+#define REQ_DONE	0x0001
+#define RESP_DONE	0x0002
+#define IS_DIR		0x0004
+#define IS_FILE		0x0008
+#define AUTOIDX		0x0010
+#define ERROR		0x0020
+#define	HEAD_SENT	0x0040
+#define REDIRECT	0x0080
+#define IS_BODY		0x0100
+#define STRM_READY	0x0200
+#define IS_WRITE	0x0400
+#define CGI_DONE	0x0800
+#define IS_CGI		0x1000
 
 #define TIMEOUT		10
 
@@ -64,12 +65,16 @@ class Client
 		void						clearStream( void );
 		void						handleRequest( void );
 		void						handleError( const int code );
-		int							parseLocation( );
 		int							searchErrorPages( void );
 		void						cleaner( void );
 
+		// location
+		int							parseLocation( void );
+		void						findIndex( void );
+
 		//for response:
 		void						initResponse( char **envp );
+		void						createOrDelete( void );
 		void						makeResponse( void );
 		void						makeGetResponse( void );
 		void						makePostResponse( void );
@@ -98,7 +103,7 @@ class Client
 
 		void						autoindex( const std::string & path );
 		void						extractCgiHeader( char * buff );
-
+		void						redirectPost( void );
 		Client( size_t nwsock );
 		~Client();
 };
