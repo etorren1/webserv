@@ -26,6 +26,7 @@ class Location_block : public Block {
             error_page = other.get_error_page();
             access_log = other.get_access_log();
             root = other.get_root();
+            cgi_root = other.get_cgi_root();
             index = other.get_index();
             cgi_index = other.get_cgi_index();
             sendfile = other.get_sendfile();

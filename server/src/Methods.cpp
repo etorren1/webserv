@@ -143,24 +143,29 @@ void Client::makePostResponse( void )
 		cleaner();
 }
 
+void Client::makeResponseWithoutBody() {
+	if (res.sendResponse_stream(socket))
+		status |= RESP_DONE;
+	if (status & RESP_DONE)	{
+		cleaner();
+	}
+}
+
 void Client::makeErrorResponse() {
-	if (status & HEAD_SENT)
-	{
-		if (status & IS_FILE)
-		{
+	if (status & HEAD_SENT) {
+		if (status & IS_FILE) {
 			if (res.sendResponse_file(socket))
 				status |= RESP_DONE;
 		}
 		else
 			status |= RESP_DONE;
 	}
-	else
-	{
+	else {
 		if (res.sendResponse_stream(socket))
 			status |= HEAD_SENT;
 	}
-	if (status & RESP_DONE)
-	{
+	if (status & RESP_DONE) {
 		cleaner();
 	}
 }
+

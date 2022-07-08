@@ -72,7 +72,7 @@ class Response
 		
 		int				getContentLenght();
 		std::string		getHeader();
-		std::string		getContentType();
+		std::string		getResponceContType();
 		std::string		getReasonPhrase();
 		std::string		getFileLoc();
 		std::string		getCookie();
@@ -106,7 +106,7 @@ class Response
 		bool openFile();
 		bool formHeaderLog(std::string str, int socket);
 		int extractCgiHeader( Request & req );
-		void createSubprocess( Request & req, char **envp);
+		void createSubprocess( Request & req, std::string & path, char **envp);
 };
 
 #endif

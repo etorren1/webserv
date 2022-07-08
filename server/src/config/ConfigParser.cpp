@@ -179,6 +179,13 @@ void    Server::cfg_root( std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_cgi_root( std::string & text, T * block ) {
+    std::string raw = get_raw_param("cgi_root", text);
+    if (raw.size())
+        block->set_cgi_root(raw);
+}
+
+template <class T>
 void    Server::cfg_sendfile( std::string & text, T * block ) {
     std::string raw = get_raw_param("sendfile", text);
     if (raw.size()) {
@@ -255,6 +262,7 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_index(text, block);
     cfg_cgi_index(text, block);
     cfg_root(text, block);
+    cfg_cgi_root(text, block);
     cfg_return(text, block);
     cfg_error_page(text, block);
     cfg_accepted_methods(text, block);
