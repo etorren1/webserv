@@ -17,11 +17,11 @@ a:focus {
 .tm-left-right-container { width: 100%; }
 
 .tm-blue-bg {
-	background-color: #006599;
+	background-color: #69b5db;
 	color: white;
 }
 
-.tm-blue-text {	color: #006599; }
+.tm-blue-text {	color: #69b5db; }
 .tm-blue-bg a {	color: white; }
 
 .tm-site-name {
@@ -50,7 +50,7 @@ a:focus {
 p { line-height: 2; }
 
 .tm-button {
-	background-color: #006599;
+	background-color: #69b5db;
 	border: none;
 	color: black;
 	cursor: pointer;
