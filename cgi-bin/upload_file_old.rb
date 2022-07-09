@@ -5,10 +5,8 @@ require 'cgi'
 require 'pp'
 
 
-DOWNLOAD_DIRECTORY = "/Users/#{`whoami`.strip}/Downloads"
+DOWNLOAD_DIRECTORY = "/Users/#{`whoami`.strip}/sand/webserv/site/downloads"
 
-STDERR.puts STDIN.read
-exit 0
 
 def upload_file(file)
   server_file = File.join(

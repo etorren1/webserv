@@ -78,11 +78,11 @@ void Client::initResponse(char **envp) {
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
 	else if (req.getMethod() == "POST") {
-		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
+		if (status & IS_CGI) {
 			res.setFileLoc(location);
 			res.setContentType(req.getResponceContType());
 			res.createSubprocess(req, location, envp);
-			status |= IS_WRITE | IS_CGI;
+			status |= IS_WRITE;
 		}
 		else
 			redirectPost();
@@ -91,7 +91,6 @@ void Client::initResponse(char **envp) {
 
 void Client::makeResponse( void )
 {
-	lastActivity = timeChecker();
 	if (status & ERROR)
 		makeErrorResponse();
 	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")

@@ -31,8 +31,12 @@ int Client::parseLocation()	{
 	}
 	size_t pos;
     std::string root;
-    if (req.getMethod() == "POST")
-        root = loc->get_cgi_root();
+    if (req.getMethod() == "POST") {
+		if (loc->is_cgi_index(req.getReqURI().substr(req.getReqURI().rfind("/") + 1))) {
+			status |= IS_CGI;
+        	root = loc->get_cgi_root();
+		}
+	}
     else
 	    root = loc->get_root();
 	std::string locn = loc->get_location();
@@ -155,8 +159,8 @@ void Client::checkMessageEnd( void ) {
 				fullpart = false;
 		}
 		else {
-			debug_msg(1, RED, "Unknown body type or encoding: has 415 exception");
-			codeException(415);
+			debug_msg(1, RED, "Unknown body type or encoding: has 501 exception");
+			codeException(501);
 		}
 	}
 	else {
