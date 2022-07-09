@@ -129,6 +129,8 @@ static void wait_subprocess(int) {
 }
 
 void 			Response::createSubprocess( Request & req, std::string & path, char **envp) {
+	if (TESTER) // for pass tester
+		path = "cgi-bin/cgi_tester";
 	debug_msg(3, CYAN, "\e[1mCGI ENABLED");
 	if (pipe(pipe1)) {
 		debug_msg(1, RED, "Pipe1 error: has 500 exception");

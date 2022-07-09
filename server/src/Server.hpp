@@ -60,7 +60,7 @@ class Server {
 		int    		closeVirtualServer( Server_block * srv, int sock, const std::string & error, const std::string & text );
 		void    	getHostAndPort( const std::string & listen, std::string & hostname, std::string & port );
 		void		checkBodySize( const size_t socket, size_t size );
-		// int		    readHeader( const size_t socket, std::string & text );
+		int 		checkTimeout( size_t socket );
 		Server_block * getServerBlock( std::string host );
 		Server_block * searchServerName(std::string host);
 		void		clientRequest(const int socket);
@@ -88,6 +88,7 @@ class Server {
 			template <class T> void		cfg_client_max_body_size( std::string & text, T * block );
 			template <class T> void		cfg_location_block( std::string & text, T * block );
 			template <class T> void		cfg_server_block( std::string & text, T * block );
+			template <class T> void		cfg_connection_timeout( std::string & text, T * block );
 
 		bool			isServerSocket( const int & fd );
 		void			closeServer( int status );

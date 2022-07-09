@@ -5,7 +5,7 @@ require 'cgi'
 require 'pp'
 
 
-DOWNLOAD_DIRECTORY = "/Users/#{`whoami`.strip}/Downloads"
+DOWNLOAD_DIRECTORY = "/Users/#{`whoami`.strip}/sand/webserv/site/downloads"
 
 
 def upload_file(file)

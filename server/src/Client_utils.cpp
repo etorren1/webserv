@@ -104,9 +104,77 @@ int Client::makeRedirect(int code, std::string loc){
 	return 1;
 }
 
-int Client::checkTimeout( void ) {
-    time = timeChecker();
-	if ((time - lastTime) > TIMEOUT)
-		return 1;
-	return 0;
+Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
+	Location_block *lctn;
+	size_t i = 0;
+	while (i < vec.size()) {
+		try {
+			lctn = srv->lctn.at(vec[i]);
+			return (lctn);
+		}
+		catch (const std::exception &e) {
+			try {
+				vec[i] += "/";
+				lctn = srv->lctn.at(vec[i]);
+				return (lctn);
+			}
+			catch (const std::exception &e) {
+				i++;
+			}
+		}
+	}
+	return NULL;
+}
+
+bool			Client::readComplete() {
+	lastActivity = timeChecker();
+	return fullpart;
+}
+
+void Client::checkMessageEnd( void ) {
+	if (status & IS_BODY) {
+		if (req.getTransferEnc() == "chunked") {
+			if (reader_size > 4) {
+				char buf[5];
+				bzero(buf, 5);
+				reader.seekg(reader_size - 5);
+				reader.read(buf, 5);
+				reader.seekg(0);
+				size_t pos = find_2xCRLN(buf, 5);
+				if (pos && buf[pos - 1] == '0')
+					fullpart = true;
+				else
+					fullpart = false;
+			}
+		}
+		else if (req.getContentLenght().size()) {
+			size_t len = atoi(req.getContentLenght().c_str());
+			if (reader_size >= len)
+				fullpart = true;
+			else
+				fullpart = false;
+		}
+		else {
+			debug_msg(1, RED, "Unknown body type or encoding: has 415 exception");
+			codeException(415);
+		}
+	}
+	else {
+		header = reader.str();
+		size_t pos = header.find("\r\n\r\n");
+		if (pos != std::string::npos) {
+			if (pos + 4 != reader_size) // part of body request got into the header
+				savePartOfStream(pos);
+			else
+				clearStream();
+			header.erase(pos + 4);
+			while (header.find("\r") != std::string::npos) {
+				header.erase(header.find("\r"), 1); // из комбинации CRLF
+				pos--;								// Удаляем символ возврата карретки
+			}
+			fullpart = true;
+		}
+		else
+			fullpart = false;
+	}
 }

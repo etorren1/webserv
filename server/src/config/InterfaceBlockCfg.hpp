@@ -20,6 +20,7 @@ class Block
         std::pair<int, std::string> redirect;
         std::pair<int, std::string> error_page;
 
+
         void set_error_log( const std::string & s ) { error_log = s; }
         void set_access_log( const std::string & s ) { access_log = s; }
         void set_sendfile( bool t ) { sendfile = t; }

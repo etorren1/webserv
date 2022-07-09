@@ -4,9 +4,23 @@
 #include "InterfaceBlockCfg.hpp"
 
 class Http_block : public Block {
+    private:
+        int             connection_timeout;
 
     public:
-        Http_block() {}
+        void set_connection_timeout( const int time ) { connection_timeout = time; }
+
+        int get_connection_timeout() const { return connection_timeout; }
+
+
+        void    show_all() {
+            std::cout << "connection_timeout" << connection_timeout << "\n";
+            Block::show_all();
+        }
+
+        Http_block() {
+            connection_timeout = 0;
+        }
         ~Http_block() {}
 };
 

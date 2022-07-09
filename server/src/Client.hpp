@@ -25,8 +25,6 @@
 #define CGI_DONE	0x0800
 #define IS_CGI		0x1000
 
-#define TIMEOUT		10
-
 class Client
 {
 	private:
@@ -50,8 +48,7 @@ class Client
 		std::vector<std::string>			envpVector;
 		int									statusCode;
 		std::string							location;
-		time_t								time;
-		time_t								lastTime;
+		time_t								lastActivity;
 
 		//bonus:
 		std::map<std::string, std::string>	cookies;
@@ -81,12 +78,9 @@ class Client
 		void						makeResponseWithoutBody();
 		void						makeErrorResponse( void );
 		int							makeRedirect( int code, std::string loc );
-		int							checkTimeout( void );
 
 		void						setStreamSize( const size_t size );
 		void						setServer( Server_block * s );
-		void						setClientTime(time_t);
-		void						setLastTime(time_t);
 
 		bool 						readComplete( void );
 		std::string					getHost( void ) const;
@@ -98,8 +92,7 @@ class Client
 		std::string &				getHeader( void );
 		size_t						getStreamSize( void );
 		Location_block * 			getLocationBlock( std::vector<std::string> vec ) const;
-		time_t						getClientTime();
-		time_t						getLastTime();
+		time_t						getlastActivity();
 
 		void						autoindex( const std::string & path );
 		void						extractCgiHeader( char * buff );

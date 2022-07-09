@@ -2,72 +2,6 @@
 #include "Utils.hpp"
 #include <errno.h>
 
-void Client::clearStream( void ) {
-	reader.seekg(0);
-	reader.str(std::string());
-	reader.clear();
-	reader_size = 0;
-}
-
-void Client::savePartOfStream( size_t pos ) {
-	char buf[reader_size - pos - 3];
-	bzero(buf, reader_size - pos - 3);
-	reader.seekg(pos + 4);
-	reader.read(buf, reader_size - pos - 4);
-	buf[reader_size - pos - 3] = 0;
-	reader_size = reader.gcount();
-	reader.str(std::string()); // clearing content in stream
-	reader.clear();
-	reader << buf;
-}
-
-void Client::checkMessageEnd( void ) {
-	if (status & IS_BODY) {
-		if (req.getTransferEnc() == "chunked") {
-			if (reader_size > 4) {
-				char buf[5];
-				bzero(buf, 5);
-				reader.seekg(reader_size - 5);
-				reader.read(buf, 5);
-				reader.seekg(0);
-				size_t pos = find_2xCRLN(buf, 5);
-				if (pos && buf[pos - 1] == '0')
-					fullpart = true;
-				else
-					fullpart = false;
-			}
-		}
-		else if (req.getContentLenght().size()) {
-			size_t len = atoi(req.getContentLenght().c_str());
-			if (reader_size >= len)
-				fullpart = true;
-			else
-				fullpart = false;
-		}
-		else {
-			fullpart = true;
-		}
-	}
-	else {
-		header = reader.str();
-		size_t pos = header.find("\r\n\r\n");
-		if (pos != std::string::npos) {
-			if (pos + 4 != reader_size) // part of body request got into the header
-				savePartOfStream(pos);
-			else
-				clearStream();
-			header.erase(pos + 4);
-			while (header.find("\r") != std::string::npos) {
-				header.erase(header.find("\r"), 1); // из комбинации CRLF
-				pos--;								// Удаляем символ возврата карретки
-			}
-			fullpart = true;
-		}
-		else
-			fullpart = false;
-	}
-}
-
 void Client::handleRequest( void ) {
 	if (status & IS_BODY) {
 		req.parseBody(reader, reader_size, envpVector);
@@ -130,16 +64,52 @@ void Client::handleError( const int code ) {
 		status |= IS_FILE;
 }
 
+void Client::initResponse(char **envp) {
+	if (status & AUTOIDX)
+		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
+	else if (status & REDIRECT)
+		res.make_response_html(statusCode, resCode[statusCode], location);
+	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE")
+		createOrDelete();
+	else if (req.getMethod() == "GET") {
+		res.setFileLoc(location);
+		res.setContentType(req.getResponceContType());
+		res.openFile();
+		res.make_response_header(req, statusCode, resCode[statusCode]);
+	}
+	else if (req.getMethod() == "POST") {
+		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
+			res.setFileLoc(location);
+			res.setContentType(req.getResponceContType());
+			res.createSubprocess(req, location, envp);
+			status |= IS_WRITE | IS_CGI;
+		}
+		else
+			redirectPost();
+	}
+}
+
+void Client::makeResponse( void )
+{
+	lastActivity = timeChecker();
+	if (status & ERROR)
+		makeErrorResponse();
+	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")
+		makeResponseWithoutBody();
+	else if (req.getMethod() == "GET")
+		makeGetResponse();
+	else if (req.getMethod() == "POST") {
+		if (status & IS_CGI)
+			makePostResponse();
+		else
+			makeGetResponse();
+	}
+}
+
 void Client::redirectPost( void ) {
 	debug_msg(3, CYAN, "\e[1mNOT CGI: redirected");
-	// location = loc->get_root();
-	location = req.getReferer().substr(7 + req.getRawHost().size()); //remove http://host:port
-	// size_t pos;
-	// while ((pos = location.find("//")) != std::string::npos)
-	// 	location.erase(pos, 1);
-	// if (location.size() > 1 && location[0] == '/')
-	// 	location = location.substr(1);
-	// findIndex();
+	size_t pos = req.getReferer().find(req.getRawHost());
+	location = req.getReferer().substr(pos + req.getRawHost().size()); //remove http://host:port
 	statusCode = 301;
 	status |= REDIRECT;
 	res.make_response_html(statusCode, resCode[statusCode], location);
@@ -173,70 +143,23 @@ void Client::createOrDelete() {
 	res.make_response_html(statusCode, resCode[statusCode], location);
 }
 
-void Client::initResponse(char **envp) {
-	if (status & AUTOIDX)
-		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
-	else if (status & REDIRECT)
-		res.make_response_html(statusCode, resCode[statusCode], location);
-	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE")
-		createOrDelete();
-	else if (req.getMethod() == "GET") {
-		res.setFileLoc(location);
-		res.setContentType(req.getResponceContType());
-		res.openFile();
-		res.make_response_header(req, statusCode, resCode[statusCode]);
-	}
-	else if (req.getMethod() == "POST") {
-		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
-			res.setFileLoc(location);
-			res.setContentType(req.getResponceContType());
-			res.createSubprocess(req, location, envp);
-			status |= IS_WRITE | IS_CGI;
-		}
-		else
-			redirectPost();
-	}
+void Client::clearStream( void ) {
+	reader.seekg(0);
+	reader.str(std::string());
+	reader.clear();
+	reader_size = 0;
 }
 
-
-void Client::makeResponse( void )
-{
-	lastTime = timeChecker();
-	if (status & ERROR)
-		makeErrorResponse();
-	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")
-		makeResponseWithoutBody();
-	else if (req.getMethod() == "GET")
-		makeGetResponse();
-	else if (req.getMethod() == "POST") {
-		if (status & IS_CGI)
-			makePostResponse();
-		else
-			makeGetResponse();
-	}
-}
-
-void Client::cleaner() {
-	if (status & ERROR)
-		debug_msg(1, GREEN,  "Complete working with error: \e[1m", itos(statusCode), " ", resCode[statusCode], "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
-	else if (status & RESP_DONE)
-		debug_msg(1, GREEN,  "Complete working with request: \e[1m", req.getMethod(), " with code ", itos(statusCode), "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
-	clearStream();
-	location.clear();
-	header.clear();
-	envpVector.clear();
-	req.cleaner();
-	res.cleaner();
-	statusCode = 0;
-	status = 0;
-	loc = NULL;
-	srv = NULL;
-	time = timeChecker();
-	lastTime = 0;
-	wrtRet = 0;
-	rdRet = 0;
-	countr = 0;
-	countw = 0;
+void Client::savePartOfStream( size_t pos ) {
+	char buf[reader_size - pos - 3];
+	bzero(buf, reader_size - pos - 3);
+	reader.seekg(pos + 4);
+	reader.read(buf, reader_size - pos - 4);
+	buf[reader_size - pos - 3] = 0;
+	reader_size = reader.gcount();
+	reader.str(std::string()); // clearing content in stream
+	reader.clear();
+	reader << buf;
 }
 
 void Client::setStreamSize( const size_t size ) {
@@ -253,9 +176,6 @@ void Client::setServer(Server_block *s) {
 	res.setLogPath(srv->get_access_log());
 }
 
-void Client::setClientTime(time_t t) { time = t; }
-void Client::setLastTime(time_t t) { lastTime = t; }
-
 Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
 size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
@@ -264,39 +184,32 @@ std::string &	Client::getHeader( void ) { return header; }
 size_t			Client::getStreamSize( void ) { return reader_size; }
 std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
-time_t			Client::getClientTime() { return time; }
-time_t			Client::getLastTime() { return lastTime; }
+time_t			Client::getlastActivity() { return lastActivity; }
 
-bool			Client::readComplete() {
-	lastTime = timeChecker();
-	return fullpart;
-}
-
-Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
-	Location_block *lctn;
-	size_t i = 0;
-	while (i < vec.size()) {
-		try {
-			lctn = srv->lctn.at(vec[i]);
-			return (lctn);
-		}
-		catch (const std::exception &e) {
-			try {
-				vec[i] += "/";
-				lctn = srv->lctn.at(vec[i]);
-				return (lctn);
-			}
-			catch (const std::exception &e) {
-				i++;
-			}
-		}
-	}
-	return NULL;
+void Client::cleaner() {
+	if (status & ERROR)
+		debug_msg(1, GREEN,  "Complete working with error: \e[1m", itos(statusCode), " ", resCode[statusCode], "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
+	else if (status & RESP_DONE)
+		debug_msg(1, GREEN,  "Complete working with request: \e[1m", req.getMethod(), " with code ", itos(statusCode), "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
+	clearStream();
+	location.clear();
+	header.clear();
+	envpVector.clear();
+	req.cleaner();
+	res.cleaner();
+	statusCode = 0;
+	status = 0;
+	loc = NULL;
+	srv = NULL;
+	lastActivity = timeChecker();
+	wrtRet = 0;
+	rdRet = 0;
+	countr = 0;
+	countw = 0;
 }
 
 Client::Client(size_t nwsock) {
-	time = timeChecker();
-	lastTime = timeChecker();
+	lastActivity = timeChecker();
 	fullpart = false;
 	location.clear();
 	header.clear();
