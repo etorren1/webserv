@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <cstring>
 
 #define RES_BUF_SIZE 2048
@@ -62,8 +63,8 @@ class Response
 		void			addCookie(std::string cookie);
 		// template <class T>
 		// int				sendResponse(T * input, const size_t socket);
-		int 			sendResponse_file(const size_t socket);
-		int 			sendResponse_stream(const size_t socket);
+		int 			sendResponse_file(const size_t socket, time_t & lastActivity);
+		int 			sendResponse_stream(const size_t socket, time_t & lastActivity);
 
 		void			cleaner();
 

@@ -5,11 +5,11 @@
 void Client::makeGetResponse( void )
 {
 	if (status & HEAD_SENT) {
-		if (res.sendResponse_file(socket))
+		if (res.sendResponse_file(socket, lastActivity))
 			status |= RESP_DONE;
 	}
 	else {
-		if (res.sendResponse_stream(socket)) {
+		if (res.sendResponse_stream(socket, lastActivity)) {
 			if (status & REDIRECT)
 				status |= RESP_DONE;
 			else
@@ -82,7 +82,7 @@ void Client::makePostResponse( void )
 	}
 	else if (status & CGI_DONE)	//если все данные передались в cgi
 	{
-		if (res.sendResponse_stream(socket)) {
+		if (res.sendResponse_stream(socket, lastActivity)) {
 			status |= RESP_DONE;
 		}
 	}
@@ -91,7 +91,7 @@ void Client::makePostResponse( void )
 }
 
 void Client::makeResponseWithoutBody() {
-	if (res.sendResponse_stream(socket))
+	if (res.sendResponse_stream(socket, lastActivity))
 		status |= RESP_DONE;
 	if (status & RESP_DONE)	{
 		cleaner();
@@ -101,14 +101,14 @@ void Client::makeResponseWithoutBody() {
 void Client::makeErrorResponse() {
 	if (status & HEAD_SENT) {
 		if (status & IS_FILE) {
-			if (res.sendResponse_file(socket))
+			if (res.sendResponse_file(socket, lastActivity))
 				status |= RESP_DONE;
 		}
 		else
 			status |= RESP_DONE;
 	}
 	else {
-		if (res.sendResponse_stream(socket))
+		if (res.sendResponse_stream(socket, lastActivity))
 			status |= HEAD_SENT;
 	}
 	if (status & RESP_DONE) {

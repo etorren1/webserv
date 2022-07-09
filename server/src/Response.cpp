@@ -36,7 +36,7 @@ void Response::addCookie(std::string cookie) {
 	_cookie = "Set-Cookie: time=" + cookie + "\r\n\r\n";
 }
 
-int Response::sendResponse_file(const size_t socket)
+int Response::sendResponse_file(const size_t socket, time_t & lastActivity)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
@@ -50,6 +50,8 @@ int Response::sendResponse_file(const size_t socket)
 
 	_totalBytesRead += _bytesRead;
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (_bytesRead)
+		lastActivity = timeChecker();
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -65,7 +67,7 @@ int Response::sendResponse_file(const size_t socket)
 	return (0);
 }
 
-int Response::sendResponse_stream(const size_t socket)
+int Response::sendResponse_stream(const size_t socket, time_t & lastActivity )
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
@@ -77,6 +79,8 @@ int Response::sendResponse_stream(const size_t socket)
 		_logged = formHeaderLog(buffer, socket);
 	_totalBytesRead += _bytesRead;
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (_bytesRead)
+		lastActivity = timeChecker();
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -153,7 +157,15 @@ void 			Response::createSubprocess( Request & req, std::string & path, char **en
 		close(pipe1[PIPE_IN]);
 		close(pipe2[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
-		if ((ex = execve(path.c_str(), NULL, addCgiVar(req, envp))) < 0) {
+		// size_t pos = path.find(".rb");
+		char **av = NULL;
+		// if (pos != std::string::npos) {
+		// 	av = new char* [2];
+		// 	av[0] = new char[path.size()];
+		// 	av[1] = 0;
+		// 	path = "/usr/bin/ruby";
+		// }
+		if ((ex = execve(path.c_str(), av, addCgiVar(req, envp))) < 0) {
 			debug_msg(1, RED, "Execve fault: has 500 exception");
 			throw(codeException(500));
 		}

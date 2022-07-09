@@ -2,7 +2,7 @@
 #define Utils_hpp
 
 #define TESTER 0
-#define DEBUGLVL 0 // LVL 1 output only exception and final result
+#define DEBUGLVL 3 // LVL 1 output only exception and final result
 				   // LVL 2 output request header from client too
 				   // LVL 3 output more stuff info
 
