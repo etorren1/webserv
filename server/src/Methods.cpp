@@ -73,7 +73,8 @@ void Client::makePostResponse( void )
 			std::stringstream tmp;
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
-			statusCode = 201;
+			if (TESTER) // tester stuff
+				statusCode = 201;
 			res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
 			res.getStrStream() << tmp.rdbuf();
 			status |= CGI_DONE;
@@ -89,39 +90,29 @@ void Client::makePostResponse( void )
 		cleaner();
 }
 
-void Client::makeDeleteOrPut() {
-	if (req.getMethod() == "PUT") {
-	std::ofstream file(location);
-	if (!file.is_open()) {
-		size_t sep = location.find_last_of("/");
-		if (sep != std::string::npos) {
-			rek_mkdir(location.substr(0, sep));
-		}
-		file.open(location);
-	}
-	if (file.is_open()) {
-		file << reader.str();
-		file.close();
-	} else {
-		throw codeException(406);
-	}
-	statusCode = 201;
-	}
-	if (req.getMethod() == "DELETE") {
-		if (remove(location.c_str()) != 0) 
-			codeException(403);
-		statusCode = 204;
-	}
-	res.setFileLoc(location);
-	clearStrStream(res.getStrStream());
-	res.make_response_html(statusCode, resCode[statusCode], location);
-}
-
 void Client::makeResponseWithoutBody() {
 	if (res.sendResponse_stream(socket))
 		status |= RESP_DONE;
 	if (status & RESP_DONE)	{
-		// std::cout << GREEN << "End AUTOINDEX response on " << socket << " socket" << RESET << "\n";
 		cleaner();
 	}
 }
+
+void Client::makeErrorResponse() {
+	if (status & HEAD_SENT) {
+		if (status & IS_FILE) {
+			if (res.sendResponse_file(socket))
+				status |= RESP_DONE;
+		}
+		else
+			status |= RESP_DONE;
+	}
+	else {
+		if (res.sendResponse_stream(socket))
+			status |= HEAD_SENT;
+	}
+	if (status & RESP_DONE) {
+		cleaner();
+	}
+}
+

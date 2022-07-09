@@ -128,7 +128,10 @@ static void wait_subprocess(int) {
 	signal(SIGCHLD, SIG_DFL);
 }
 
-void 			Response::createSubprocess( Request & req, char **envp) {
+void 			Response::createSubprocess( Request & req, std::string & path, char **envp) {
+	if (TESTER) // for pass tester
+		path = "cgi-bin/cgi_tester";
+	debug_msg(3, CYAN, "\e[1mCGI ENABLED");
 	if (pipe(pipe1)) {
 		debug_msg(1, RED, "Pipe1 error: has 500 exception");
 		throw(codeException(500));
@@ -150,7 +153,7 @@ void 			Response::createSubprocess( Request & req, char **envp) {
 		close(pipe1[PIPE_IN]);
 		close(pipe2[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
-		if ((ex = execve(CGI_PATH, NULL, addCgiVar(req, envp))) < 0) {
+		if ((ex = execve(path.c_str(), NULL, addCgiVar(req, envp))) < 0) {
 			debug_msg(1, RED, "Execve fault: has 500 exception");
 			throw(codeException(500));
 		}
@@ -224,7 +227,7 @@ int	&			Response::getPipeWrite( void ) { return pipe1[PIPE_OUT]; }
 int	&			Response::getPipeRead( void ) { return pipe2[PIPE_IN]; }
 int				Response::getContentLenght() { return(std::atoi(_contentLength.c_str())); }
 std::string		Response::getHeader() { return(_header); }
-std::string		Response::getContentType() { return(_contentType); }
+std::string		Response::getResponceContType() { return(_contentType); }
 std::string		Response::getReasonPhrase() { return(_reasonPhrase); }
 std::string		Response::getFileLoc() { return(_fileLoc); }
 std::string		Response::getCookie() { return(_cookie); }

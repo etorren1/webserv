@@ -62,7 +62,7 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     address.sin_port = htons(atoi(port.c_str()));
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
-    if (listen(newSrvSock, 10) < 0)
+    if (listen(newSrvSock, 10000) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
@@ -154,7 +154,6 @@ void Server::connectClients( const int & fd ) {
 
 void Server::clientRequest(const int socket) {
     if (client[socket]->status & IS_BODY) {
-        // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
         client[socket]->handleRequest();
         checkBodySize(socket, client[socket]->getStreamSize());
         client[socket]->parseLocation();
@@ -171,9 +170,6 @@ void Server::clientRequest(const int socket) {
         writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
 
-            if (client[socket]->status & IS_BODY) {
-                // writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " body:", client[socket]->getStream().str());
-            }
             checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
             client[socket]->initResponse(envp);
@@ -186,25 +182,26 @@ void Server::mainHandler( void ) {
     if (ret != 0) {
         for (size_t id = 0; id < fds.size(); id++) {
             size_t socket = fds[id].fd;
+            bool   is_srv = isServerSocket(socket);
             try {
-                if (!isServerSocket(socket)) {
-                    if (client[socket]->checkTimeout()) {
+                if (fds[id].revents & POLLIN) {
+                    if (is_srv)
+                        connectClients(socket);
+                    else if (readRequest(socket) <= 0) {
                         disconnectClients(id);
                         continue;
                     }
-                }
-                if (fds[id].revents & POLLIN) {
-                    if (isServerSocket(socket))
-                        connectClients(socket);
-                    else if (readRequest(socket) <= 0)
-                        disconnectClients(id);
                     else if (client[socket]->readComplete())
                         clientRequest(socket);
                 }  
                 else if (fds[id].revents & POLLOUT) {
-                    if (!isServerSocket(socket) && client[socket]->status & REQ_DONE) {
+                    if (!is_srv && client[socket]->status & REQ_DONE) {
                         client[socket]->makeResponse();
                     }
+                }
+                if (!is_srv && checkTimeout(socket)) {
+                    disconnectClients(id);
+                    continue;;
                 }
             }
             catch(codeException& e) {
@@ -218,7 +215,7 @@ void Server::mainHandler( void ) {
 int     Server::readRequest( const size_t socket ) { // v2
     char buf[BUF_SIZE + 1];
     size_t bytesRead = 0;
-    int rd = -2, count = 0;
+    int rd, count = 0;
 
     bytesRead = client[socket]->getStreamSize();
     if ((rd = recv(socket, buf, BUF_SIZE, 0)) > 0) {

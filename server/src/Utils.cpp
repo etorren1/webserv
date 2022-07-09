@@ -175,6 +175,8 @@ void	writeLog( const std::string & path, const std::string & header, const std::
 
 void debug_msg(int lvl, std::string m1, std::string m2, std::string m3, std::string m4,\
 	                     std::string m5, std::string m6, std::string m7, std::string m8) {
-    if (DEBUGLVL >= lvl)
+    if (DEBUGLVL >= lvl) {
+        usleep(300);
         std::cerr << m1 << m2 << m3 << m4 << m5 << m6 << m7 << m8 << RESET << "\n";
+    }
 }

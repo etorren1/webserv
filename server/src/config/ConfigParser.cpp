@@ -179,6 +179,13 @@ void    Server::cfg_root( std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_cgi_root( std::string & text, T * block ) {
+    std::string raw = get_raw_param("cgi_root", text);
+    if (raw.size())
+        block->set_cgi_root(raw);
+}
+
+template <class T>
 void    Server::cfg_sendfile( std::string & text, T * block ) {
     std::string raw = get_raw_param("sendfile", text);
     if (raw.size()) {
@@ -247,6 +254,17 @@ void    Server::cfg_error_page( std::string & text, T * block ) {
 }
 
 template <class T>
+void    Server::cfg_connection_timeout( std::string & text, T * block ) {
+    std::string raw = get_raw_param("connection_timeout", text);
+    if (raw.size()) {
+        if (raw.find_first_not_of("0123456789") != std::string::npos)
+            errorShutdown(255, http->get_error_log(), "error: configuration file: invalid value: connection_timeout.");
+        int time = atoi(raw.c_str());
+        block->set_connection_timeout(time);
+    }
+}
+
+template <class T>
 void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_error_log(text, block);
     cfg_access_log(text, block);
@@ -255,6 +273,7 @@ void    Server::cfg_set_attributes( std::string & text, T * block ) {
     cfg_index(text, block);
     cfg_cgi_index(text, block);
     cfg_root(text, block);
+    cfg_cgi_root(text, block);
     cfg_return(text, block);
     cfg_error_page(text, block);
     cfg_accepted_methods(text, block);
@@ -286,6 +305,7 @@ void    Server::config( const int & fd ) {
     if ((rd = get_block("http", text, text)) == -1)
         errorShutdown(255, http->get_error_log(), "error: configuration file: not closed brackets.", text);
     cfg_set_attributes(text, http);
+    cfg_connection_timeout(text, http);
     cfg_server_block(text, http);
 
     // std::cout << YELLOW << "http block" << RESET << "\n";

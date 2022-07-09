@@ -1,9 +1,10 @@
 #ifndef Utils_hpp
 #define Utils_hpp
 
-#define TESTER 1
-#define DEBUGLVL 1 // LVL 1 output only exception and final result
+#define TESTER 0
+#define DEBUGLVL 0 // LVL 1 output only exception and final result
 				   // LVL 2 output request header from client too
+				   // LVL 3 output more stuff info
 
 #include <iostream>
 #include <vector>
@@ -22,7 +23,6 @@
 //for CGI:
 #define PIPE_IN 0	//we write
 #define PIPE_OUT 1	//we read
-#define CGI_PATH "server/cgi-bin/cgi_tester"
 #define BUF 8192   //можно заменить на общий buff
 
 class Client;

@@ -2,72 +2,6 @@
 #include "Utils.hpp"
 #include <errno.h>
 
-void Client::clearStream( void ) {
-	reader.seekg(0);
-	reader.str(std::string());
-	reader.clear();
-	reader_size = 0;
-}
-
-void Client::savePartOfStream( size_t pos ) {
-	char buf[reader_size - pos - 3];
-	bzero(buf, reader_size - pos - 3);
-	reader.seekg(pos + 4);
-	reader.read(buf, reader_size - pos - 4);
-	buf[reader_size - pos - 3] = 0;
-	reader_size = reader.gcount();
-	reader.str(std::string()); // clearing content in stream
-	reader.clear();
-	reader << buf;
-}
-
-void Client::checkMessageEnd( void ) {
-	if (status & IS_BODY) {
-		if (req.getTransferEnc() == "chunked") {
-			if (reader_size > 4) {
-				char buf[5];
-				bzero(buf, 5);
-				reader.seekg(reader_size - 5);
-				reader.read(buf, 5);
-				reader.seekg(0);
-				size_t pos = find_2xCRLN(buf, 5);
-				if (pos && buf[pos - 1] == '0')
-					fullpart = true;
-				else
-					fullpart = false;
-			}
-		}
-		else if (req.getContentLenght().size()) {
-			size_t len = atoi(req.getContentLenght().c_str());
-			if (reader_size >= len)
-				fullpart = true;
-			else
-				fullpart = false;
-		}
-		else {
-			fullpart = true;
-		}
-	}
-	else {
-		header = reader.str();
-		size_t pos = header.find("\r\n\r\n");
-		if (pos != std::string::npos) {
-			if (pos + 4 != reader_size) // part of body request got into the header
-				savePartOfStream(pos);
-			else
-				clearStream();
-			header.erase(pos + 4);
-			while (header.find("\r") != std::string::npos) {
-				header.erase(header.find("\r"), 1); // из комбинации CRLF
-				pos--;								// Удаляем символ возврата карретки
-			}
-			fullpart = true;
-		}
-		else
-			fullpart = false;
-	}
-}
-
 void Client::handleRequest( void ) {
 	if (status & IS_BODY) {
 		req.parseBody(reader, reader_size, envpVector);
@@ -110,7 +44,7 @@ void Client::handleError( const int code ) {
 	if (loc && loc->get_error_page().first == code)	{
 		if ((file = searchErrorPages()) == 1) {
 			req.setMIMEType(loc->get_error_page().second);
-			res.setContentType(req.getContentType());
+			res.setContentType(req.getResponceContType());
 			res.make_response_header(req, code, resCode[code]);
 		}
 	}
@@ -134,89 +68,98 @@ void Client::initResponse(char **envp) {
 	if (status & AUTOIDX)
 		res.make_response_autoidx(req, location, statusCode, resCode[statusCode]);
 	else if (status & REDIRECT)
-		res.make_response_html(statusCode, resCode[statusCode], location); //TODO: 
-		// res.make_response_header(req, statusCode, resCode[statusCode], 1);
+		res.make_response_html(statusCode, resCode[statusCode], location);
 	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE")
-		makeDeleteOrPut();
+		createOrDelete();
 	else if (req.getMethod() == "GET") {
 		res.setFileLoc(location);
-		res.setContentType(req.getContentType());
+		res.setContentType(req.getResponceContType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-	else if (req.getMethod() == "POST")
-	{
-		res.setFileLoc(location);
-		res.setContentType(req.getContentType());
+	else if (req.getMethod() == "POST") {
 		if (loc->is_cgi_index(location.substr(location.rfind("/") + 1))) {
-			res.createSubprocess(req, envp);
-			status |= IS_WRITE;
+			res.setFileLoc(location);
+			res.setContentType(req.getResponceContType());
+			res.createSubprocess(req, location, envp);
+			status |= IS_WRITE | IS_CGI;
 		}
-		else {
-			// what need doing here?
-			;
-		}
+		else
+			redirectPost();
 	}
 }
 
 void Client::makeResponse( void )
 {
-	lastTime = timeChecker();
+	lastActivity = timeChecker();
 	if (status & ERROR)
 		makeErrorResponse();
 	else if (status & AUTOIDX || req.getMethod() == "DELETE" || req.getMethod() == "PUT")
 		makeResponseWithoutBody();
 	else if (req.getMethod() == "GET")
 		makeGetResponse();
-	else if (req.getMethod() == "POST")
-		makePostResponse();
-	// 	makePostResponse(envp);  //envp не нужен уже
-}
-
-void Client::makeErrorResponse()
-{
-	if (status & HEAD_SENT)
-	{
-		if (status & IS_FILE)
-		{
-			if (res.sendResponse_file(socket))
-				status |= RESP_DONE;
-		}
+	else if (req.getMethod() == "POST") {
+		if (status & IS_CGI)
+			makePostResponse();
 		else
-			status |= RESP_DONE;
-	}
-	else
-	{
-		if (res.sendResponse_stream(socket))
-			status |= HEAD_SENT;
-	}
-	if (status & RESP_DONE)
-	{
-		cleaner();
+			makeGetResponse();
 	}
 }
 
-void Client::cleaner() {
-	if (status & ERROR)
-		debug_msg(1, GREEN,  "Complete working with error: \e[1m", itos(statusCode), " ", resCode[statusCode], "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
-	else if (status & RESP_DONE)
-		debug_msg(1, GREEN,  "Complete working with request: \e[1m", req.getMethod(), " with code ", itos(statusCode), "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
-	clearStream();
-	location.clear();
-	header.clear();
-	envpVector.clear();
-	req.cleaner();
-	res.cleaner();
-	statusCode = 0;
-	status = 0;
-	loc = NULL;
-	srv = NULL;
-	time = timeChecker();
-	lastTime = 0;
-	wrtRet = 0;
-	rdRet = 0;
-	countr = 0;
-	countw = 0;
+void Client::redirectPost( void ) {
+	debug_msg(3, CYAN, "\e[1mNOT CGI: redirected");
+	size_t pos = req.getReferer().find(req.getRawHost());
+	location = req.getReferer().substr(pos + req.getRawHost().size()); //remove http://host:port
+	statusCode = 301;
+	status |= REDIRECT;
+	res.make_response_html(statusCode, resCode[statusCode], location);
+}
+
+void Client::createOrDelete() {
+	if (req.getMethod() == "PUT") {
+	std::ofstream file(location);
+	if (!file.is_open()) {
+		size_t sep = location.find_last_of("/");
+		if (sep != std::string::npos) {
+			rek_mkdir(location.substr(0, sep));
+		}
+		file.open(location);
+	}
+	if (file.is_open()) {
+		file << reader.str();
+		file.close();
+	} else {
+		throw codeException(406);
+	}
+	statusCode = 201;
+	}
+	if (req.getMethod() == "DELETE") {
+		if (remove(location.c_str()) != 0) 
+			codeException(403);
+		statusCode = 204;
+	}
+	res.setFileLoc(location);
+	clearStrStream(res.getStrStream());
+	res.make_response_html(statusCode, resCode[statusCode], location);
+}
+
+void Client::clearStream( void ) {
+	reader.seekg(0);
+	reader.str(std::string());
+	reader.clear();
+	reader_size = 0;
+}
+
+void Client::savePartOfStream( size_t pos ) {
+	char buf[reader_size - pos - 3];
+	bzero(buf, reader_size - pos - 3);
+	reader.seekg(pos + 4);
+	reader.read(buf, reader_size - pos - 4);
+	buf[reader_size - pos - 3] = 0;
+	reader_size = reader.gcount();
+	reader.str(std::string()); // clearing content in stream
+	reader.clear();
+	reader << buf;
 }
 
 void Client::setStreamSize( const size_t size ) {
@@ -233,9 +176,6 @@ void Client::setServer(Server_block *s) {
 	res.setLogPath(srv->get_access_log());
 }
 
-void Client::setClientTime(time_t t) { time = t; }
-void Client::setLastTime(time_t t) { lastTime = t; }
-
 Response &		Client::getResponse() { return res; }
 Request &		Client::getRequest() { return req; }
 size_t			Client::getMaxBodySize() const { return loc->get_client_max_body_size(); }
@@ -244,39 +184,32 @@ std::string &	Client::getHeader( void ) { return header; }
 size_t			Client::getStreamSize( void ) { return reader_size; }
 std::stringstream &	Client::getStream() { return reader; }
 Server_block *	Client::getServer(void) { return srv; }
-time_t			Client::getClientTime() { return time; }
-time_t			Client::getLastTime() { return lastTime; }
+time_t			Client::getlastActivity() { return lastActivity; }
 
-bool			Client::readComplete() {
-	lastTime = timeChecker();
-	return fullpart;
-}
-
-Location_block *Client::getLocationBlock(std::vector<std::string> vec) const {
-	Location_block *lctn;
-	size_t i = 0;
-	while (i < vec.size()) {
-		try {
-			lctn = srv->lctn.at(vec[i]);
-			return (lctn);
-		}
-		catch (const std::exception &e) {
-			try {
-				vec[i] += "/";
-				lctn = srv->lctn.at(vec[i]);
-				return (lctn);
-			}
-			catch (const std::exception &e) {
-				i++;
-			}
-		}
-	}
-	return NULL;
+void Client::cleaner() {
+	if (status & ERROR)
+		debug_msg(1, GREEN,  "Complete working with error: \e[1m", itos(statusCode), " ", resCode[statusCode], "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
+	else if (status & RESP_DONE)
+		debug_msg(1, GREEN,  "Complete working with request: \e[1m", req.getMethod(), " with code ", itos(statusCode), "\e[0m\e[32m on \e[1m", itos(socket), "\e[0m\e[32m socket");
+	clearStream();
+	location.clear();
+	header.clear();
+	envpVector.clear();
+	req.cleaner();
+	res.cleaner();
+	statusCode = 0;
+	status = 0;
+	loc = NULL;
+	srv = NULL;
+	lastActivity = timeChecker();
+	wrtRet = 0;
+	rdRet = 0;
+	countr = 0;
+	countw = 0;
 }
 
 Client::Client(size_t nwsock) {
-	time = timeChecker();
-	lastTime = timeChecker();
+	lastActivity = timeChecker();
 	fullpart = false;
 	location.clear();
 	header.clear();
@@ -329,113 +262,4 @@ Client::Client(size_t nwsock) {
 }
 
 Client::~Client() {
-}
-
-int Client::parseLocation()	{
-	statusCode = 200;
-	if (req.getMIMEType() == "none" && !req.getContType().size())
-		status |= IS_DIR;
-	else
-		status |= IS_FILE;
-	if (req.getMethod() != "DELETE" && loc->get_redirect().first && !(status & REDIRECT)) {
-		if (makeRedirect(loc->get_redirect().first, loc->get_redirect().second)) {
-			location = req.getReqURI();
-			return 0;
-		}
-	}
-	size_t pos;
-	std::string root = loc->get_root();
-	std::string locn = loc->get_location();
-	if (!loc->is_accepted_method(req.getMethod()))
-	{
-		debug_msg(1, RED, "Method: ", req.getMethod(), " has 405 exception");
-		throw codeException(405);
-	}
-	size_t subpos;
-	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
-	location = root + locn + req.getReqURI().substr(subpos);
-
-	if (TESTER) {
-		// FOR INTRA TESTER
-		if (location.find("directory") != std::string::npos) {
-			location.erase(location.find("directory"), 10);
-		}
-		// DELETE IT IN FINAL VERSION!
-	}
-
-	while ((pos = location.find("//")) != std::string::npos)
-		location.erase(pos, 1);
-	if (location.size() > 1 && location[0] == '/')
-		location = location.substr(1);
-	if (req.getMethod() == "PUT")
-		return 1;
-	if (status & IS_DIR)	{
-		// if (location.size() && location[location.size() - 1] != '/')	{ // FINAL IF
-		if (location.size() && location[location.size() - 1] != '/' && !TESTER)	{
-			statusCode = 301;
-			location = req.getReqURI() + "/"; 
-			status |= REDIRECT;
-			return 0;
-		} 
-		else	
-		{
-			if (TESTER && location.size() && location[location.size() - 1] != '/') // FOR TESTER
-				location += "/"; // FOR TESTER
-			std::vector<std::string> indexes = loc->get_index();
-			size_t i = -1;
-			if (!loc->get_autoindex())	{
-				while (++i < indexes.size()) {
-					// std::cout << "loc - " << location << " index - " << indexes[i] << "\n";
-					std::string tmp = location + indexes[i];
-					if (access(tmp.c_str(), 0) != -1)	{
-						location = tmp;
-						req.setMIMEType(indexes[i]);
-						break;
-					}
-					// std::cout << "i = " << i << " " << tmp << "\n";
-				}
-				if (i == indexes.size())	{
-					debug_msg(1, RED, "Not found index in directory: ", location);
-					throw codeException(404);
-				}
-			}
-			else	{
-				if (access(location.c_str(), 0) == -1)		{
-					debug_msg(1, RED, "No such directory: ", location);
-					throw codeException(404);
-				}
-				status |= AUTOIDX;
-			}
-		}
-	}
-	else if (status & IS_FILE)	{ // FILE
-		if (req.getMethod() == "POST") 
-			// res.new_method(); // OPEN OR CREATE FILE WITH URI NAME
-			;
-		else if (access(location.c_str(), 0) == -1)	{
-			debug_msg(1, RED, "File not found (IS_FILE): ", location);
-			throw codeException(404);
-		}
-	}
-	if (access(location.c_str(), 4) == -1)	{
-		debug_msg(1, RED, "Permisson denied: ", location);
-		throw codeException(403);
-	}
-	// std::cout << GREEN << "this is final location: " << location << " <-\n" << RESET;
-	return (0);
-}
-
-int Client::makeRedirect(int code, std::string loc){
-	status |= REDIRECT;
-	statusCode = code;
-	req.splitLocation(loc);
-	req.splitDirectories();
-	return 1;
-}
-
-int Client::checkTimeout( void ) {
-    time = timeChecker();
-	if ((time - lastTime) > TIMEOUT)
-		return 1;
-	return 0;
 }

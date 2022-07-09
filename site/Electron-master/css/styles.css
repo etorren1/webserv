@@ -1,0 +1,101 @@
+body {
+	font-family: Georgia, 'Times New Roman', Times, sans-serif;
+} 
+
+.navbar {
+	float: none;
+	text-align: center;
+	background-color: #278ece;
+	color: #f1f7fc;
+}
+.btn{
+	background-color: #278ece;
+}
+.card {
+	box-shadow: 0px 6px 7px 3px #ced4da;
+	margin: 15px;
+}
+#send{
+	margin-left: 15px;
+	margin-bottom: 15px;
+}
+.photos{
+	min-height: 254px;
+	min-width: 241px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+#photoLabel{
+	padding-left: 7px;
+}
+.paddingFix{
+	padding-left: 15px;
+	color: #f1f7fc;
+}
+.postDetails{
+	padding-top: 50px;
+	padding-left: 20px;
+}
+.fix{
+	margin-left: 5px;
+}
+.postImg{
+	margin-bottom: 20px;
+}
+.postCreatorName{
+	color: #278ece;
+}
+.postTime{
+	color: #999999;
+}
+.aboutElectron{
+	color: #278ece;
+	padding-left: 20px;
+}
+.search{
+	border-radius: 14px;
+	background: #b6ea11;
+	width: 250px;
+	height: 30px;
+}
+.photoCard{
+	overflow: auto;
+}	
+.row-flex {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+}
+.avatar{
+	height: 95%;
+}
+.dropdown-item{
+	color: #278ece;
+}
+#saveButton{
+	margin-left: 1em;
+	margin-bottom: 4px;
+	height: 30px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+}
+#statusCard{
+	padding: 5px;
+}
+#statusInput{
+	margin-top: 4px;
+	margin-bottom: 4px;
+	width: 75%;
+}
+#nameOfUser{
+	margin-bottom: 0px;	
+}
+#dropdownMenuButton{
+	padding-left: 1px;
+	color: #a0cde9;
+}
+#send{
+	width: 200px;
+}
