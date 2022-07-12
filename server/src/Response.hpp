@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <signal.h>
 #include <cstring>
 
 #define RES_BUF_SIZE 2048

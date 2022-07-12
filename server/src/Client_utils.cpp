@@ -161,8 +161,8 @@ void Client::checkMessageEnd( void ) {
 				fullpart = false;
 		}
 		else {
-			debug_msg(1, RED, "Unknown body type or encoding: has 415 exception");
-			codeException(415);
+			debug_msg(1, RED, "Unknown body type or encoding: has 501 exception");
+			codeException(501);
 		}
 	}
 	else {
