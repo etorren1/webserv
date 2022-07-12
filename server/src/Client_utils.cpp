@@ -18,8 +18,21 @@ void Client::findIndex( void ) {
 }
 
 int Client::parseLocation()	{
+	if (!loc->is_accepted_method(req.getMethod()))
+	{
+		debug_msg(1, RED, "Method: ", req.getMethod(), " has 405 exception");
+		throw codeException(405);
+	}
+	size_t pos;
 	statusCode = 200;
-	if (req.getMIMEType() == "none" && !req.getContType().size())
+	pos = req.getReqURI().find("cgi-bin/");
+	if (pos != std::string::npos)
+		status |= IS_CGI;
+
+	if (TESTER && req.getMethod() == "POST") // INTRA TESTER
+		status |= IS_CGI;
+
+	if (req.getMIMEType() == "none" && !(status & IS_CGI))
 		status |= IS_DIR;
 	else
 		status |= IS_FILE;
@@ -29,21 +42,14 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-	size_t pos;
-    std::string root;
-    if (req.getMethod() == "POST")
-        root = loc->get_cgi_root();
-    else
-	    root = loc->get_root();
-	std::string locn = loc->get_location();
-	if (!loc->is_accepted_method(req.getMethod()))
-	{
-		debug_msg(1, RED, "Method: ", req.getMethod(), " has 405 exception");
-		throw codeException(405);
+    if (status & IS_CGI && !TESTER) {
+		location = loc->get_cgi_root() + req.getReqURI().substr(pos);
 	}
-	size_t subpos;
-	locn[locn.size() - 1] == '/' ? subpos = locn.size() - 1 : subpos = locn.size();
-	location = root + locn + req.getReqURI().substr(subpos);
+    else {
+		std::string locn = loc->get_location();
+		locn[locn.size() - 1] == '/' ? pos = locn.size() - 1 : pos = locn.size();
+		location = loc->get_root() + locn + req.getReqURI().substr(pos);
+	}
 
 	if (TESTER) {
 		// FOR INTRA TESTER

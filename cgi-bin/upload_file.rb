@@ -1,4 +1,4 @@
-#/!/usr/bin/ruby
+#!/usr/bin/ruby
 
 
 require 'cgi'
@@ -32,7 +32,7 @@ params = cgi.params
 
 
 # DEBUG INFO in browser
-# send_debug_info(cgi)
+send_debug_info(cgi)
 
 if params.has_key?("file")
   upload_file(params["file"].first)
@@ -57,3 +57,12 @@ html = <<~END
 END
 
 cgi.out("text/html") { html }
+
+
+# print "Status: 200\r\n"
+# print "Content-Type: text/plain\r\n"
+
+# puts ENV.map { |k, v| "#{k}: #{v}" }.join("\n")
+
+# body = STDIN.read
+# puts body

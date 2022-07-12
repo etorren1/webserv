@@ -7,6 +7,7 @@
 #include <dirent.h> 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <cstring>
 
@@ -62,8 +63,8 @@ class Response
 		void			addCookie(std::string cookie);
 		// template <class T>
 		// int				sendResponse(T * input, const size_t socket);
-		int 			sendResponse_file(const size_t socket);
-		int 			sendResponse_stream(const size_t socket);
+		int 			sendResponse_file(const size_t socket, time_t & lastActivity);
+		int 			sendResponse_stream(const size_t socket, time_t & lastActivity);
 
 		void			cleaner();
 
@@ -107,6 +108,9 @@ class Response
 		bool formHeaderLog(std::string str, int socket);
 		int extractCgiHeader( Request & req );
 		void createSubprocess( Request & req, std::string & path, char **envp);
+
+		int waitChild( void );
+		char **createArgv(std::vector<std::string> vars);
 };
 
 #endif

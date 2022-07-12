@@ -62,7 +62,7 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     address.sin_port = htons(atoi(port.c_str()));
     if (bind(newSrvSock, (struct sockaddr*)&address, sizeof(address)) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " bind failed");
-    if (listen(newSrvSock, 10000) < 0)
+    if (listen(newSrvSock, 1000) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
     /* 
@@ -147,7 +147,7 @@ void Server::connectClients( const int & fd ) {
         nw.revents = 0;
         fds.push_back(nw);   
         client.insert(std::make_pair(newClientSock, new Client(newClientSock)));
-        fcntl(newClientSock, F_SETFL, O_NONBLOCK);
+        // fcntl(newClientSock, F_SETFL, O_NONBLOCK);
         debug_msg(1,"New client on ", itos(newClientSock), " socket.");
     }
 }

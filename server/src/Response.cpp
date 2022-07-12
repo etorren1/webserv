@@ -36,7 +36,7 @@ void Response::addCookie(std::string cookie) {
 	_cookie = "Set-Cookie: time=" + cookie + "\r\n\r\n";
 }
 
-int Response::sendResponse_file(const size_t socket)
+int Response::sendResponse_file(const size_t socket, time_t & lastActivity)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
@@ -50,6 +50,8 @@ int Response::sendResponse_file(const size_t socket)
 
 	_totalBytesRead += _bytesRead;
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (_bytesSent)
+		lastActivity = timeChecker();
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -65,7 +67,7 @@ int Response::sendResponse_file(const size_t socket)
 	return (0);
 }
 
-int Response::sendResponse_stream(const size_t socket)
+int Response::sendResponse_stream(const size_t socket, time_t & lastActivity)
 {
 	char 			*buffer = new char [RES_BUF_SIZE];
 
@@ -77,6 +79,8 @@ int Response::sendResponse_stream(const size_t socket)
 		_logged = formHeaderLog(buffer, socket);
 	_totalBytesRead += _bytesRead;
 	_bytesSent = send(socket, buffer, _bytesRead, 0);		// Отправляем ответ клиенту с помощью функции send
+	if (_bytesSent)
+		lastActivity = timeChecker();
 	if (_bytesSent < _bytesRead)
 	{
 		_totalBytesRead -= (_bytesRead - _bytesSent);
@@ -119,13 +123,14 @@ char** Response::addCgiVar(Request & req, char **envp) {
 	return arr;
 }
 
-static void wait_subprocess(int) {
-	int wstat;
-	waitpid(P_ALL, &wstat, 0);
-	if (wstat > 255)
-		wstat /= 255;
-	debug_msg(3, "Child process exited with code ", itos(wstat));
-	signal(SIGCHLD, SIG_DFL);
+char** Response::createArgv(std::vector<std::string> vars) {
+	char **av = NULL;
+	size_t size = vars.size();
+	av = new char*[size + 1];
+	for (size_t i = 0; i < size; i++)
+		av[i] = strdup(vars[i].c_str());
+	av[size] = NULL;
+	return av;
 }
 
 void 			Response::createSubprocess( Request & req, std::string & path, char **envp) {
@@ -153,7 +158,11 @@ void 			Response::createSubprocess( Request & req, std::string & path, char **en
 		close(pipe1[PIPE_IN]);
 		close(pipe2[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
-		if ((ex = execve(path.c_str(), NULL, addCgiVar(req, envp))) < 0) {
+		std::vector<std::string> vec;
+		vec.push_back(path);
+		if ((ex = execve(path.c_str(), createArgv(vec), addCgiVar(req, envp))) < 0) {
+			std::cerr << "here\n";
+			std::cerr << "ex = " << ex << "\n";
 			debug_msg(1, RED, "Execve fault: has 500 exception");
 			throw(codeException(500));
 		}
@@ -162,8 +171,27 @@ void 			Response::createSubprocess( Request & req, std::string & path, char **en
 	else { // main process
 		close(pipe1[PIPE_IN]);
 		close(pipe2[PIPE_OUT]);
-		signal(SIGCHLD, wait_subprocess);
 	}
+}
+
+int Response::waitChild( void ) {
+	int wstat = -1;
+	pid_t pstat;
+	// std::cout << "waitpid\n";
+	pstat = waitpid(pid, &wstat, WNOHANG); //WNOHANG
+	// std::cout << "pstat = " << pstat << "\n";
+	if (pstat > 0) {
+		if (wstat > 255)
+			wstat /= 255;
+		debug_msg(3, "Child process exited with code ", itos(wstat));
+		return (1);
+	}
+	else if (pstat < 0) {
+		kill(pid, SIGKILL);
+		debug_msg(3, RED, "Child process killed: pid = -1: has 500 exception");
+		throw codeException(500);
+	}
+	return (0);
 }
 
 int Response::extractCgiHeader( Request & req )
@@ -172,7 +200,7 @@ int Response::extractCgiHeader( Request & req )
 	std::vector<std::string>	headerStrs;
 	size_t pos, rd, bytesRead = 0;
 	char	buf[BUF];
-	while (true) {
+	while (!_stream.eof()) {
 		bzero(buf, BUF);
 		_stream.read(buf, BUF);
 		headerAll += buf;

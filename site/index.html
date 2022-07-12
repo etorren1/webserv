@@ -16,7 +16,7 @@
     </div><br>
 </form>
 
-<form action="cgi_tester" method="post">
+<form action="cgi-bin/cgi_tester" method="post">
     <div>
         <label for="name">Name:</label>
         <input type="text" id="name" name="user_name">
@@ -37,11 +37,9 @@
     <!-- <div><img src="image.png" alt="image"></div> -->
 </form>
 
-<form action="cgi_tester" method="post" enctype="multipart/form-data">
+<form action="cgi-bin/upload_file.rb" method="post" enctype="multipart/form-data">
 	<input type="file" name="uploaded_image" accept="image/jpeg,image/png"/>
 	<input type="submit" name="commit" value="Upload"/>
-    <input type="submit" name="text" value="Some stuff"/>
-    <input type="submit" name="commit" value="Last commit"/>
 </form>
 
 <form action="./file.html" method="get">
@@ -53,6 +51,21 @@
 		<button type="submit">Send your message</button>
     </div><br>
 </form>
+
+<FORM ACTION="/CGI-BIN/EXAMPLE.PLI METHOD="GET">
+<H5>Please enter the following information:</H5><BR>
+Product name:
+<INPUT TYPE="TEXT" NAME="NAME" size="25" MAXLENGTH ="30"><BR>
+Select product type:
+<INPUT TYPE="RADIO" NAME="ProdType" VALUE="Bridge" CHECKED> Bridge
+<INPUT TYPE="RADIO" NAME="ProdType" VALUE="Router"> Router
+<INPUT TYPE="RADIO" NAME="ProdType" VALUE="Switch"> Switch<P>
+Protocols handled: <INPUT TYPE="CHECKBOX" NAME="IP" CHECKED> IP
+<INPUT TYPE="CHECKBOX" NAME="IPX" CHECKED> IPX
+<INPUT TYPE="CHECKBOX" NAME="AppleTalk" CHECKED> AppleTalk
+<INPUT TYPE="SUBMIT" VALUE="Press here to submit your entry">
+<INPUT TYPE="RESET" VALUE="Clear Form">
+</FORM>>>>
 
 </body>
 </html>

@@ -1,8 +1,8 @@
 #ifndef Utils_hpp
 #define Utils_hpp
 
-#define TESTER 0
-#define DEBUGLVL 0 // LVL 1 output only exception and final result
+#define TESTER 1
+#define DEBUGLVL 3 // LVL 1 output only exception and final result
 				   // LVL 2 output request header from client too
 				   // LVL 3 output more stuff info
 
@@ -38,7 +38,7 @@ size_t 						find_2xCRLN( char* buf, size_t size, size_t indent = 0 );
 std::string					getCurTime();
 long long					getFileSize(const char *fileLoc);
 long						hexadecimalToDecimal(std::string hex_val);
-long						getStrStreamSize(std::stringstream &strm);
+size_t						getStrStreamSize(std::stringstream &strm);
 void						clearStrStream(std::stringstream &strstring);
 void						rek_mkdir( std::string path);
 time_t						timeChecker( void );

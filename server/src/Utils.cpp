@@ -76,7 +76,7 @@ std::string 	getstr(char *c, size_t size) {
     return str;
 }
 
-long		getStrStreamSize(std::stringstream &strm)
+size_t		getStrStreamSize(std::stringstream &strm)
 {
     std::streambuf* buf = strm.rdbuf();
 	long size = buf->pubseekoff(0, strm.end);
