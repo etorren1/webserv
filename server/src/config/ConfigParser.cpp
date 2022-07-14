@@ -153,10 +153,16 @@ void    Server::cfg_server_block( std::string & text, T * block ) {
         Server_block *nw = new Server_block(*block);
 
         cfg_listen(tmp, nw);
-        cfg_server_name(tmp, nw);
-        cfg_set_attributes(tmp, nw);
-        cfg_location_block(tmp, nw);
-        srvs.insert(std::make_pair(nw->get_listen(), nw));
+        try { 
+            srvs.at(nw->get_listen());
+            errorShutdown(255, http->get_error_log(), "error: configuration file: listen " + nw->get_listen() + " alredy is use.");
+        }
+        catch (std::exception & e) {
+            cfg_server_name(tmp, nw);
+            cfg_set_attributes(tmp, nw);
+            cfg_location_block(tmp, nw);
+            srvs.insert(std::make_pair(nw->get_listen(), nw));
+        }
     }
 }
 

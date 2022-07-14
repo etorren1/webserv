@@ -176,7 +176,7 @@ void Request::findHost() {
         throw codeException(400);
     }
     _raw_host = _host;
-    if (_host.substr(9) == "" && (_host == "localhost" || _host == "127.0.0.1"))
+    if ((_host == "localhost" || _host == "127.0.0.1") && _host.substr(9) == "")
         _host += ":80";
     if (_host.find("localhost") != std::string::npos) {
         std::string ip = "127.0.0.1" + _host.substr(9);

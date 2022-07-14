@@ -25,7 +25,7 @@ void    Server::create() {
 void    Server::run( void ) {
 
     if (status & ~STOP)
-        debug_msg(1, GREEN, "Server running.");
+        debug_msg(0, GREEN, "\e[1mServer running.");
     while(status & WORKING) {
         mainHandler();
         consoleCommands();
@@ -106,11 +106,11 @@ void Server::consoleCommands( void ) {
     }
     if (bytesRead > 0) {
         if (text == "STOP") {
-            debug_msg(1, YELLOW, "Shutdown server");
+            debug_msg(0, RED, "\e[1mShutdown server");
             closeServer(STOP);
         }
         else if (text == "RESTART") {
-            debug_msg(1, YELLOW, "Restarting server ... ");
+            debug_msg(0, YELLOW, "\e[1mRestarting server ... ");
             closeServer(RESTART);
             int fd = open(cfg_path.c_str(), O_RDONLY);
             config(fd);
