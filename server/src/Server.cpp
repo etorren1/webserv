@@ -169,7 +169,6 @@ void Server::clientRequest(const int socket) {
         client[socket]->setServer(srv);
         writeLog(client[socket]->getServer()->get_access_log(), "Client " + itos(socket) + " header:", client[socket]->getHeader());
         if (client[socket]->readComplete()) {
-
             checkBodySize(socket, client[socket]->getStreamSize());
             client[socket]->parseLocation();
             client[socket]->initResponse(envp);

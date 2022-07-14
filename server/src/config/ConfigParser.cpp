@@ -138,6 +138,10 @@ void    Server::cfg_location_block( std::string & text, T * block ) {
         nw->set_location(raw);
         block->lctn.insert(std::make_pair(raw, nw));
     }
+    try { block->lctn.at("/"); }
+    catch (std::exception & e) {
+        block->lctn.insert(std::make_pair("/", new Location_block(*block)));
+    }
 }
 
 template <class T>

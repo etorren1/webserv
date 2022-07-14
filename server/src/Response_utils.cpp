@@ -9,9 +9,9 @@ void	Response::make_response_html( const int code, std::string & mess, std::stri
     std::string responseBody = "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"> \
 <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"> \
 <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> \
-<title>" + itos(code) + " " + mess + "</title></head><body  align=\"center\"><div class=\"container\"><h1>" \
+<title>" + itos(code) + " " + mess + "</title></head><center><body  align=\"center\"><div class=\"container\"><h1>" \
 + itos(code) + " " + mess + "</h1><hr></hr> \
-<p> with ♡ webserver</p></div></body></html>";
+<p> with ♡ webserver</p></div></body></center></html>";
     if (!loc.empty())
         location = "Location: " + loc + "\r\n";
     std::string header = "HTTP/1.1 " + itos(code) + " " + mess + "\r\n" + location + "Version: " + "HTTP/1.1" \
