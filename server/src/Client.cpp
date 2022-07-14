@@ -11,7 +11,7 @@ void Client::handleRequest( void ) {
 		bool rd = req.parseText(header);
 		if (rd == true) { // body exist
 			status |= IS_BODY;
-			if (reader_size) {
+			if (reader_size || req.getContentLenght() == "0") {
 				checkMessageEnd();
 				if (fullpart) {
 					req.parseBody(reader, reader_size, envpVector);
@@ -71,22 +71,19 @@ void Client::initResponse(char **envp) {
 		res.make_response_html(statusCode, resCode[statusCode], location);
 	else if (req.getMethod() == "PUT" || req.getMethod() == "DELETE")
 		createOrDelete();
-	else if (req.getMethod() == "GET") {
+	else if (req.getMethod() == "POST" && status & IS_CGI) {
+		res.setFileLoc(location);
+		res.setContentType(req.getResponceContType());
+		res.createSubprocess(req, location, envp);
+		status |= IS_WRITE;
+	}
+	else if (req.getMethod() == "GET" || req.getMethod() == "POST") {
 		res.setFileLoc(location);
 		res.setContentType(req.getResponceContType());
 		res.openFile();
 		res.make_response_header(req, statusCode, resCode[statusCode]);
 	}
-	else if (req.getMethod() == "POST") {
-		if (status & IS_CGI) {
-			res.setFileLoc(location);
-			res.setContentType(req.getResponceContType());
-			res.createSubprocess(req, location, envp);
-			status |= IS_WRITE;
-		}
-		else
-			redirectPost();
-	}
+	
 }
 
 void Client::makeResponse( void )
@@ -105,14 +102,14 @@ void Client::makeResponse( void )
 	}
 }
 
-void Client::redirectPost( void ) {
-	debug_msg(3, CYAN, "\e[1mNOT CGI: redirected");
-	size_t pos = req.getReferer().find(req.getRawHost());
-	location = req.getReferer().substr(pos + req.getRawHost().size()); //remove http://host:port
-	statusCode = 301;
-	status |= REDIRECT;
-	res.make_response_html(statusCode, resCode[statusCode], location);
-}
+// void Client::redirectPost( void ) {
+// 	debug_msg(3, CYAN, "\e[1mNOT CGI: redirected");
+// 	size_t pos = req.getReferer().find(req.getRawHost());
+// 	location = req.getReferer().substr(pos + req.getRawHost().size()); //remove http://host:port
+// 	statusCode = 301;
+// 	status |= REDIRECT;
+// 	res.make_response_html(statusCode, resCode[statusCode], location);
+// }
 
 void Client::createOrDelete() {
 	if (req.getMethod() == "PUT") {

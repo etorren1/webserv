@@ -39,6 +39,7 @@ void Client::makePostResponse( void )
 			bytesRead = reader.gcount();
 			wr = write(res.getPipeWrite(), buf, bytesRead);
 			if (wr > 0) {
+				lastActivity = timeChecker();
 				wrtRet += wr;
 				countw +=wr;
 			}
@@ -55,6 +56,7 @@ void Client::makePostResponse( void )
 			bzero(buf, BUF);
 			rd = read(res.getPipeRead(), buf, BUF);
 			if (rd > 0) {
+				lastActivity = timeChecker();
 				rdRet += rd;
 				countr += rd;
 			}
