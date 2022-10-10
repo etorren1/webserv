@@ -28,10 +28,6 @@ int Client::parseLocation()	{
 	pos = req.getReqURI().find("cgi-bin/");
 	if (pos != std::string::npos)
 		status |= IS_CGI;
-
-	if (TESTER && req.getMethod() == "POST") // INTRA TESTER
-		status |= IS_CGI;
-
 	if (req.getMIMEType() == "none" && !(status & IS_CGI))
 		status |= IS_DIR;
 	else
@@ -42,7 +38,7 @@ int Client::parseLocation()	{
 			return 0;
 		}
 	}
-    if (status & IS_CGI && !TESTER) {
+    if (status & IS_CGI) {
 		location = loc->get_cgi_root() + req.getReqURI().substr(pos);
 	}
     else {
@@ -50,15 +46,6 @@ int Client::parseLocation()	{
 		locn[locn.size() - 1] == '/' ? pos = locn.size() - 1 : pos = locn.size();
 		location = loc->get_root() + locn + req.getReqURI().substr(pos);
 	}
-
-	if (TESTER) {
-		// FOR INTRA TESTER
-		if (location.find("directory") != std::string::npos) {
-			location.erase(location.find("directory"), 10);
-		}
-		// DELETE IT IN FINAL VERSION!
-	}
-
 	while ((pos = location.find("//")) != std::string::npos)
 		location.erase(pos, 1);
 	if (location.size() > 1 && location[0] == '/')
@@ -66,8 +53,7 @@ int Client::parseLocation()	{
 	if (req.getMethod() == "PUT")
 		return 1;
 	if (status & IS_DIR)	{
-		// if (location.size() && location[location.size() - 1] != '/')	{ // FINAL IF
-		if (location.size() && location[location.size() - 1] != '/' && !TESTER)	{
+		if (location.size() && location[location.size() - 1] != '/') {
 			statusCode = 301;
 			location = req.getReqURI() + "/"; 
 			status |= REDIRECT;
@@ -75,8 +61,6 @@ int Client::parseLocation()	{
 		} 
 		else	
 		{
-			if (TESTER && location.size() && location[location.size() - 1] != '/') // FOR TESTER
-				location += "/"; // FOR TESTER
 			if (!loc->get_autoindex())
                 findIndex();
 			else	{
@@ -169,7 +153,7 @@ void Client::checkMessageEnd( void ) {
 		header = reader.str();
 		size_t pos = header.find("\r\n\r\n");
 		if (pos != std::string::npos) {
-			if (pos + 4 != reader_size) // part of body request got into the header
+			if (pos + 4 != reader_size)
 				savePartOfStream(pos);
 			else
 				clearStream();

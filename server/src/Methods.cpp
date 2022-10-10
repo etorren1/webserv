@@ -75,8 +75,6 @@ void Client::makePostResponse( void )
 			std::stringstream tmp;
 			tmp << res.getStrStream().rdbuf();
 			clearStrStream(res.getStrStream());
-			if (TESTER) // tester stuff
-				statusCode = 201;
 			res.make_response_header(req, statusCode, resCode[statusCode], getStrStreamSize(tmp));
 			res.getStrStream() << tmp.rdbuf();
 			status |= CGI_DONE;

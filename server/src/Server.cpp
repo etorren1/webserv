@@ -1,9 +1,5 @@
 #include "Server.hpp"
 
-static void     ft(int) {
-    // ignore SIGPIPE
-}
-
 void    Server::create() {
     std::vector<std::string> brokenhosts;
     for ( srvs_iterator it = srvs.begin(); it != srvs.end(); it++) {
@@ -19,7 +15,7 @@ void    Server::create() {
         srvs.erase(brokenhosts[i]);
     if (!srvs.size())
         closeServer(STOP);
-    signal(SIGPIPE, ft);
+    signal(SIGPIPE, NULL); // ignore sigpipe
 }
 
 void    Server::run( void ) {
@@ -65,11 +61,6 @@ int    Server::createVirtualServer( const std::string & hostname, const std::str
     if (listen(newSrvSock, 10000) < 0)
         return closeVirtualServer(srv, newSrvSock, strerror(errno), "Host: " + hostname + ":" + port + " listen failed");
     fcntl(newSrvSock, F_SETFL, O_NONBLOCK);
-    /* 
-    / F_SETFL устанавливет флаг O_NONBLOCK для подаваемого дескриптора 
-    / O_NONBLOCK устанавливает  режим  неблокирования, 
-    / что позволяет при ошибке вернуть чтение другим запросам 
-    */
     fds.push_back(newPoll);
     srvSockets.insert(newSrvSock);
     debug_msg(1, "Host: ", hostname, ":", port, " up succsesfuly");
@@ -268,5 +259,5 @@ Server::Server( char **envp, std::string nw_cfg_path ) {
 }
 
 Server::~Server() {
-    debug_msg(1, "Destroyed.");
+    debug_msg(3, "Destroyed.");
 }

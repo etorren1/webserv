@@ -102,15 +102,6 @@ void Client::makeResponse( void )
 	}
 }
 
-// void Client::redirectPost( void ) {
-// 	debug_msg(3, CYAN, "\e[1mNOT CGI: redirected");
-// 	size_t pos = req.getReferer().find(req.getRawHost());
-// 	location = req.getReferer().substr(pos + req.getRawHost().size()); //remove http://host:port
-// 	statusCode = 301;
-// 	status |= REDIRECT;
-// 	res.make_response_html(statusCode, resCode[statusCode], location);
-// }
-
 void Client::createOrDelete() {
 	if (req.getMethod() == "PUT") {
 	std::ofstream file(location);
@@ -153,7 +144,7 @@ void Client::savePartOfStream( size_t pos ) {
 	reader.read(buf, reader_size - pos - 4);
 	buf[reader_size - pos - 3] = 0;
 	reader_size = reader.gcount();
-	reader.str(std::string()); // clearing content in stream
+	reader.str(std::string());
 	reader.clear();
 	reader << buf;
 }
@@ -218,8 +209,6 @@ Client::Client(size_t nwsock) {
 	envpVector.clear();
 	wrtRet = 0;
 	rdRet = 0;
-	//Для POST браузер сначала отправляет заголовок, сервер отвечает 100 continue, браузер
-	// отправляет данные, а сервер отвечает 200 ok (возвращаемые данные).
 	this->resCode.insert(std::make_pair(100, "Continue"));
 	this->resCode.insert(std::make_pair(101, "Switching Protocols"));
 	this->resCode.insert(std::make_pair(200, "OK"));

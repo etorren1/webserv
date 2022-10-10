@@ -18,7 +18,7 @@ void     Server::checkBodySize( const size_t socket, size_t size ) {
 int Server::checkTimeout( size_t socket ) {
 
 	int timeout = http->get_connection_timeout();
-	if (!TESTER && timeout && (timeChecker() - client[socket]->getlastActivity() > timeout))
+	if (timeout && (timeChecker() - client[socket]->getlastActivity() > timeout))
 		return 1;
 	return 0;
 }
