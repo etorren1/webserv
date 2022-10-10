@@ -21,7 +21,7 @@ or
 * handle CGI
 * nginx style configuration file
 
-<img src="https://github.com/etorren1/webserv/blob/main/images/conf1.png" width="60%"/>
+<img src="https://github.com/etorren1/webserv/blob/main/images/conf1.png" width="70%"/>
 
 ## Developers
 [etorren](https://github.com/etorren1)  
